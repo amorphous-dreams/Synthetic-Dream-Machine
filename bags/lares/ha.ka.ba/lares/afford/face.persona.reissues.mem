@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.persona.reissues"
 
 ! face.persona.reissues ~ both keys sign one hand-over
 
-`lares persona reissue [--nexus <aid>] [--face N]` hands the face's key at one Nexus on to a fresh random key; both keys sign one hand-over that lands on that Nexus's carriage board, where every gate reads it beside the face's admit, and the outgoing key leaves this vessel. The admit keeps naming the key the Nexus admitted. A compromised key takes the face-key roll instead.
+`lares persona reissue [nexus=<aid>] [face=N]` hands the face's key at one Nexus on to a fresh random key; both keys sign one hand-over that lands on that Nexus's carriage board, where every gate reads it beside the face's admit, and the outgoing key leaves this vessel. The admit keeps naming the key the Nexus admitted. A compromised key takes the face-key roll instead.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Mf5bKXa1V1Ptu8xUU_T_Lu4pC9fg85fkVIKcFtfX49I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;quPN6kTeJ8mwEYKTdKUvkugXYuYXscR8QXZQ5cChou0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

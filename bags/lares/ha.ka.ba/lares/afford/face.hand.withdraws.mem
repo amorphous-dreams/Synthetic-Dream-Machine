@@ -38,7 +38,7 @@ Under a pūlama the root signs at the pūlama's hand door, since the vessel ther
 !! takes ~ cid · face · terms · land
 
 ```memetic-wikitext
-<<has entity=`arg` name=`cid` params=`takes/cid needs/required seat/1 as/<cid> ~ the revision cid to withdraw, as 'lares kahua get <title> --history' names it`>>
+<<has entity=`arg` name=`cid` params=`takes/cid needs/required seat/1 as/<cid> ~ the revision cid to withdraw, as 'lares kahua get <title> history=true' names it`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's stage this call reads or writes, by persona index (a whole number from 0); absent, the one face standing open or the worn face`>>
 <<has entity=`arg` name=`terms` params=`~ print the one terms line a pūlama signs; opens no route; name it or --land, never both`>>
 <<has entity=`arg` name=`land` params=`takes/answer ~ land the signed record from a pūlama's sign answer`>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3gvmylmZ4AEGGruhUCZh_rJxPBBDcnm24TIw439peko`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6vMow69Pqd6VNPddPSzROw6oSS_m_3s0N9csm_o1RpY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -82,7 +82,7 @@ export interface BootDaemonKeyhiveInput {
   /** The face's handle-index on this vessel, where the caller knows it: a refusal names the command for that face. */
   readonly handle?: number;
   /**
-   * THE RECARD (`lares vault recard --face N`): where this stand meets `PrekeySecretAbsent`, it mints its card FIRST and
+   * THE RECARD (`lares vault recard face=N`): where this stand meets `PrekeySecretAbsent`, it mints its card FIRST and
    * registers again, so every Document it mints rides the fresh prekey whose secret it holds. A face that registers without
    * the fault stands as an ordinary boot would (`recard.stale` false). The caller rests the Archive after that card, or the
    * recard keeps nothing.
@@ -120,7 +120,7 @@ export async function recardRegistration(register: (hold: boolean) => Promise<Du
   await card();
   try { return { stale: true, ...(await register(true)) }; }
   catch (again) {
-    if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${face.slice(0, 16)}… held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
+    if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${face.slice(0, 16)}… held no prekey secret even after its card; read \`lares vault status verbose=true\` and keep the face dark`);
     throw again;
   }
 }
@@ -132,7 +132,7 @@ export async function recardRegistration(register: (hold: boolean) => Promise<Du
  */
 export async function landRecard(recard: BootDaemonKeyhiveRecard, floor: Pick<ArchiveFloorOutcome, "wrote" | "refusals" | "barred">, handle: string, handleIndex?: number): Promise<void> {
   if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
-    throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Read the refusing row with \`lares vault status --verbose\` first; where custody reads locked, unlock it (\`lares vault unlock\`) so its Archive rows take writes, then \`${recardCommand(handleIndex)}\` again`);
+    throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Read the refusing row with \`lares vault status verbose=true\` first; where custody reads locked, unlock it (\`lares vault unlock\`) so its Archive rows take writes, then \`${recardCommand(handleIndex)}\` again`);
   }
   await recard.commit();
 }
@@ -148,7 +148,7 @@ export function recardFloorThrew(recard: Pick<BootDaemonKeyhiveRecard, "held">, 
 }
 
 /** The command that recards a face, by its handle where known. */
-export const recardCommand = (handle?: number): string => `lares vault recard --face ${handle ?? "<N>"}`;
+export const recardCommand = (handle?: number): string => `lares vault recard face=${handle ?? "<N>"}`;
 
 /**
  * A face whose stand holds no prekey secret, by the face's public atom key: its Archive came in absent or older than its
@@ -259,7 +259,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   if (input.dyad === "aside") {
     throw new Error(
       "[daemon-keyhive] Binding Gate: this device stands SET ASIDE from its fleet — a shadow stands over its own device edge, " +
-      "so its delegation binds nothing. The fleet root lifts it (`lares edge un-kapae --device <key>`), and the device then takes a fresh seat.",
+      "so its delegation binds nothing. The fleet root lifts it (`lares edge un-kapae device=<key>`), and the device then takes a fresh seat.",
     );
   }
   // Bind-check: the edge MUST delegate to THIS vessel's key (designation carries authority —

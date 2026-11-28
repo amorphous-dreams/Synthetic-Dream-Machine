@@ -530,7 +530,7 @@ source ~/.venv/bin/activate && pytest   # the Python suites (the sensorium scrip
 
 ```bash
 tools/wsl2/witness.sh      # the WSL host profile and Docker, read only
-lares home read --brief    # your homes: seats, hooks, seed rule, `lares` on the path
+lares home read brief=true    # your homes: seats, hooks, seed rule, `lares` on the path
 lares repo read            # this checkout's own seats
 ```
 

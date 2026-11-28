@@ -34,7 +34,7 @@ export type WearHand = () => HandReading;
 let readHandOfWear: WearHand = () => readOwnHand({ proveRoute: false });
 export function setWearHand(read: WearHand): void { readHandOfWear = read; }
 
-/** The face the line names: the positional, else `--face N`; null where neither names a handle index. */
+/** The face the line names: the positional, else `face=N`; null where neither names a handle index. */
 function faceNamed(args: ParsedArgs): number | null {
   const raw = args.positional[0] ?? args.options["face"];
   if (typeof raw !== "string" || !/^\d+$/.test(raw)) return null;
@@ -87,7 +87,7 @@ export async function cmdWear(given: ParsedArgs): Promise<number> {
 }
 
 /**
- * The wear frame and its answer, over a vessel already read holding its key. `vault unlock --face N` rides it where N stands
+ * The wear frame and its answer, over a vessel already read holding its key. `vault unlock face=N` rides it where N stands
  * open on a held key, so that unlock asks no route either (`verb` names the command the refusal speaks for).
  */
 export async function wearOpenFace(args: ParsedArgs, face: number, verb: string): Promise<number> {
@@ -133,7 +133,7 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
       for (const line of shoreLines(a["shore"])) console.log(line);
       for (const line of sharesLines(shares.landed, face)) console.log(line);
       if (shares.unhanded) console.error(shares.unhanded);
-      if (shares.waits) console.error(`shares: the share config waits (${shares.waits}); \`lares wiki share --list\` reads it`);
+      if (shares.waits) console.error(`shares: the share config waits (${shares.waits}); \`lares wiki share list=true\` reads it`);
     },
   });
   return 0;
@@ -145,7 +145,7 @@ function sharesLines(landed: { granted: number; lifted: number; pending: number 
   return [
     ...(landed.lifted > 0 ? [`shares: ${landed.lifted} granted row(s) now stand in h${face}'s catalog`] : []),
     ...(landed.granted > 0 ? [`shares: ${landed.granted} grant(s) landed for the faces this vessel holds lit`] : []),
-    ...(landed.pending > 0 ? [`shares: ${landed.pending} grant(s) wait for a shut face (\`lares vault unlock --face N\`)`] : []),
+    ...(landed.pending > 0 ? [`shares: ${landed.pending} grant(s) wait for a shut face (\`lares vault unlock face=N\`)`] : []),
   ];
 }
 

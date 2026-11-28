@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.retires"
 
 ! sense.sensorium.retires ~ a sensorium retires on its grounds
 
-`lares sense retire <name> --grounds <grounds> --approve` runs on a person's hand at a real terminal and retires the named sensorium in its manifest on one of the named grounds; `un-retire` reverses it.
+`lares sense retire <name> grounds=<grounds> approve=true` runs on a person's hand at a real terminal and retires the named sensorium in its manifest on one of the named grounds; `un-retire` reverses it.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zk5JuzJXMm2MzU4UbPuAqsD2rR3u4ee_Bwnn0BVSdSw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AihwkCsZwDY17FIjWn6JC12tVNk9TPnuK4k5zBV57II`>>
 
 <<^ code=`&#x0004;` to=`?`>>

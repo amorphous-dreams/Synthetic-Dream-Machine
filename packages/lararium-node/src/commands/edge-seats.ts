@@ -94,7 +94,7 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
   let roots: string[];
   if (opts.fleetRoot !== undefined) {
     const named = bare(opts.fleetRoot);
-    if (!HEX64.test(named)) throw new EdgeSeatError(`--fleet expects a 64-hex fleet root, got "${opts.fleetRoot}".`);
+    if (!HEX64.test(named)) throw new EdgeSeatError(`fleet= expects a 64-hex fleet root, got "${opts.fleetRoot}".`);
     roots = [named];
   } else roots = opts.worn !== undefined ? [bare(opts.worn.fleetRoot)] : await servedFleetRoots();
   const fleets: EdgeSeatFacts[] = [];

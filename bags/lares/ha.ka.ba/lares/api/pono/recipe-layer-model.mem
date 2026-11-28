@@ -142,7 +142,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | `get meme=true recipe=<slug>` | THE LIST LAW: the same cascade the get walks; every root some bag of the stack holds, each answered by the first bag that holds a record under it, so a tombstone above shadows the bags beneath and a root two bags hold lists once | the stack — each entry names the bag that answered; a bag the island neither mounts nor reaches gets named `unreached`; `get meme=true bag=<slug>` lists that one bag's own records. Every listing pages at the outcome's entry cap (`MEME_LIST_PAGE`) and names the cursor of the next page | `meme-verbs.ts` `listRecipeStack`; `tests/meme-verbs.test.ts` "a named recipe lists the roots its stack resolves" |
 | `put bag=<slug>` | `compositeMemeSink` → `composite.put({bag})` on the daemon island | that bag's writable layer, else refuses (no shadow-up) | `meme-verbs.ts:177-179`, `composite-store.ts:218-244` |
 | `act ADD / COPY / MOVE / LOAD / INGEST --to <bag>` | `BagAccess`: a mounted writable layer, else the catalog/oracle accessor's own store (write-then-sync) | the named bag exactly | `packages/lararium-tw5/src/action-handler.ts:243-270`, `:1170-1186` |
-| `lares ingest --source <dir> --to <bag>` | the caller names `--to`; a `wikis/` source only changes the URI derivation | the named bag | `packages/lares-cli/src/commands/ingest.ts:27-33`, `packages/lares-cli/src/ingest-core.ts:118-131` |
+| `lares ingest source=<dir> to=<bag>` | the caller names `--to`; a `wikis/` source only changes the URI derivation | the named bag | `packages/lares-cli/src/commands/ingest.ts:27-33`, `packages/lares-cli/src/ingest-core.ts:118-131` |
 | `draft` verb (`makeDraftReactor`) | `toBag` else `defaultWritableBagId()` | the daemon's working layer by default | `packages/lararium-tw5/src/wiki-draft-handlers.ts` |
 | `where` / `wiki which` | the mounted composite, every registered bag by access, AND every registered wiki's instance slots through THE ONE resolver (a floor doc answers under its slot name, never its registry key) | membership | `packages/lararium-tw5/src/worker-data-verbs.ts` `makeWhereReactor` |
 | recipe-watch library mount | `bag-stack` minus `structuralSlots(slug)` | inserted above `bags/lares`, `writable:true, defaultWritable:false` | `recipe-watch.ts` |
@@ -360,6 +360,6 @@ A meme's root and its component slots leave together (the family law, `packages/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sBuKRrb_hmnOV2kUXNeD0A7Ebe5GdVo7XbJSO85-hHg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MXGjEoqf6MoXsMBzvzDHFZcLmWFwPP-D9rGa4B1AbTU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

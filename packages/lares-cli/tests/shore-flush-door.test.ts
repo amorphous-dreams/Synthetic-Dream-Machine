@@ -78,9 +78,9 @@ describe("lares shore flush", () => {
     expect(shoreArgs("list", parsed(["list"], { face: "2" }))).toEqual({ args: { op: "list", face: 2 } });
     expect(shoreArgs("take-records", parsed(["take-records", "lar:///a/x"], { key: "k1", face: "2" }))).toEqual({ args: { op: "take-records", uri: "lar:///a/x", key: "k1", face: 2 } });
     expect(shoreArgs("restore", parsed(["restore", "lar:///a/x"], { face: "1" }))).toEqual({ args: { op: "restore", uris: ["lar:///a/x"], face: 1 } });
-    expect(shoreArgs("list", parsed(["list"], { face: "h2" }))).toMatchObject({ usage: expect.stringMatching(/--face names a handle index/) });
-    expect(shoreArgs("flush", parsed(["flush"], { face: "2" }))).toMatchObject({ usage: expect.stringMatching(/flush takes no --face/) });
-    expect(shoreArgs("take-disk", parsed(["take-disk", "lar:///a/x"], { key: "k", face: "2" }))).toMatchObject({ usage: expect.stringMatching(/take-disk takes no --face/) });
+    expect(shoreArgs("list", parsed(["list"], { face: "h2" }))).toMatchObject({ usage: expect.stringMatching(/face= names a handle index/) });
+    expect(shoreArgs("flush", parsed(["flush"], { face: "2" }))).toMatchObject({ usage: expect.stringMatching(/flush takes no face=/) });
+    expect(shoreArgs("take-disk", parsed(["take-disk", "lar:///a/x"], { key: "k", face: "2" }))).toMatchObject({ usage: expect.stringMatching(/take-disk takes no face=/) });
     // The face's list reaches the daemon island alone, and each row names its island.
     const asked: string[] = [];
     const run = async (name: string, args: Record<string, unknown>): Promise<SubmitResult> => {

@@ -784,7 +784,7 @@ function heldCure(refusal: HeldRefusal): string {
   if (refusal === "save-unsealed") return "run any `lares` call under that face (a live session of it seals what waits), or `lares vault unlock` where its seat stands dark";
   if (refusal === "save-unbooked") return "run any `lares` call under that face, or `lares vault unlock`: the next live session of the face seals it";
   if (refusal === "save-unmapped") return "light the face that owns the bag (`lares vault unlock`), or open the wiki whose map names the document";
-  return "read who carries the document with `lares vessel census --docs`, then open the wiki or bag that owns it";
+  return "read who carries the document with `lares vessel census docs=true`, then open the wiki or bag that owns it";
 }
 
 /**
@@ -801,7 +801,7 @@ export function heldFateLine(held: HeldNotice): string {
   const where = held.bagId ? `, bag ${held.bagId}${held.face ? `, face ${held.face.slice(0, 16)}…` : ", no lit face"}` : "";
   const head = `${held.refusal}${why}: ${shortDoc(held.documentId)}${where}`;
   if (held.refusal === "save-unnamed") {
-    if (held.syncState === true) return `${head} holds a peer's sync state alone (heads, no change): it waits in this process's memory, lands clear once the roster names its document, and drops once a sealed bag names it; a stop loses no content here. Cure: none owed; \`lares vessel census --docs\` reads who carries the document`;
+    if (held.syncState === true) return `${head} holds a peer's sync state alone (heads, no change): it waits in this process's memory, lands clear once the roster names its document, and drops once a sealed bag names it; a stop loses no content here. Cure: none owed; \`lares vessel census docs=true\` reads who carries the document`;
     if (held.rests === "sealed-pending") {
       return held.carried === true
         ? `${head} stood in the vessel's inbox from an earlier boot: it joins this boot's wait, never clear on a guess; the roster's naming lands it clear, and a sealed bag's naming seals it. Cure: none owed at a stop; ${heldCure(held.refusal)}`

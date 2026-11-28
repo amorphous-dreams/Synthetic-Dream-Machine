@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.scratch.opens"
 
 ! sense.scratch.opens ~ a scratch sensorium stands live until dissolved
 
-`lares sensorium open <path> [--name <n>]` spins up a scratch sensorium, ingests the path, leaves it live and prints its id.
+`lares sensorium open <path> [name=<n>]` spins up a scratch sensorium, ingests the path, leaves it live and prints its id.
 
 <<~/ahu>>
 
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cKM7YP1BlBe-nu_XXN_7_zfhiIHPz5I6aJ-Ke-EB-jg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FfkoCt2ITINVXo-jy1EqyDCJBmwGz6gd0ztzg5HzoBM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

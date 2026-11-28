@@ -290,7 +290,7 @@ logs_count() {
 NYM=""
 AID_A=""
 contract_ab() {
-  # $1 (optional): the sync URL A's admit carries beside its pin (`nexus contract --sync-url`), the address B's boot dials once she takes it.
+  # $1 (optional): the sync URL A's admit carries beside its pin (`nexus contract sync-url=`), the address B's boot dials once she takes it.
   local SYNC_URL="${1:-}"
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
   local CHARTER IMP ACC SIG CONTRACT TAKE
@@ -300,18 +300,18 @@ contract_ab() {
   CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
   if [ -z "$CHARTER" ]; then bad "A exported no charter"; return 1; fi
   if printf '%s' "$CHARTER" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a-charter.mem' \
-     && IMP=$($COMPOSE exec -T lararium-b $LARES nexus seal import --carry /tmp/a-charter.mem --json 2>/dev/null) \
+     && IMP=$($COMPOSE exec -T lararium-b $LARES nexus seal import carry=/tmp/a-charter.mem --json 2>/dev/null) \
      && AID_A=$(printf '%s' "$IMP" | grep -oE '"aid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4) && [ -n "$AID_A" ]; then ok
   else bad "B could not carry A's charter"; printf '%s\n' "$IMP" | tail -2 | sed 's/^/      /'; return 1; fi
 
   step "B signs her contract-in, A's quorum admits her"
-  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --nexus "$AID_A" --json 2>/dev/null)
+  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage nexus="$AID_A" --json 2>/dev/null)
   NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
   SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
   if [ -z "$NYM" ] || [ -z "$SIG" ]; then
     bad "B minted no contract-in"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; return 1
   fi
-  CONTRACT=$($COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" ${SYNC_URL:+--sync-url "$SYNC_URL"} --json 2>/dev/null)
+  CONTRACT=$($COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" sig="$SIG" ${SYNC_URL:+sync-url="$SYNC_URL"} --json 2>/dev/null)
   if [ -z "$CONTRACT" ] || ! printf '%s' "$CONTRACT" | grep -q '"ok":true'; then
     bad "A's quorum refused the admit"; printf '%s\n' "$CONTRACT" | tail -2 | sed 's/^/      /'; return 1
   fi
@@ -365,7 +365,7 @@ carry_place() {
     bad "$svc signed no carrier seal and floor pin"; printf '%s\n' "$CF" | tail -2 | sed 's/^/      /'; return 1
   fi
   printf '%s' "$CF" | $COMPOSE exec -T lararium-a sh -c "cat > /tmp/carry-for-$svc.json"
-  CARRY=$($COMPOSE exec -T lararium-a $LARES nexus carry "$PNYM" --carrier "$PSIG" --floor-pin "/tmp/carry-for-$svc.json" --json 2>/dev/null)
+  CARRY=$($COMPOSE exec -T lararium-a $LARES nexus carry "$PNYM" carrier="$PSIG" floor-pin="/tmp/carry-for-$svc.json" --json 2>/dev/null)
   if ! printf '%s' "$CARRY" | grep -q '"ok":true' || ! printf '%s' "$CARRY" | grep -q '"carryBundle":{'; then
     bad "A's quorum refused the carry"; printf '%s\n' "$CARRY" | tail -2 | sed 's/^/      /'; return 1
   fi
@@ -393,7 +393,7 @@ admit_self_a() {
   if [ -z "$NYM" ] || [ -z "$SIG" ]; then
     bad "A minted no contract-in for its own face"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; return 1
   fi
-  CONTRACT=$($COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" --json 2>/dev/null)
+  CONTRACT=$($COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" sig="$SIG" --json 2>/dev/null)
   if [ -z "$CONTRACT" ] || ! printf '%s' "$CONTRACT" | grep -q '"ok":true'; then
     bad "A's quorum refused its own founder's admit"; printf '%s\n' "$CONTRACT" | tail -2 | sed 's/^/      /'; return 1
   fi
@@ -541,7 +541,7 @@ run_leaf() {
   # joining vessel reads the answer under that key, and the answer binds that nonce.
   step "A offers her face's fleet — the offer names its root key and a fresh nonce"
   local OFFER OFFER2
-  OFFER=$($COMPOSE exec -T lararium-a $LARES fleet join offer --face 0 2>&1 | sed -n '/^{/,/^}/p')
+  OFFER=$($COMPOSE exec -T lararium-a $LARES fleet join offer face=0 2>&1 | sed -n '/^{/,/^}/p')
   if printf '%s' "$OFFER" | grep -q '"kind": "fleet-join-offer"' \
      && printf '%s' "$OFFER" | grep -qE '"rootKey": "[0-9a-f]{64}"' \
      && printf '%s' "$OFFER" | grep -qE '"nonce": "[0-9a-f]{64}"'; then ok; else
@@ -549,7 +549,7 @@ run_leaf() {
 
   # EACH OFFER MINTS ITS OWN NONCE: a request answers one offer, never every offer the hearth makes.
   step "a second offer carries a fresh nonce"
-  OFFER2=$($COMPOSE exec -T lararium-a $LARES fleet join offer --face 0 2>&1 | sed -n '/^{/,/^}/p')
+  OFFER2=$($COMPOSE exec -T lararium-a $LARES fleet join offer face=0 2>&1 | sed -n '/^{/,/^}/p')
   local N1 N2
   N1=$(printf '%s' "$OFFER" | sed -n 's/^ *"nonce": "\([0-9a-f]\{64\}\)".*/\1/p')
   N2=$(printf '%s' "$OFFER2" | sed -n 's/^ *"nonce": "\([0-9a-f]\{64\}\)".*/\1/p')
@@ -564,7 +564,7 @@ run_leaf() {
   SEAL="09$(printf '0%.0s' $(seq 62))"
   FORGED="{\"kind\":\"fleet-join-request\",\"nonce\":\"$N1\",\"atomKey\":\"$KEY\",\"sealKey\":\"$SEAL\",\"requests\":[],\"signature\":\"$ZSIG\"}"
   if printf '%s' "$FORGED" | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/leaf-forged-request.json'; then
-    if ANSWER=$($COMPOSE exec -T lararium-a $LARES fleet join answer --face 0 /tmp/leaf-forged-request.json 2>&1); then
+    if ANSWER=$($COMPOSE exec -T lararium-a $LARES fleet join answer face=0 /tmp/leaf-forged-request.json 2>&1); then
       bad "the hearth answered a request no vessel signed"; printf '%s\n' "$ANSWER" | head -3 | sed 's/^/      /'
     elif printf '%s' "$ANSWER" | grep -q 'request-unsigned' && ! printf '%s' "$ANSWER" | grep -q 'fleet-join-answer'; then ok
     else bad "the forged request failed without refusing as request-unsigned"; printf '%s\n' "$ANSWER" | tail -3 | sed 's/^/      /'; fi
@@ -615,7 +615,7 @@ run_open_relation() {
   # THE ASSERTION THIS SCENARIO EXISTS FOR. A flip is not an admission and not a revocation: B stands
   # exactly where she stood, and the phase reads the relation rather than the posture.
   step "B remains on the members board, and the phase stays SEED"
-  if $COMPOSE exec -T lararium-a $LARES nexus members --list 2>&1 | grep -qi "$NYM" \
+  if $COMPOSE exec -T lararium-a $LARES nexus members list=true 2>&1 | grep -qi "$NYM" \
      && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "opening the posture moved the membership or the phase"; fi
 
@@ -630,14 +630,14 @@ run_open_relation() {
   step "under an OPEN posture a realm still reads UNFED, then VISIT, then MANY-FACES"
   local REALM; REALM=$(printf 'f%.0s' $(seq 1 64))
   local okc=1
-  $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
+  $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=0 realm="$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=1 realm="$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
   if [ "$okc" -eq 1 ]; then ok; else
     bad "the OPEN posture moved what the realm reads"
-    $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | tail -1 | sed 's/^/      /'
+    $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | tail -1 | sed 's/^/      /'
   fi
 
   step "and the posture is UNMOVED by the feeding — orthogonal both ways"
@@ -670,21 +670,21 @@ run_crossing() {
     bad "a hearth never answered"; clear_all; return; fi
 
   step "A feeds a realm — VISIT, while the phase stays SEED"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
-  if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' \
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=0 realm="$REALM" >/dev/null 2>&1
+  if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"visit"' \
      && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "feeding a realm moved the phase, or did not register"; fi
 
   if ! contract_ab; then clear_all; return; fi
   step "the contract moves no phase, and the realm does NOT"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"' \
-     && $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"'; then ok
+     && $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"visit"'; then ok
   else bad "the contract moved the realm, or the phase never moved"; fi
 
   # THE ORTHOGONALITY, STATED AS A REFUSAL TO COUPLE. B carries for A and dwells in no realm — canon's
   # own example — so B's view of that realm stays UNFED however deep the carriage relation runs.
   step "B carries and dwells nowhere — her realm reads UNFED"
-  if $COMPOSE exec -T lararium-b $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"'; then ok
+  if $COMPOSE exec -T lararium-b $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"unfed"'; then ok
   else bad "B's realm read as fed without B ever feeding"; fi
   clear_all
 }
@@ -742,14 +742,14 @@ run_open() {
   step "under an OPEN posture a realm still reads UNFED, then VISIT, then MANY-FACES"
   local REALM; REALM=$(printf 'e%.0s' $(seq 1 64))
   local okc=1
-  $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
+  $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=0 realm="$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=1 realm="$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
   if [ "$okc" -eq 1 ]; then ok; else
     bad "the OPEN posture moved what the realm reads"
-    $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | tail -1 | sed 's/^/      /'
+    $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | tail -1 | sed 's/^/      /'
   fi
 
   step "and the posture is UNMOVED by the feeding — orthogonal both ways"
@@ -775,25 +775,25 @@ run_realm() {
   fi
 
   step "an unfed realm reads UNFED"
-  if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
+  if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 \
      | grep -q '"standing":"unfed"'; then ok; else
     bad "an unfed realm did not read unfed"
-    $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | tail -2 | sed 's/^/      /'
+    $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | tail -2 | sed 's/^/      /'
   fi
 
   step "ONE face feeds — a VISIT, and depth changes nothing"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
-  if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=0 realm="$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=0 realm="$REALM" >/dev/null 2>&1
+  if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 \
      | grep -q '"standing":"visit"'; then ok; else bad "one face twice did not read as a visit"; fi
 
   # THE READING THAT MUST NOT OVER-CLAIM. A second FACE of the same operator is a second writer id
   # and not a second hand; naming it belonging would manufacture the reciprocity the model requires
   # be earned.
   step "a SECOND face feeds — MANY-FACES, and never belonging"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=1 realm="$REALM" >/dev/null 2>&1
   local CLK
-  CLK=$($COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1)
+  CLK=$($COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1)
   if printf '%s' "$CLK" | grep -q '"standing":"many-faces"' \
      && ! printf '%s' "$CLK" | grep -q '"standing":"belonging"'; then ok; else
     bad "the second face did not read as many-faces"
@@ -838,7 +838,7 @@ run_relation() {
   else bad "the contract moved the phase"; fi
 
   step "A's members board folds B IN"
-  if $COMPOSE exec -T lararium-a $LARES nexus members --list 2>&1 | grep -qi "$NYM"; then ok
+  if $COMPOSE exec -T lararium-a $LARES nexus members list=true 2>&1 | grep -qi "$NYM"; then ok
   else bad "B never landed on the board"; fi
   clear_all
 }
@@ -943,8 +943,8 @@ run_realm_crossing() {
   fi
 
   step "the realm reads UNFED on BOTH sides"
-  if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"' \
-     && $COMPOSE exec -T lararium-b $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"'; then ok
+  if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"unfed"' \
+     && $COMPOSE exec -T lararium-b $LARES cabal clock realm="$REALM" --json 2>&1 | grep -q '"standing":"unfed"'; then ok
   else bad "an unfed realm did not read unfed on both sides"; fi
 
   if ! contract_ab; then clear_all; return; fi
@@ -971,7 +971,7 @@ run_realm_crossing() {
   step "★ B reads her own seed charter as primary; A's rides carried, never in its place ★"
   local BPHASE BCARRIED
   BPHASE=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1)
-  BCARRIED=$($COMPOSE exec -T lararium-b $LARES nexus members --list --nexus "$AID_A" --json 2>&1)
+  BCARRIED=$($COMPOSE exec -T lararium-b $LARES nexus members list=true nexus="$AID_A" --json 2>&1)
   # `seal show` lists the carried set beside the primary: A's AID stands there as primary:false, never true.
   if printf '%s' "$BPHASE" | grep -q '"phase":{"phase":"seed"' \
      && printf '%s' "$BPHASE" | grep -q "\"aid\":\"$AID_A\",\"primary\":false" \
@@ -986,24 +986,24 @@ run_realm_crossing() {
   # AND SHE NEVER CLAIMS THE ROSTER. A joiner sees her own relation; how many others joined is not
   # readable from her side, and a reading that counted them would fabricate what no vessel can see.
   step "and B's members board stays her OWN and EMPTY — no roster was imported"
-  if $COMPOSE exec -T lararium-b $LARES nexus members --list --json 2>&1 | grep -q '"members":\[\]'; then ok
+  if $COMPOSE exec -T lararium-b $LARES nexus members list=true --json 2>&1 | grep -q '"members":\[\]'; then ok
   else bad "B's immune surface folded somebody else's admits"; fi
 
   step "A feeds her own face — a VISIT on A's side"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1
-  if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=0 realm="$REALM" >/dev/null 2>&1
+  if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 \
      | grep -q '"standing":"visit"'; then ok; else bad "A's own offering did not read as a visit"; fi
 
   # THE CELL THIS SCENARIO CLAIMS, and it claims it HONESTLY: many-faces under a standing relation,
   # reached the only way this system can reach it — two faces of ONE operator. The cross-operator
   # walk below measures whether it could ever be reached the other way, and it cannot yet.
   step "A's SECOND face feeds — MANY-FACES under a standing relation"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$REALM" >/dev/null 2>&1
-  if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
+  $COMPOSE exec -T lararium-a $LARES cabal feed face=1 realm="$REALM" >/dev/null 2>&1
+  if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 \
      | grep -q '"standing":"many-faces"'; then ok; else bad "two faces did not read as many-faces"; fi
 
   step "B feeds HER face, on her own contracted vessel"
-  if $COMPOSE exec -T lararium-b $LARES cabal feed --face 0 --realm "$REALM" >/dev/null 2>&1; then ok
+  if $COMPOSE exec -T lararium-b $LARES cabal feed face=0 realm="$REALM" >/dev/null 2>&1; then ok
   else bad "B could not feed"; fi
 
   # THE MEASUREMENT THIS SCENARIO EXISTS FOR. Three faces have now fed one realm — two of A's and one
@@ -1022,7 +1022,7 @@ run_realm_crossing() {
   local FACES
   local wait_until=$((SECONDS + 45))
   while [ "$SECONDS" -lt "$wait_until" ]; do
-    FACES=$($COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
+    FACES=$($COMPOSE exec -T lararium-a $LARES cabal clock realm="$REALM" --json 2>&1 \
             | grep -oE '"maintainerCount":[0-9]+' | head -1 | cut -d: -f2)
     [ "${FACES:-0}" -ge 3 ] 2>/dev/null && break
     sleep 3
@@ -1079,13 +1079,13 @@ run_quorum_realm() {
     printf '%s' "$CHARTER" | $COMPOSE exec -T "$partner" sh -c 'cat > /tmp/a-charter.mem'
     # The partner stands on her own seed charter: A's rides CARRIED beside it, and she contracts in under A's AID.
     local IMP AID ACC NYM SIG
-    IMP=$($COMPOSE exec -T "$partner" $LARES nexus seal import --carry /tmp/a-charter.mem --json 2>/dev/null)
+    IMP=$($COMPOSE exec -T "$partner" $LARES nexus seal import carry=/tmp/a-charter.mem --json 2>/dev/null)
     AID=$(printf '%s' "$IMP" | grep -oE '"aid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-    ACC=$($COMPOSE exec -T "$partner" $LARES nexus accept-carriage --nexus "$AID" --json 2>/dev/null)
+    ACC=$($COMPOSE exec -T "$partner" $LARES nexus accept-carriage nexus="$AID" --json 2>/dev/null)
     NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
     SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
     if [ -n "$AID" ] && [ -n "$NYM" ] && [ -n "$SIG" ] \
-       && $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1; then ok
+       && $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" sig="$SIG" >/dev/null 2>&1; then ok
     else bad "$partner never contracted in"; printf '%s\n' "$IMP" "$ACC" | tail -3 | sed 's/^/      /'; clear_all; return; fi
   done
 
@@ -1105,21 +1105,21 @@ run_quorum_realm() {
     local letter="$1" label="$2" realm
     realm=$(printf "${letter}%.0s" $(seq 1 64))
     step "under $label the realm reads UNFED"
-    if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 | grep -q '"standing":"unfed"'; then ok
+    if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$realm" --json 2>&1 | grep -q '"standing":"unfed"'; then ok
     else
       bad "an unfed realm did not read unfed under $label"
-      printf '      realm %s reads: %s\n' "${letter}…" "$($COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 \
+      printf '      realm %s reads: %s\n' "${letter}…" "$($COMPOSE exec -T lararium-a $LARES cabal clock realm="$realm" --json 2>&1 \
         | grep -oE '"standing":"[a-z-]+"|"maintainerCount":[0-9]+|"error".*' | tr '\n' ' ' | cut -c1-200)"
     fi
 
     step "under $label one face feeds — a VISIT"
-    $COMPOSE exec -T lararium-a $LARES cabal feed --face 0 --realm "$realm" >/dev/null 2>&1
-    if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 | grep -q '"standing":"visit"'; then ok
+    $COMPOSE exec -T lararium-a $LARES cabal feed face=0 realm="$realm" >/dev/null 2>&1
+    if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$realm" --json 2>&1 | grep -q '"standing":"visit"'; then ok
     else bad "one face did not read as a visit under $label"; fi
 
     step "under $label a second face feeds — MANY-FACES"
-    $COMPOSE exec -T lararium-a $LARES cabal feed --face 1 --realm "$realm" >/dev/null 2>&1
-    if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 | grep -q '"standing":"many-faces"'; then ok
+    $COMPOSE exec -T lararium-a $LARES cabal feed face=1 realm="$realm" >/dev/null 2>&1
+    if $COMPOSE exec -T lararium-a $LARES cabal clock realm="$realm" --json 2>&1 | grep -q '"standing":"many-faces"'; then ok
     else bad "two faces did not read as many-faces under $label"; fi
   }
 
@@ -1200,7 +1200,7 @@ run_meme() {
   # THE DIRECT DIAL. The hearths peer through the herm's FLOW-map for the public shelf and sealed bodies; the
   # member-read lane a realm bag rides is Automerge sync over B's dial to A's sealed gate. The dial reads its pin and its
   # address from the admit bundle B TAKES (`admit-take` keeps it), never from the environment: A's admit carries her
-  # sovereign gate pin and, by `--sync-url`, the address she listens at. B boots her dial from what she holds, so she
+  # sovereign gate pin and, by `sync-url=`, the address she listens at. B boots her dial from what she holds, so she
   # stands first, takes the admit, and restarts to dial; a dial is the vessel's own act at boot.
   step "B stands, holding no dial yet"
   if $COMPOSE up -d --no-deps lararium-b >/dev/null 2>&1 && up_and_answering lararium-b; then ok
@@ -1253,7 +1253,7 @@ run_meme() {
 
   step "A registers her book on the realm — steward-signed, read at CONTRACT"
   local REG DOC_A
-  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --face 0 --json 2>&1)
+  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" face=0 --json 2>&1)
   DOC_A=$(printf '%s' "$REG" | grep -oE '"doc":"[^"]+"' | head -1 | cut -d'"' -f4)
   if printf '%s' "$REG" | grep -q '"readTier":"contract"' && [ -n "$DOC_A" ]; then ok
   else bad "the registration refused"; printf '%s\n' "$REG" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
@@ -1274,7 +1274,7 @@ run_meme() {
   if $COMPOSE restart lararium-b >/dev/null 2>&1 && up_and_answering lararium-b; then ok
   else bad "lararium-b never stood again"; dump_boot_failure lararium-b; clear_all; return; fi
   step "B re-folds the relation she carries; the realm stands under ONE doc id"
-  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags realm="$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
 
@@ -1285,7 +1285,7 @@ run_meme() {
   step "B folds A's registration, counted and naming A's book document"
   local SEEN="" until=$((SECONDS + 90))
   while [ "$SECONDS" -lt "$until" ]; do
-    SEEN=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1)
+    SEEN=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags realm="$AID_A" --json 2>&1)
     if [ -n "$DOC_A" ] && printf '%s' "$SEEN" | grep -qF "\"doc\":\"$DOC_A\""; then break; fi
     sleep 3
   done
@@ -1307,7 +1307,7 @@ run_meme() {
   else
     bad "B reads no meme"
     printf '      B reads:      %s\n' "$(printf '%s' "$GB" | tail -1 | cut -c1-200)"
-    printf '      B realm-bags: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
+    printf '      B realm-bags: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus realm-bags realm="$AID_A" --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
     printf '      A realm-bags: %s\n' "$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
     printf '      B dial:       %s\n' "$($COMPOSE logs lararium-b 2>&1 | grep -E '\[nexus-join\]|\[lar-leaf\] (verdict|ANERGIZED)' | tail -3 | tr '\n' ' ' | cut -c1-300)"
   fi
@@ -1352,14 +1352,14 @@ run_meme() {
 
   step "B projects it to md — the pair renders"
   local PJ
-  PJ=$($COMPOSE exec -T lararium-b $LARES meme project "$URI" --to md --bag "$BOOK" --realm "$AID_A" --json 2>&1)
+  PJ=$($COMPOSE exec -T lararium-b $LARES meme project "$URI" to=md bag="$BOOK" realm="$AID_A" --json 2>&1)
   if printf '%s' "$PJ" | grep -q '"ok":true' && printf '%s' "$PJ" | grep -q '"meta"'; then ok
   else bad "B's projection refused"; printf '%s\n' "$PJ" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
   # THE STEWARD WRITE PATH. The read cap is CONTRACT (every contracted member); the write cap is the NAMED
-  # STEWARDS' SET. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B asks from her own vessel (`--join`), the face
+  # STEWARDS' SET. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B asks from her own vessel (`join=true`), the face
   # she names sealing a record that names the standing steward and herself; the record is n-of-n, so it counts
-  # nothing until A consents on hers (`--cosign`). B's `lares put title=… bag=<book>` then resolves the REALM doc
+  # nothing until A consents on hers (`cosign=true`). B's `lares put title=… bag=<book>` then resolves the REALM doc
   # rather than refusing.
   step "B edits on the base she read, promotes; A gets the new slot"
   local HASH_B GB2 GA2 ASK COSIGN PUT
@@ -1368,13 +1368,13 @@ run_meme() {
   # CONTROL: before she asks, B's put refuses — a member at the read tier writes nothing.
   if $COMPOSE exec -T lararium-b $LARES put "title=$URI" "bag=$BOOK" "realm=$AID_A" "base=$HASH_B" file=/tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
     bad "B's put --bag <book> LANDED BEFORE she asked — the read tier must refuse a placement"; clear_all; return; fi
-  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag "$BOOK" --face 0 --join --realm "$AID_A" --json 2>&1)
+  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag "$BOOK" face=0 join=true realm="$AID_A" --json 2>&1)
   # THE RECORD CROSSES BEFORE EACH NEXT HAND CAN ACT ON IT. B's ask rides the realm doc to A, and A's consent
   # rides it back; neither vessel reads the other's seal before the doc syncs. So each next act repeats until
   # the realm answers it or its budget ends (the budget only bounds the wait; the verb's own answer decides).
   local until_ms=$((SECONDS + 90))
   while :; do
-    COSIGN=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --face 0 --cosign --json 2>&1)
+    COSIGN=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" face=0 cosign=true --json 2>&1)
     if printf '%s' "$COSIGN" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
     sleep 3
   done
@@ -1518,9 +1518,9 @@ run_climb() {
   local i CARD HEAD
   CARD=$($COMPOSE logs lararium-a 2>&1 | grep -oE 'staged seed card: [0-9a-f-]+' | tail -1 | cut -d' ' -f4)
   for i in 1 2; do
-    $COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES persona new "$i" --name "kahu-$i" --handle "Kahu $i" --seat >/dev/null 2>&1 || true
+    $COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES persona new "$i" name="kahu-$i" handle="Kahu $i" seat=true >/dev/null 2>&1 || true
   done
-  $COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES nexus seal rotate --face 0 --cold-key "$CARD" --threshold 2 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES nexus seal rotate face=0 cold-key="$CARD" threshold=2 >/dev/null 2>&1
   HEAD=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
          | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$CARD" ] && [ -n "$HEAD" ] && [ "$HEAD" != "$AID" ]; then ok
@@ -2067,7 +2067,7 @@ run_board() {
   step "★ under ONE charter, both vessels compute ONE board ★"
   local RA RB
   RA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
-  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags realm="$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else
     bad "the two sides name different boards under one charter"

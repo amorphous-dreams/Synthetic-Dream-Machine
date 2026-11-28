@@ -1,5 +1,5 @@
 /**
- * found-hearth-door — `lares vessel found --hearth`, THE STABLE FOUNDING ACT at the CLI door (one act under one route).
+ * found-hearth-door — `lares vessel found hearth=true`, THE STABLE FOUNDING ACT at the CLI door (one act under one route).
  *
  *   D1 · on a staged root the act answers the hearth's Nexus AID, its one seat's fingerprint and posture PRIVATE, and
  *        its JSON carries the card's code (the read-back stood in); persona zero stands as a held root.
@@ -33,7 +33,7 @@ const found = (options: Record<string, string>, flags: Record<string, boolean> =
 const lastJson = (lines: string[]): Record<string, any> =>
   JSON.parse(lines.filter((l) => l.trim().startsWith("{")).at(-1) ?? "{}");
 
-describe("lares vessel found --hearth", () => {
+describe("lares vessel found hearth=true", () => {
   let house: Scratch;
   let root: string;
   let wire: string[];

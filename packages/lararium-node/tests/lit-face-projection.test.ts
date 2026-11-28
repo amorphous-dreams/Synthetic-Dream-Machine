@@ -214,7 +214,7 @@ describe("every lit face projects its own writes", () => {
     } finally { await house.stopWorn(); }
   }, 60_000);
 
-  test("RED F9 — a lit sibling's projector seats on the island's shore by its face while it stands, and leaves it at the drop: `lares shore --face N` reads it without a wear", async () => {
+  test("RED F9 — a lit sibling's projector seats on the island's shore by its face while it stands, and leaves it at the drop: `lares shore face=N` reads it without a wear", async () => {
     const house = await wornIsland();
     const h1 = await house.light(1, "h-one");
     try {

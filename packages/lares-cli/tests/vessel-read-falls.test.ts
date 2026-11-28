@@ -48,7 +48,7 @@ async function readJson(root: string): Promise<{ data: Record<string, unknown> }
   let output = "";
   const stdoutWrite = process.stdout.write;
   process.stdout.write = ((chunk: unknown) => { output += String(chunk); return true; }) as typeof process.stdout.write;
-  try { expect(await dispatch(["vessel", "read", "--root", root, "--json", "--skip-build"])).toBe(0); }
+  try { expect(await dispatch(["vessel", "read", `root=${root}`, "--json", "--skip-build"])).toBe(0); }
   finally { process.stdout.write = stdoutWrite; }
   return JSON.parse(output);
 }
@@ -57,7 +57,7 @@ async function readProse(root: string): Promise<string[]> {
   const lines: string[] = [];
   vi.spyOn(console, "log").mockImplementation((...a) => { lines.push(a.join(" ")); });
   vi.spyOn(console, "error").mockImplementation(() => {});
-  expect(await dispatch(["vessel", "read", "--root", root, "--skip-build"])).toBe(0);
+  expect(await dispatch(["vessel", "read", `root=${root}`, "--skip-build"])).toBe(0);
   return lines;
 }
 

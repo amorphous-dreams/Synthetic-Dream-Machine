@@ -2,16 +2,16 @@
  * `lares nexus cabal {admit | remove | cosign | standing}` — the seat quorum's admission of a PersonaGroup into a
  * Nexus's Kahu cabal (kahu#/seed-and-nexus: ADMISSION TAKES THE SEAT QUORUM), and where one group stands.
  *
- *   admit  <group> [--nexus <aid>] [--out <partial>]    open the act and sign with the seats held here
- *   remove <group> [--nexus <aid>] [--out <partial>]    the same, taking the group back out
- *   cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]
+ *   admit  <group> [nexus=<aid>] [out=<partial>]    open the act and sign with the seats held here
+ *   remove <group> [nexus=<aid>] [out=<partial>]    the same, taking the group back out
+ *   cosign <partial> act=<cid> [nexus=<aid>] [out=<file>]
  *          add the seats held here to a carried act; a person names the act CID they read aloud first
- *   standing <group> [--nexus <aid>]                    the group's standing as of this vessel's last sync
+ *   standing <group> [nexus=<aid>]                    the group's standing as of this vessel's last sync
  *
  * Each sub-verb rides the store door (`nexus-cabal-*`), so a standing vessel's own Repo takes the write and a
- * bare tree holds the store for the moment of the act, exactly as `nexus contract --out` does. Where the seats
+ * bare tree holds the store for the moment of the act, exactly as `nexus contract out=` does. Where the seats
  * held here fall short of the high-impact threshold, the act stays a PARTIAL: it prints with its act CID so a
- * person reads it aloud, and `--out` writes it for the next vault. The file holds public material alone.
+ * person reads it aloud, and `out=` writes it for the next vault. The file holds public material alone.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission
  */
@@ -43,7 +43,7 @@ function emitAct(args: ParsedArgs, step: string, r: NexusCabalActResult, written
         if (written?.error) console.log(`  partial: ${written.error}`);
         console.log(JSON.stringify(r.act));
       }
-      console.log(`  read the act CID aloud; the next seat's vault runs \`lares nexus cabal cosign <partial> --act ${r.actCid} --out <file>\``);
+      console.log(`  read the act CID aloud; the next seat's vault runs \`lares nexus cabal cosign <partial> act=${r.actCid} out=<file>\``);
     },
   });
   return 0;   // a partial reads as progress; `standing` answers where the group stands
@@ -65,7 +65,7 @@ export async function cmdNexusCabal(args: ParsedArgs): Promise<number> {
   try {
     if (sub === "cosign") {
       const path = args.positional[2], act = args.options["act"];
-      if (!path || !act) return usage(args, "cosign needs <partial> and --act <cid>, the act CID you read aloud");
+      if (!path || !act) return usage(args, "cosign needs <partial> and act=<cid>, the act CID you read aloud");
       if (out !== undefined) partialOutOrRefuse(refuse, out, path);
       const { output } = await storeVerb("nexus-cabal-cosign", { partial: readPartial(path), act, ...nexus }, NexusCabalError);
       const r = output as unknown as NexusCabalActResult;

@@ -67,7 +67,7 @@ drift. The organ ladder wires dependency-ordered:
 `setup` runs ''wire-once / detect-existing'' (idempotent — an already-stood organ no-ops), returns the
 `PalaceSetupStep[]` ledger as a table or JSON, and surfaces through:
 
-<<~ scale name=`surface` ranks=```wake-init ~ `lares vessel stand --init` (EXTEND the existing wake) -> status-palaces ~ `lares vessel read --palaces` (probe every organ's standing)```>>
+<<~ scale name=`surface` ranks=```wake-init ~ `lares vessel stand init=true` (EXTEND the existing wake) -> status-palaces ~ `lares vessel read palaces=true` (probe every organ's standing)```>>
 
 ''The help that teaches.'' Add a per-command ''HELP REGISTRY'' — each command carries
 `{ synopsis, examples[], flags[] }`, examples-first. This registry
@@ -345,7 +345,7 @@ homes the sensorium itself — the model reads py-side rather than behind TS:
 S0 stands UNGATED (no upstream blocker); the cap sprints follow. The
 TW5-quine runs after S0 + S2.
 
-<<~ has entity=`Sprint` name=`S0` params=```name/CLI foundation [UNGATED] ~ palaceOrgans registry · setup-wires-all-five · help-registry · `lares sensorium` ephemeral-lifecycle · THIS corpus.md heleuma meme ~ ACCEPT: `lares vessel read --palaces` lists all five organs; `lares sensorium run <path>` opens, analyzes, and DISSOLVES on exit; an interrupted run leaves no scratch under ~/.lares/.corpus/; the heleuma drift gate (`packages/lararium-tw5/scripts/sync-heleuma.ts`) ties this meme to the corpus help registry```>>
+<<~ has entity=`Sprint` name=`S0` params=```name/CLI foundation [UNGATED] ~ palaceOrgans registry · setup-wires-all-five · help-registry · `lares sensorium` ephemeral-lifecycle · THIS corpus.md heleuma meme ~ ACCEPT: `lares vessel read palaces=true` lists all five organs; `lares sensorium run <path>` opens, analyzes, and DISSOLVES on exit; an interrupted run leaves no scratch under ~/.lares/.corpus/; the heleuma drift gate (`packages/lararium-tw5/scripts/sync-heleuma.ts`) ties this meme to the corpus help registry```>>
 <<~ has entity=`Sprint` name=`S1` params=`name/bands cap ~ the grain address (FFZ membership tree) + the boundary tree R leg (ecp::e.divisive nested changepoints over content+form+structure, cosine-drift the signal) ~ ACCEPT: the grain address maps Pulse→Theme as containment LEVELS; a bootstrap reproduces the locked boundaries (resampling-consensus gate fires)`>>
 <<~ has entity=`Sprint` name=`S2` params=```name/structure cap ~ tree-sitter router → the existing structurepalace encoder + the `<<~` sigil grammar ~ ACCEPT: code/markdown/wikitext/json route through one CST API; the sigil grammar parses a meme's `<<~` spans; the encoder yields content-free shape vectors```>>
 <<~ has entity=`Sprint` name=`S3` params=```name/form cap ~ the induction holder (TreeMiner + PrefixSpan/BIDE + c2xg, EM-iterated, MDL-stopped) ~ ACCEPT: the `induce` batch surfaces templates that each pay their description-length; the LLM labels them AFTER mining, never inside the loop```>>
@@ -515,6 +515,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zR5TH5xJ3hx1UYV_iLbrvsVXobpNKnDS-aVxNA6n_eo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ptJALUvbHwtdD0vo8kSF19fFaspSd91h5--6HupvoCs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

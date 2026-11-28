@@ -185,7 +185,7 @@ export interface DaemonVmCoreOptions {
    * The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`), or a read of it: the daemon island's
    * manifest carries it, so the island mounts the floor the vessel accepted. Absent or null: the island reads its genesis
    * seed's own floor witness. A walked hearth read a promoted record `not-found` from every face outside the Kahu cabal after
-   * `floor accept`, since this manifest named no floor and the island's `--bag` read door answered the genesis snapshot.
+   * `floor accept`, since this manifest named no floor and the island's `bag=` read door answered the genesis snapshot.
    */
   floorCid?:       string | null | (() => string | null);
   /** Compiled daemon-island Worker script URL. */

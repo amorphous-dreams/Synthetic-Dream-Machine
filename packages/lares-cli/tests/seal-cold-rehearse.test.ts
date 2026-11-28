@@ -169,7 +169,7 @@ describe("lares nexus seal cold rehearse", () => {
     custody = { homes, holder, async drop() { await holder.lock(); unseatCustody(holder); } };
     const refused = await run(rehearse({ "cold-key": codes[0]! }));
     expect(refused.code).toBe(2);
-    expect(refused.out.error.message).toMatch(/--cold-key stands in for the terminal on a staged test root alone/);
+    expect(refused.out.error.message).toMatch(/cold-key= stands in for the terminal on a staged test root alone/);
   });
 
   test("R5 — no charter refuses by name; a run with no terminal and no flag refuses", async () => {

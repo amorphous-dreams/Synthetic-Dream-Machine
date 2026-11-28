@@ -1,19 +1,19 @@
 /**
  * lares shore — a person's answers at the disk shore.
  *
- *   lares shore [list] [--face N]                         what stands for a hand (a lit sibling's shore by its face)
- *   lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]
- *   lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
- *   lares shore keep-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
- *   lares shore keep-records <uri> --key <key> [--bag <bagUri>] [--yes]
- *   lares shore keep-both    <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore [list] [face=N]                         what stands for a hand (a lit sibling's shore by its face)
+ *   lares shore take-records <uri> key=<key> [bag=<bagUri>] [--yes]
+ *   lares shore take-disk    <uri> key=<key> [bag=<bagUri>] [--yes]
+ *   lares shore keep-disk    <uri> key=<key> [bag=<bagUri>] [--yes]
+ *   lares shore keep-records <uri> key=<key> [bag=<bagUri>] [--yes]
+ *   lares shore keep-both    <uri> key=<key> [bag=<bagUri>] [--yes]
  *   lares shore drafts       <uri>
- *   lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
- *   lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
- *   lares shore settle  --bag <bagUri|slug> --pending
- *   lares shore lift-kahua --count <n>
+ *   lares shore restore (<uri>… | all=true count=<n>) [bag=<bagUri>] [--yes]
+ *   lares shore remove  (<uri>… | all=true count=<n>) [bag=<bagUri>] [--yes]
+ *   lares shore settle  bag=<bagUri|slug> pending=true
+ *   lares shore lift-kahua count=<n>
  *   lares shore flush
- *   lares shore log [--kind <k>] [--held] [--boot <id>]
+ *   lares shore log [kind=<k>] [held=true] [boot=<id>]
  *
  * The disk projector decides nothing a person owns.
  *
@@ -51,11 +51,11 @@
  * daemon island (the `shore` verb itself), each answering for the mirrors it holds (`askShore`). The list
  * reads both as one shore and names each row's island; an answer goes to the island that holds its state.
  *
- * `settle --pending` resumes a settle word that stalled: `lares ingest --apply` leaves the carriers still
+ * `settle pending=true` resumes a settle word that stalled: `lares ingest apply=true` leaves the carriers still
  * waiting as the bag's record under the house's run dir (`settlePendingPath`), and this act asks the word
  * again over them alone, then clears the record (settled whole) or rewrites it (still waiting).
  *
- * `lift-kahua --count <n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's
+ * `lift-kahua count=<n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's
  * mirror leg again, and lifts only where n equals the count the preview reads now; a wrong count refuses and lifts nothing.
  * `list` names each pending item (face, title, body digest) beside the shore's own rows.
  *
@@ -64,10 +64,10 @@
  * wrote, what it could not and why (`askShoreFlush`). It takes nothing and asks no confirmation. Exit: 0 every island wrote what
  * it owed · 4 a carrier stayed unwritten · 3 an island, or the vessel, could not answer.
  *
- * `--face N` names a LIT SIBLING's shore: every lit face projects under its own root through its own projector in the daemon
+ * `face=N` names a LIT SIBLING's shore: every lit face projects under its own root through its own projector in the daemon
  * island, so `list`, `take-records`, `restore` and `remove` read and answer that face's standoffs without wearing it. A face
  * that stands no projection refuses `face-unprojected`. `take-disk` rides the worn face's ingest leg, and `settle`, `flush` and
- * `lift-kahua` read no face, so each refuses `--face` as usage.
+ * `lift-kahua` read no face, so each refuses `face=` as usage.
  */
 
 import { createInterface } from "readline/promises";
@@ -90,7 +90,7 @@ import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, RETIREMEN
 /** The acts this door carries. */
 export const SHORE_ACTS = ["list", "take-records", "take-disk", "keep-disk", "keep-records", "keep-both", "drafts", "restore", "remove", "settle", "lift-kahua", "flush", "log"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
-/** The acts a lit sibling's shore answers by its face (`--face N`); the rest read the worn face, or no face at all. */
+/** The acts a lit sibling's shore answers by its face (`face=N`); the rest read the worn face, or no face at all. */
 const FACE_ACTS: ReadonlySet<ShoreAct> = new Set(["list", "take-records", "restore", "remove"]);
 
 /** A refusal ends with the door's lines, drawn from the carriers (`lares shore --help` prints the same). */
@@ -103,8 +103,8 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   const bag = args.options["bag"];
   const faceText = args.options["face"];
   if (faceText !== undefined) {
-    if (!/^(?:0|[1-9][0-9]*)$/.test(faceText)) return { usage: `--face names a handle index (a whole number from 0); "${faceText}" names none` };
-    if (!FACE_ACTS.has(act)) return { usage: `${act} takes no --face: only ${[...FACE_ACTS].join(", ")} reach a lit sibling's shore` };
+    if (!/^(?:0|[1-9][0-9]*)$/.test(faceText)) return { usage: `face= names a handle index (a whole number from 0); "${faceText}" names none` };
+    if (!FACE_ACTS.has(act)) return { usage: `${act} takes no face=: only ${[...FACE_ACTS].join(", ")} reach a lit sibling's shore` };
   }
   const withBag = { ...(bag ? { bag } : {}), ...(faceText !== undefined ? { face: Number(faceText) } : {}) };
   if (act === "list") return { args: { op: "list", ...withBag } };
@@ -112,17 +112,17 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   if (act === "log") return { args: { op: "log" } };
   if (act === "lift-kahua") {
     const countText = args.options["count"];
-    if (countText === undefined || !/^(?:0|[1-9][0-9]*)$/.test(countText)) return { usage: "lift-kahua names the count of pending kahua items `lares shore` lists: lares shore lift-kahua --count <n>" };
+    if (countText === undefined || !/^(?:0|[1-9][0-9]*)$/.test(countText)) return { usage: "lift-kahua names the count of pending kahua items `lares shore` lists: lares shore lift-kahua count=<n>" };
     return { args: { op: "lift-kahua", count: Number(countText) } };
   }
   if (act === "settle") {
-    if (!bag || !args.flags["pending"]) return { usage: "settle resumes a stalled settle word from its record: lares shore settle --bag <bagUri|slug> --pending" };
+    if (!bag || !args.flags["pending"]) return { usage: "settle resumes a stalled settle word from its record: lares shore settle bag=<bagUri|slug> pending=true" };
     return { args: { op: "settle", bag, pending: true } };
   }
   if (act === "take-records" || act === "take-disk" || act === "keep-disk" || act === "keep-records" || act === "keep-both") {
     const uri = args.positional[1];
     const key = args.options["key"];
-    if (!uri || !key) return { usage: `${act} names a carrier and the standoff's key: lares shore ${act} <uri> --key <key>` };
+    if (!uri || !key) return { usage: `${act} names a carrier and the standoff's key: lares shore ${act} <uri> key=<key>` };
     // keep-records rides take-records; keep-disk rides take-disk, whole.
     const op = act === "keep-records" ? "take-records" : act === "keep-disk" ? "take-disk" : act;
     return { args: { op, uri, key, ...withBag, ...(act === "keep-disk" ? { whole: true } : {}) } };
@@ -136,10 +136,10 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   const all = Boolean(args.flags["all"]);
   const countText = args.options["count"];
   const count = countText !== undefined ? Number(countText) : undefined;
-  if (count !== undefined && (!Number.isInteger(count) || count < 0)) return { usage: `--count names a whole number of carriers; "${countText}" names none` };
-  if (all && uris.length > 0) return { usage: `${act} names carriers or --all, never both` };
-  if (!all && uris.length === 0) return { usage: `${act} names a carrier, or --all with --count: lares shore ${act} <uri>` };
-  if ((all || uris.length > 1) && count === undefined) return { usage: `${act} over more than one carrier names the count that stands pending: --count <n> (read it from \`lares shore\`)` };
+  if (count !== undefined && (!Number.isInteger(count) || count < 0)) return { usage: `count= names a whole number of carriers; "${countText}" names none` };
+  if (all && uris.length > 0) return { usage: `${act} names carriers or all=true, never both` };
+  if (!all && uris.length === 0) return { usage: `${act} names a carrier, or all=true with count=: lares shore ${act} <uri>` };
+  if ((all || uris.length > 1) && count === undefined) return { usage: `${act} over more than one carrier names the count that stands pending: count=<n> (read it from \`lares shore\`)` };
   return { args: { op: act, ...(all ? { all: true } : { uris }), ...(count !== undefined ? { count } : {}), ...withBag } };
 }
 
@@ -211,7 +211,7 @@ export function shoreHandRefusal(act: ShoreAct, named: Readonly<Record<string, u
   if (!SETTLING.has(act)) return null;
   const read = hand();
   if (!("refusal" in read)) return null;
-  const line = `lares shore ${act} ${String(named["uri"] ?? "<uri>")} --key ${String(named["key"] ?? "<key>")}${typeof named["bag"] === "string" ? ` --bag ${named["bag"]}` : ""}`;
+  const line = `lares shore ${act} ${String(named["uri"] ?? "<uri>")} key=${String(named["key"] ?? "<key>")}${typeof named["bag"] === "string" ? ` bag=${named["bag"]}` : ""}`;
   return handRefusalOf(read.refusal, { act: `\`lares shore ${act}\` (it settles a stand-off)`, reads: "branch", line });
 }
 
@@ -376,14 +376,14 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
           // A lift rides its own face's wear: the count names what the daemon MOUNT's items come to, face by face.
           for (const handleIndex of [...new Set(kahua.map((k) => k.handleIndex))].sort((a, b) => a - b)) {
             const n = kahua.filter((k) => k.handleIndex === handleIndex).length;
-            console.log(`  lift h${handleIndex}'s under its own grant, wearing it (\`lares vault unlock --face ${handleIndex}\`): \`lares shore lift-kahua --count ${n}\``);
+            console.log(`  lift h${handleIndex}'s under its own grant, wearing it (\`lares vault unlock face=${handleIndex}\`): \`lares shore lift-kahua count=${n}\``);
           }
         }
         if (standoffs.length === 0 && pending.length === 0) { if (kahua.length === 0) console.log("the disk shore holds nothing for a hand"); return; }
         if (standoffs.length > 0) {
           console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
           for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}${s["island"] === "daemon" ? " (daemon island)" : ""}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
-          console.log("  settle one under its key: `lares shore take-disk <uri> --key <key>` lands the file's words · `lares shore take-records <uri> --key <key>` writes the records' render · or save in the wiki until both say the same");
+          console.log("  settle one under its key: `lares shore take-disk <uri> key=<key>` lands the file's words · `lares shore take-records <uri> key=<key>` writes the records' render · or save in the wiki until both say the same");
         }
         if (pending.length > 0) for (const line of shorePendingLines(pending, receipts)) console.log(line);
       },
@@ -509,7 +509,7 @@ async function resumeSettle(args: ParsedArgs, bagNamed: string): Promise<number>
       console.log(`settled ${read.settledCount} · ${read.pendingCount} pending · ${read.stalledCount} stalled (${record.bag}, ${record.carriers.length} asked)${read.elsewhereCount > 0 ? `; ${read.elsewhereCount} project from a higher bag` : ""}`);
       if (read.stalled) {
         for (const uri of read.pendingUris) console.error(`  pending: ${uri}`);
-        console.error(`  ⚠ ${read.pendingCount} carrier(s) still wait; the record stands at ${read.recordPath ?? "(unwritten)"}: \`lares shore settle --bag ${record.bag} --pending\` asks again`);
+        console.error(`  ⚠ ${read.pendingCount} carrier(s) still wait; the record stands at ${read.recordPath ?? "(unwritten)"}: \`lares shore settle bag=${record.bag} pending=true\` asks again`);
       } else console.log("  the record clears: every carrier it named settled");
     },
   });
@@ -537,7 +537,7 @@ export function shorePendingLines(pending: ReadonlyArray<Record<string, unknown>
       const r = receiptOf(p, receipts);
       return r === undefined ? [row] : [row, `      ${retirementLine(r)}`];
     }),
-    "  answer: `lares shore restore <uri>` · `lares shore remove <uri>` · over all: `--all --count <n>` with the count one bag holds (and --bag where more than one bag stands pending)",
+    "  answer: `lares shore restore <uri>` · `lares shore remove <uri>` · over all: `all=true count=<n>` with the count one bag holds (and bag= where more than one bag stands pending)",
   ];
 }
 

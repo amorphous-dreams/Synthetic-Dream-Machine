@@ -1,5 +1,5 @@
 /**
- * spirit-residue-witness.test.ts — `lares spirit residue <pet> --witness [--transcripts <dir|file>]`: every hand-back landed
+ * spirit-residue-witness.test.ts — `lares spirit residue <pet> witness=true [transcripts=<dir|file>]`: every hand-back landed
  * under the pet and every hand-back the named transcripts carry, read for the frame and the Personas. One receipt line per
  * reading and one tally; the command exits 0 on every reading, an unreadable transcript answering a named unread line.
  * The door rides a mock stage; transcripts stand synthetic in a scratch directory, in the shape a subagent transcript takes.
@@ -41,7 +41,7 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { cmdSpirit } from "../src/commands/spirit.js";
-import { COMMANDS } from "../src/bin/lares.js";
+import { COMMANDS, doorTakes } from "../src/bin/lares.js";
 import { compactionTitle, residueTitle } from "@lararium/mesh/spirit-shrine";
 import { FILING_LINE, frameWitness } from "@lararium/mesh/spirit-witness";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -86,7 +86,7 @@ afterEach(() => { h.calls.length = 0; rmSync(scratch, { recursive: true, force: 
 describe("the command table names the witness", () => {
   test("residue accepts --witness and --transcripts", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
-    expect(row.accepts).toEqual(expect.arrayContaining(["witness", "transcripts"]));
+    expect(doorTakes(row!.name)).toEqual(expect.arrayContaining(["witness", "transcripts"]));
   });
 });
 

@@ -4,20 +4,20 @@
  *   (a family's writes ride the plain record calls: `lares put title=<uri> file=<path>` lands the whole carrier, `lares put
  *    title=<uri> slot='#/x' text=|file=|append=` one slot, `lares delete title=<uri> family=true` the family; `lares get meme=true
  *    [tree=true]` lists)
- *   normalize <file.mem ...> [--grammar]
- *   check <file.mem ...> [--gradient | --edges | --grammar]
- *   project <file.mem> --to md [--out <path>]
- *   project <file.mem | lar:uri> --to <md|html|tid|json> (--recipe <slug> | --bag <slug>) [--out <path>]
- *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
- *   project <file.mem> --to md [--tongue <bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
- *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
- *   promote <docs/…/x.mem> [--face N] [--dest-bag <lar:uri>] [--corpus <glob>]
- *   offer <lar:uri ...> --bag <slug>              — offer working records toward a house-canon bag (offering#/the-canon-offer)
- *   offer show [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
+ *   normalize <file.mem ...> [grammar=]
+ *   check <file.mem ...> [gradient= | edges= | grammar=]
+ *   project <file.mem> to=md [out=<path>]
+ *   project <file.mem | lar:uri> to=<md|html|tid|json> (recipe=<slug> | bag=<slug>) [out=<path>]
+ *   project <file.mem> to=md [dialect=CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
+ *   project <file.mem> to=md [tongue=<bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
+ *   project to=md check=<file.md | dir>   — prove currency by re-projection alone; writes nothing
+ *   promote <docs/…/x.mem> [face=N] [dest-bag=<lar:uri>] [--corpus <glob>]
+ *   offer <lar:uri ...> bag=<slug>              — offer working records toward a house-canon bag (offering#/the-canon-offer)
+ *   offer show [bag=<slug>] [all=true]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
  *   offer show <cid>                              — one offer's field diff against canon now
- *   offer promote <cid> [--over-fresher]          — the Kahu steward lands it in canon and retires it
+ *   offer promote <cid> [over-fresher=true]          — the Kahu steward lands it in canon and retires it
  *
- * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
+ * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project to=md` over a file run LOCAL — they open a
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
  * effect record. The offline re-stamp of a stale block check keeps working with no socket. `project` over a
  * `lar:` uri or to any rendered target rides the daemon verb (`meme-project`): the island's own renderers, reached
@@ -27,11 +27,11 @@
  *
  * THE CONTAINER LAW (every store-backed seat):
  *   · no target        — `no-container` refusal before file reads, socket dials or daemon starts.
- *   · --recipe default — the daemon's own wiki (`recipes/default`), its cascade routing
+ *   · recipe=default — the daemon's own wiki (`recipes/default`), its cascade routing
  *                        the records to the top bag as an in-wiki edit would.
- *   · --recipe <slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
- *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
- *   · --realm <id>     — beside --bag: the realm whose registration that bag resolves through; it reads that realm alone.
+ *   · recipe=<slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
+ *   · bag=<slug>     — a residency placement into that bag; a bag the island cannot write refuses.
+ *   · realm=<id>     — beside bag=: the realm whose registration that bag resolves through; it reads that realm alone.
  *   · tree=true        — (the listing, `lares get meme=true`) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
  *
  * The listing names EVERY root its seat holds. `bag=` lists that one bag's records; `recipe=<slug>` lists the
@@ -54,27 +54,27 @@
  * DOCTYPE address, sigil spellings, child-slot roots, meta columns, the block check) carry exactly one
  * right answer and ALWAYS apply. GRAMMAR clauses (authored bytes — today, only the named-parameter
  * separator: a call site's `:` vs `=`) are a PREFERENCE, never an answer — both spellings build the
- * identical attribute — so they apply ONLY with `--grammar`; by default they are named per site
- * ("N call site(s) would take the equals sign — rerun with --grammar to apply") and move no byte.
+ * identical attribute — so they apply ONLY with `grammar=`; by default they are named per site
+ * ("N call site(s) would take the equals sign — rerun with grammar= to apply") and move no byte.
  *
  * `check` reads the same law and writes nothing: FRAME drift alone exits 1 (CI / pre-commit); GRAMMAR
  * drift is reported as a named preference and never fails the gate. Its other readings share the seat —
  * read alone, write nothing — so they ride it as flags:
- *   --gradient  how far down the ingest gradient each file sits: the KIND a file declares itself to be,
+ *   gradient=  how far down the ingest gradient each file sits: the KIND a file declares itself to be,
  *               and the marks that kind requires and lacks. Graceful parsing hides files — a carrier
  *               missing its address, declaration or body frame still parses, renders and round-trips,
  *               as something smaller than a meme, and every `if (!uri) continue` gate skips it. This
  *               reading fails on a fault, never on a kind.
- *   --edges     the addresses these carriers point AT, and which of them answer. A `lar:` uri names and
+ *   edges=     the addresses these carriers point AT, and which of them answer. A `lar:` uri names and
  *               does not fetch, so a carrier whose target moved keeps passing every other gate. Run it
  *               before a move and after: equal counts prove the weld held.
  *
- * `project --to md` over a file renders the submission pair — `<name>.md` + `<name>.md.meta`, beside the
- * source or under `--out <dir>` — through `projectSubmission` (`@lararium/tw5/weave`), the one
+ * `project to=md` over a file renders the submission pair — `<name>.md` + `<name>.md.meta`, beside the
+ * source or under `out=<dir>` — through `projectSubmission` (`@lararium/tw5/weave`), the one
  * mouth the in-VM face (`$tw.lares.meme.project`) and the `meme-project` verb also call, so a pair
  * projected from any door carries identical bytes. No clock rides the meta: currency proves by re-projecting, never by a stamp.
  *
- * `project --to md --check <file.md | dir>` RUNS THAT PROOF: re-project each named pair's source in memory through the same
+ * `project to=md check=<file.md | dir>` RUNS THAT PROOF: re-project each named pair's source in memory through the same
  * `projectSubmission`, compare against the pair on disk and its meta's `source-check`, and exit non-zero
  * naming each pair whose source moved (`source-check` disagrees), vanished, or whose bytes drifted from
  * a hand edit. Local, read-alone — it writes nothing, exactly like `check` over a `.mem` file.
@@ -109,7 +109,7 @@ import type { ParsedArgs } from "../parse-args.js";
 
 import { UsageError } from "./meme-shared.js";
 
-/** The targets `project --to` renders. `md` over a file seats local; every other pairing rides the daemon. */
+/** The targets `project to=` renders. `md` over a file seats local; every other pairing rides the daemon. */
 /** `mem` left the list: the composed carrier reads through the one door, `lares get title=<uri> recipe=<slug> aperture=arc`. */
 export const PROJECT_TARGETS = ["md", "html", "tid", "json"] as const;
 export type ProjectTarget = typeof PROJECT_TARGETS[number];
@@ -136,7 +136,7 @@ function usage(): void { for (const line of helpLines("meme")) console.error(lin
  * The seat law for `project` — decided from the argument shape alone, with no daemon in reach.
  *
  * A source spelled `lar:` names a record only the island holds, so it rides the daemon whatever the
- * target. A file with `--to md` renders in-process. A file with any other target rides the daemon by its
+ * target. A file with `to=md` renders in-process. A file with any other target rides the daemon by its
  * DECLARED address (`uri-path`), read here so the plan carries it; the island renders the record it holds
  * at that address, which a file still unsent may differ from.
  */
@@ -145,7 +145,7 @@ export function projectPlan(args: ParsedArgs): ProjectPlan {
   if (!source) throw new UsageError("the verb needs a source: a file, or a lar: uri");
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   if (!(PROJECT_TARGETS as readonly string[]).includes(to)) {
-    throw new UsageError(`--to names the target, one of ${PROJECT_TARGETS.join(" · ")}${to ? ` (got "${to}")` : ""}`);
+    throw new UsageError(`to= names the target, one of ${PROJECT_TARGETS.join(" · ")}${to ? ` (got "${to}")` : ""}`);
   }
   const target = to as ProjectTarget;
   const needsStore = source.startsWith("lar:") || target !== "md";
@@ -233,8 +233,8 @@ function readNamed(f: string): string {
 /**
  * `check`: the normalize law read alone, or one of its two sibling readings.
  *
- * parse-args reads `--gradient` as a boolean only when the next token is another option or the end;
- * `--gradient <file>` binds the file as its value instead. Read each reading from both, and recover any
+ * parse-args reads `gradient=` as a boolean only when the next token is another option or the end;
+ * `gradient=<file>` binds the file as its value instead. Read each reading from both, and recover any
  * file it ate, so flag position stays free.
  */
 function checkFiles(args: ParsedArgs): number {
@@ -249,7 +249,7 @@ function checkFiles(args: ParsedArgs): number {
   const files = [...(ate.length > 0 ? args.positional.slice(1) : namedFiles(args, "check")), ...ate];
   const problems = problemsFormat(args);
   if (problems && (gradient.on || edges.on || sitting.on)) {
-    throw new UsageError("lares meme check --format=problems reads the normalize law alone — drop --gradient, --edges and --sitting");
+    throw new UsageError("lares meme check format=problems reads the normalize law alone — drop gradient=, edges= and sitting=");
   }
   if (gradient.on) return surveyGradient(files);
   if (edges.on) return surveyEdges(files);
@@ -258,13 +258,13 @@ function checkFiles(args: ParsedArgs): number {
 }
 
 /**
- * `--format=problems`: one `path:line:col: severity: code: message` line per diagnostic, the shape a
+ * `format=problems`: one `path:line:col: severity: code: message` line per diagnostic, the shape a
  * `tasks.json` problem matcher reads (lar:///ha.ka.ba/lares/cli/problems). Absent, the human report.
  */
 function problemsFormat(args: ParsedArgs): boolean {
   if (!("format" in args.options) && !("format" in args.flags)) return false;
   if (args.options["format"] === "problems") return true;
-  throw new UsageError("lares meme check --format=problems — `problems` names the one format this door reads");
+  throw new UsageError("lares meme check format=problems — `problems` names the one format this door reads");
 }
 
 /**
@@ -281,22 +281,22 @@ function problemsFormat(args: ParsedArgs): boolean {
  * refusal that would block a legitimate partial sweep.
  *
  * ── `problems` SPEAKS THE SAME READING IN THE MATCHER'S SHAPE ──────────────────────────────────
- * Read alone with `--format=problems`, every human line falls silent and each diagnostic prints once as
+ * Read alone with `format=problems`, every human line falls silent and each diagnostic prints once as
  * `path:line:col: severity: code: message` (problems.ts), the exit unchanged. The unnamed-dirty reading
  * names files nobody named, so it stays in the human report alone.
  */
 function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): number {
   if (write && ("format" in args.options || "format" in args.flags)) {
-    throw new UsageError("lares meme normalize takes no --format — `lares meme check --format=problems` reads the law alone");
+    throw new UsageError("lares meme normalize takes no format=true — `lares meme check format=problems` reads the law alone");
   }
   const say = problems ? (_line: string): void => {} : (line: string): void => console.log(line);
   const report = (f: string, src: string, offset: number | null, severity: ProblemSeverity, code: string, message: string): void => {
     if (problems) console.log(problemLine(f, src, offset, severity, code, message));
   };
-  // `--grammar` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
+  // `grammar=` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
   // separator) alongside the FRAME clauses that always apply. Default: grammar clauses are
   // PROPOSED, named per site, and move no byte — parse-args eats a following bare token as the
-  // flag's value the same way `--gradient`/`--edges`/`--sitting` do, so recover it the same way.
+  // flag's value the same way `gradient=`/`edges=`/`sitting=` do, so recover it the same way.
   const grammarOpt = args.options["grammar"];
   const grammar = typeof grammarOpt === "string" ? true : Boolean(args.flags["grammar"]);
   const files = [
@@ -335,7 +335,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): num
 
     // GRAMMAR-authority drift reads and reports SEPARATELY from FRAME drift — a preference named
     // aloud, never a failure. `res.grammarNotes` already carries the per-site "would take the
-    // equals sign — rerun with --grammar to apply" wording (or, with --grammar on, the applied
+    // equals sign — rerun with grammar= to apply" wording (or, with grammar= on, the applied
     // wording) from the clause itself.
     if (res.grammarChanged) {
       grammarDrifted++;
@@ -472,7 +472,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): num
 
   const tail = (flagged > 0 ? ` (${flagged} flagged for triage)` : "")
     + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "")
-    + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with --grammar to apply"})` : "");
+    + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with grammar= to apply"})` : "");
   if (drifted === 0) {
     say(faulted === 0
       ? `all ${files.length} carrier(s) canonical.${tail}`
@@ -489,7 +489,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): num
   // carriers. Flags stay advisory (needs-triage); GRAMMAR drift is a preference, never a gate
   // failure — `drifted` above counts only FRAME-authority changes (frame clauses + the block-check
   // re-stamp), since a grammar-only carrier never enters this branch: `changed` on its result is
-  // false unless `--grammar` applied it, and its grammar note surfaces through the `grammar
+  // false unless `grammar=` applied it, and its grammar note surfaces through the `grammar
   // preference` line above regardless.
   return faulted === 0 && (write || drifted === 0) ? 0 : 1;
 }
@@ -686,7 +686,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
       ...(out ? { out, ...(typeof meta === "string" ? { outMeta: `${out}.meta` } : {}) } : { text }),
       ...(typeof meta === "string" ? { meta } : {}),
     },
-    // The rendered text alone reaches stdout, so `lares meme project <uri> --recipe <slug> --to html > file` carries it.
+    // The rendered text alone reaches stdout, so `lares meme project <uri> recipe=<slug> to=html > file` carries it.
     human: () => {
       if (out) console.log(`projected ${uri} -> ${out} (${plan.to})`); else stdout.write(text);
     },
@@ -696,7 +696,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
 
 /**
  * `profileOf` (`@lararium/tw5/weave`) names an RFC 7764 variant or throws a plain Error; this wraps
- * that Error in `UsageError` at the CALL SITE so `--dialect foo` exits `usage` here — the CLI is the
+ * that Error in `UsageError` at the CALL SITE so `dialect=foo` exits `usage` here — the CLI is the
  * one door that turns a thrown Error into the `usage` exit class, and the weave module (read by the
  * filter and the verb too) has no exit classes of its own.
  */
@@ -724,13 +724,13 @@ export function bagsResolver(root: string): (uri: string) => string | null {
   };
 }
 
-/** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`
- * — or, under a standalone `--dialect` (GFM, kramdown-rfc2629), `<name>.md` alone, frontmatter carried
+/** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `out=`
+ * — or, under a standalone `dialect=` (GFM, kramdown-rfc2629), `<name>.md` alone, frontmatter carried
  * inside it per RFC 7763.
  *
- * A BARE RE-PROJECT KEEPS THE PAIR'S OWN TARGET. `--dialect`/`--tongue` win when given; absent, a pair
- * already standing at this exact path (beside the source, or under this `--out`) names its own target
- * through its `.md.meta`'s `variant:`/`tongue:` fields — the same record `--check` reads back — so a
+ * A BARE RE-PROJECT KEEPS THE PAIR'S OWN TARGET. `dialect=`/`tongue=` win when given; absent, a pair
+ * already standing at this exact path (beside the source, or under this `out=`) names its own target
+ * through its `.md.meta`'s `variant:`/`tongue:` fields — the same record `check=` reads back — so a
  * re-project with no flags reproduces what is already there rather than silently falling to CommonMark
  * and clobbering a standalone profile's frontmatter + normative list. A pair with no recorded meta (a
  * first projection) falls to the CommonMark/no-tongue default.
@@ -783,33 +783,33 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
 }
 
 /**
- * `project --to md --check <file.md|dir>` — the submission currency check.
+ * `project to=md check=<file.md|dir>` — the submission currency check.
  *
  * A projected pair proves its currency by RE-PROJECTION, never by a stamp: the meta carries no clock,
  * so the only way a pair reads current is that projecting its source again produces the same bytes.
  * This mode runs that proof — over one named pair, or every `<name>.md` + `.md.meta` pair in a named
- * directory — through `projectSubmission`, the same mouth `project --to md` itself calls: no second
+ * directory — through `projectSubmission`, the same mouth `project to=md` itself calls: no second
  * projector. It reads and writes NOTHING; a hand edit, a moved source, or a gone source each name
  * themselves and the run exits 1. Green means every pair on the target re-projects byte-identical.
  *
- * `--root <dir>` OVERRIDES where the source resolves from. `repoRoot` (`@lararium/mesh/node`) anchors
+ * `root=<dir>` OVERRIDES where the source resolves from. `repoRoot` (`@lararium/mesh/node`) anchors
  * on the built module's OWN on-disk location — it walks up from `import.meta.url` to the first
  * `pnpm-workspace.yaml`, never from `cwd` or an env var — so it always answers the real checkout no
  * matter where this process runs from. A pre-commit gate that mirrors staged blobs into a scratch tree
  * (so it judges what the commit carries, never a dirty working file) needs the source read from THAT
- * mirror, not the real tree beside it; `--root` is the one door for it, read-alone like the rest of
+ * mirror, not the real tree beside it; `root=` is the one door for it, read-alone like the rest of
  * this seat.
  */
 function projectMdCheck(args: ParsedArgs): number {
-  // `--check` rides either spelling `checkFiles`'s `--gradient`/`--edges` already use: a bare flag
-  // with the target in the normal source position (`project <dir> --to md --check`), or an eaten
-  // value (`--check <dir>`) when it lands last on the line — parse-args cannot tell a flag from an
+  // `check=` rides either spelling `checkFiles`'s `gradient=`/`edges=` already use: a bare flag
+  // with the target in the normal source position (`project <dir> to=md check=`), or an eaten
+  // value (`check=<dir>`) when it lands last on the line — parse-args cannot tell a flag from an
   // option apart from what follows it, so both spellings answer the same target.
   const checkOpt = args.options["check"];
   const target = typeof checkOpt === "string" ? checkOpt : args.positional[1];
-  if (!target) throw new UsageError("lares meme project --to md --check <file.md|dir> — name a projected pair or a shelf of them");
+  if (!target) throw new UsageError("lares meme project to=md check=<file.md|dir> — name a projected pair or a shelf of them");
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "md";
-  if (to !== "md") throw new UsageError(`--check proves the md pair's currency alone; got --to ${to}`);
+  if (to !== "md") throw new UsageError(`check= proves the md pair's currency alone; got to=${to}`);
   const root = typeof args.options["root"] === "string" ? args.options["root"] : repoRoot;
 
   const abs = isAbsolute(target) ? target : join(process.cwd(), target);
@@ -825,7 +825,7 @@ function projectMdCheck(args: ParsedArgs): number {
     throw new UsageError(`${target}: name a projected <name>.md pair, or a directory holding some`);
   }
   if (mdFiles.length === 0) {
-    console.log(`[meme project --check] ${target} holds no .md pair — nothing to prove`);
+    console.log(`[meme project check=] ${target} holds no .md pair — nothing to prove`);
     return 1;
   }
 
@@ -861,7 +861,7 @@ function projectMdCheck(args: ParsedArgs): number {
     if (p.markdown !== mdNow) { console.log(`  ${name}: markdown DRIFTED from its re-projection; re-project (hand edits do not survive)`); failed += 1; continue; }
     if (p.meta !== meta) { console.log(`  ${name}: meta DRIFTED from its re-projection`); failed += 1; continue; }
   }
-  console.log(`[meme project --check] ${mdFiles.length} pair(s) · ${failed} out of step`);
+  console.log(`[meme project check=] ${mdFiles.length} pair(s) · ${failed} out of step`);
   return failed === 0 ? 0 : 1;
 }
 
@@ -877,10 +877,10 @@ function projectMdCheck(args: ParsedArgs): number {
  *   · RESIDENCY — the `where` verb (`worker-data-verbs.ts:87`) answers //which bags hold this title// across
  *     every registered bag on both planes. That is the residency question, asked of residency.
  *   · CAPABILITY — no verb answers `cap("admin", bag)` on its own, and the daemon's real reading sits one
- *     line inside the residency verbs (`action-handler.ts:422`). A `--dry-run` MOVE reaches exactly that
+ *     line inside the residency verbs (`action-handler.ts:422`). A `dry-run=true` MOVE reaches exactly that
  *     line: the cap gate runs BEFORE the capturing executor, so the daemon answers with its own
  *     `cap-denied: admin on <bag> required (…)` and nothing commits. The rehearsal IS the cap reading.
- *   · THE MOVE — the same verb without `--dry-run`. `executeMove` performs the whole-carrier-group transfer;
+ *   · THE MOVE — the same verb without `dry-run=true`. `executeMove` performs the whole-carrier-group transfer;
  *     this door builds no second mover.
  *
  * A missing cap draws the daemon's own refusal. Promotion-down requires an operator-triggered kahu-cabal act;
@@ -888,7 +888,7 @@ function projectMdCheck(args: ParsedArgs): number {
  */
 async function memePromote(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
-  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--face N] [--approval <approval.json>] [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
+  if (!file) throw new UsageError("lares meme promote <…/x.mem> [face=N] [approval=<approval.json>] [from-bag=<b>] [dest-bag=<b>] — name the carrier to cross");
   const root = process.cwd();
   const destBag = typeof args.options["dest-bag"] === "string" ? args.options["dest-bag"].trim() : undefined;
   const fromBag = typeof args.options["from-bag"] === "string" ? args.options["from-bag"].trim() : undefined;
@@ -905,10 +905,10 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 
   const rawFace = args.options["face"];
   if (args.flags["face"] !== undefined || (rawFace !== undefined && (typeof rawFace !== "string" || !/^(?:0|[1-9][0-9]*)$/.test(rawFace)))) {
-    throw new UsageError("face-malformed: --face N names a whole handle index");
+    throw new UsageError("face-malformed: face=N names a whole handle index");
   }
-  if (typeof rawFace === "string" && !Number.isSafeInteger(Number(rawFace))) throw new UsageError("face-malformed: --face N names a safe handle index");
-  if (rawFace === undefined && listFaceOrdinals().length > 1) throw new UsageError("face-not-named: this vessel holds several faces; name the signing face with --face N");
+  if (typeof rawFace === "string" && !Number.isSafeInteger(Number(rawFace))) throw new UsageError("face-malformed: face=N names a safe handle index");
+  if (rawFace === undefined && listFaceOrdinals().length > 1) throw new UsageError("face-not-named: this vessel holds several faces; name the signing face with face=N");
   const atom = await faceSigningSeat(typeof rawFace === "string" ? Number(rawFace) : undefined);
   const seedKey = atom.key;
   const did = `0x${atom.key}`;
@@ -990,12 +990,12 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 
 /**
  * THE OFFERING DOOR (offering#/the-canon-offer), four acts over the daemon's offer verbs:
- *   offer <lar:uri ...> --bag <slug>      `offer-make`: the lit face offers records from its working layer toward a house-canon bag;
- *   offer show [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
+ *   offer <lar:uri ...> bag=<slug>      `offer-make`: the lit face offers records from its working layer toward a house-canon bag;
+ *   offer show [bag=<slug>] [all=true]     `offer-list`: the open offers (every one with all=true), each record's freshness now;
  *   offer show <cid>                      `offer-show`: one offer's field diff against canon now;
- *   offer promote <cid> [--over-fresher]  `offer-promote`: the Kahu steward, on a vessel holding a charter seat, writes the offered bytes into canon and retires the offer.
- * A moved base WARNS ("canon is fresher") in every listing; only a promotion over it takes the explicit `--over-fresher`. A release
- * after a promotion carries it: `lares nexus release --cut <manifest-file>` cuts the floor from live canon.
+ *   offer promote <cid> [over-fresher=true]  `offer-promote`: the Kahu steward, on a vessel holding a charter seat, writes the offered bytes into canon and retires the offer.
+ * A moved base WARNS ("canon is fresher") in every listing; only a promotion over it takes the explicit `over-fresher=true`. A release
+ * after a promotion carries it: `lares nexus release cut=true <manifest-file>` cuts the floor from live canon.
  */
 export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "offer-list" | "offer-show" | "offer-promote"; readonly args: Record<string, unknown> } {
   const act = args.positional[1];
@@ -1004,13 +1004,13 @@ export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "of
   if (act === "show" || act === "promote") {
     const cid = args.positional[2];
     if (act === "show" && !cid) return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}), ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) } };
-    if (act === "show" && (bag !== undefined || args.flags["all"] === true)) throw new UsageError("offer show <cid> refuses list filters --bag and --all");
+    if (act === "show" && (bag !== undefined || args.flags["all"] === true)) throw new UsageError("offer show <cid> refuses list filters bag= and all=true");
     if (!cid || !/^[0-9a-f]{64}$/.test(cid)) throw new UsageError(`offer ${act} names one offer CID (64 hex)`);
     return act === "show" ? { verb: "offer-show", args: { cid } } : { verb: "offer-promote", args: { cid, ...(args.flags["over-fresher"] === true ? { overFresher: true } : {}) } };
   }
   const titles = args.positional.slice(1);
   if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of show [<cid>] · promote <cid>");
-  if (bag === undefined) throw new UsageError("offer names the house-canon bag it offers toward (--bag <slug>)");
+  if (bag === undefined) throw new UsageError("offer names the house-canon bag it offers toward (bag=<slug>)");
   return { verb: "offer-make", args: { bag, titles } };
 }
 
@@ -1128,7 +1128,7 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
       console.log(`  wrote:  ${((out["wrote"] as string[]) ?? []).join(", ") || "(canon already carried every record)"}`);
       const over = (out["over"] as Array<{ title: string }>) ?? [];
       if (over.length > 0) console.log(`  over fresher canon (your explicit choice): ${over.map((o) => o.title).join(", ")}`);
-      console.log(`  retired by the charter seat's record ${short(retire?.["retire"])}; cut a release to carry it to every face: lares nexus release <manifest-file> --cut`);
+      console.log(`  retired by the charter seat's record ${short(retire?.["retire"])}; cut a release to carry it to every face: lares nexus release <manifest-file> cut=true`);
     },
   });
   return 0;

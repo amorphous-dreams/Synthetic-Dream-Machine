@@ -83,7 +83,7 @@ const rosterKey = async (face: number): Promise<string | null> => (await loadPer
 const wardedRoot = (ward: WardCredential | undefined) => async (face: number): Promise<{ seed: Uint8Array; verifyingKey: string } | null> => {
   const key = await rosterKey(face);
   if (!key) return null;
-  if (!ward) throw new FounderCertificateRefused("ward-needs-fresh-unlock", `issuing face h${face}'s certificate at a new scope is a ward act; it runs inside a face unlock (\`lares vault unlock --face ${face}\`), whose route opens the ward`);
+  if (!ward) throw new FounderCertificateRefused("ward-needs-fresh-unlock", `issuing face h${face}'s certificate at a new scope is a ward act; it runs inside a face unlock (\`lares vault unlock face=${face}\`), whose route opens the ward`);
   return { seed: await loadPersonaGroupRootSeed(face, ward), verifyingKey: key };
 };
 

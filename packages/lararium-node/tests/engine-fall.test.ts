@@ -184,7 +184,7 @@ describe("an engine that falls flushes, stops and rises once", () => {
     // face's backup bundle (`found --hearth --restore`) restores one face, never a house, and a reset clears the damaged hearth.
     expect(ENGINE_DOWN_HAND_ACT).toContain("founding runbook 11a");
     expect(ENGINE_DOWN_HAND_ACT).toContain("`lares up --workspace house-backup=<keep checkout>`");
-    expect(ENGINE_DOWN_HAND_ACT).toContain("`lares import /lar/workspaces/house-backup/house --apply`");
+    expect(ENGINE_DOWN_HAND_ACT).toContain("`lares import /lar/workspaces/house-backup/house apply=true`");
     expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/--restore|`lares reset`/);
 
     // The code: a vessel that stays down, holding a document in flight, takes the hand's stop; the count and the hold clear.

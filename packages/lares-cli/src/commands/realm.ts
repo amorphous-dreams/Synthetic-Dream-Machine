@@ -8,10 +8,10 @@
  * EVERY REALM CARRIES A PET NAME: a realm minted with none takes its wiki's slug (`realms/<slug>/wikis/<slug>/`), and the vessel
  * mints that label on first read, so nothing waits. Naming stays the operator's act and never gates flow:
  *
- * The verb, then the thing acted on, then `--to` its destination, as `mv` reads:
+ * The verb, then the thing acted on, then `to=` its destination, as `mv` reads:
  *
- *   - `rename <current pet | realm id> --to <new pet>`: the realm takes a new pet name.
- *   - `move <wiki slug> --to <realm pet>`: the wiki (and its canon bag) moves to that realm, minted where no label wears the pet
+ *   - `rename <current pet | realm id> to=<new pet>`: the realm takes a new pet name.
+ *   - `move <wiki slug> to=<realm pet>`: the wiki (and its canon bag) moves to that realm, minted where no label wears the pet
  *     name; it keeps its canon realm id (the label only gathers it), and a label the move empties leaves, named.
  *
  * A rename or a move relabels at once, and the folders move at a QUIET POINT (`settleRealmMoves`): a rename moves the realm's whole
@@ -20,7 +20,7 @@
  * stands, never half-moved.
  *   - `list`: each realm, its pet name, its wikis' folders and the canon realm ids it holds. Local alone.
  *
- * `lares wiki init <slug> --realm <pet>` places the wiki in an existing realm before it mints (`placeWikiInRealm`), so its first
+ * `lares wiki init <slug> realm=<pet>` places the wiki in an existing realm before it mints (`placeWikiInRealm`), so its first
  * mount lays under the realm.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
@@ -45,18 +45,18 @@ async function settleOrDefer(doors: RealmDoors, probe: string): Promise<{ readon
   return { now: true, lines: [...r.moved.map((m) => `moved ${m.from} -> ${m.to}`), ...r.held.map((h) => `held: ${h}`)] };
 }
 
-/** The destination `--to` names, or why the line names none. */
+/** The destination `to=` names, or why the line names none. */
 function toOption(args: ParsedArgs): string | null {
   const to = args.options["to"];
   return typeof to === "string" && to !== "" ? to : null;
 }
 
-/** `lares realm rename <current pet> --to <new pet>`: the label moves at once; its folders follow at a quiet point. */
+/** `lares realm rename <current pet> to=<new pet>`: the label moves at once; its folders follow at a quiet point. */
 async function cmdRename(args: ParsedArgs, doors: RealmDoors): Promise<number> {
   const [current, ...rest] = args.positional.slice(1);
   const to = toOption(args);
   if (current === undefined || rest.length > 0 || to === null) {
-    return refuseUsage(args, "realm rename", helpLines("realm rename"), rest.length > 0 ? `unknown word "${rest[0]}"` : "name the realm and its new pet name: `lares realm rename <current pet> --to <new pet>`");
+    return refuseUsage(args, "realm rename", helpLines("realm rename"), rest.length > 0 ? `unknown word "${rest[0]}"` : "name the realm and its new pet name: `lares realm rename <current pet> to=<new pet>`");
   }
   const projections = doors.projections();
   const r = nameRealm(projections, to, { from: current, faceNames: houseFaceNames(projections) });
@@ -73,13 +73,13 @@ async function cmdRename(args: ParsedArgs, doors: RealmDoors): Promise<number> {
   return 0;
 }
 
-/** `lares realm move <wiki slug> --to <realm pet>`: the wiki and its canon bag move to that realm (minted where none wears the pet
+/** `lares realm move <wiki slug> to=<realm pet>`: the wiki and its canon bag move to that realm (minted where none wears the pet
  *  name), keeping its canon realm id; a label the move empties leaves, named; the folder follows at a quiet point. */
 async function cmdMove(args: ParsedArgs, doors: RealmDoors): Promise<number> {
   const [slug, ...rest] = args.positional.slice(1);
   const to = toOption(args);
   if (slug === undefined || rest.length > 0 || to === null) {
-    return refuseUsage(args, "realm move", helpLines("realm move"), rest.length > 0 ? `unknown word "${rest[0]}"` : "name the wiki and its realm: `lares realm move <wiki slug> --to <realm pet>`");
+    return refuseUsage(args, "realm move", helpLines("realm move"), rest.length > 0 ? `unknown word "${rest[0]}"` : "name the wiki and its realm: `lares realm move <wiki slug> to=<realm pet>`");
   }
   const projections = doors.projections();
   const r = moveWikiToRealm(projections, slug, to, { faceNames: houseFaceNames(projections) });

@@ -10,7 +10,7 @@ import { ALLOWED_TOOLS, LAUNCH_CAPS, LaunchRefused, WAKE_LINE, launchPlan, run }
 import * as core from "../packages/lararium-mesh/dist/spirit-summons.js";
 
 const HASH = "ab".repeat(32);
-const LINE = `wake as cold-reader#00002: lares spirit om cold-reader --mandate lar:///ha.ka.ba/kahua/memory/mandate/${HASH.slice(0, 16)}@${HASH}`;
+const LINE = `wake as cold-reader#00002: lares spirit om cold-reader mandate=lar:///ha.ka.ba/kahua/memory/mandate/${HASH.slice(0, 16)}@${HASH}`;
 
 /** A spawn that records its call and stands (or fails) on the next tick. */
 function fakeSpawn(fail = null) {
@@ -42,7 +42,7 @@ test("claude-cli starts `claude -p <the one line> --model <slug>`, detached, and
 });
 
 test("a mandate naming no model passes no --model; a face rides the line", () => {
-  assert.deepEqual(launchPlan({ cap: "claude-cli", prompt: `${LINE} --face 1` }).argv, ["-p", `${LINE} --face 1`]);
+  assert.deepEqual(launchPlan({ cap: "claude-cli", prompt: `${LINE} face=1` }).argv, ["-p", `${LINE} face=1`]);
 });
 
 test("a launch naming no allowed tools passes no permission flag at all", () => {
@@ -66,7 +66,7 @@ test("a malformed allowed-tools value refuses by name with its cure, and nothing
     const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--allowed-tools", rules], deps);
     assert.equal(exit, 2, rules);
     assert.equal(out.code, "launch-allowed-tools-malformed");
-    assert.match(out.message, /lares spirit mandate .* --allowed-tools/);
+    assert.match(out.message, /lares spirit mandate .* allowed-tools=/);
     assert.doesNotMatch(out.message, /\b(is|are|was|were|be|been|being|am)\b/);
     assert.equal(calls.length, 0);
   }
@@ -88,7 +88,7 @@ test("a workdir the host holds none of refuses launch-workdir-absent, and nothin
   const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--cwd", "/srv/none"], { spawn, holdsDir: () => false });
   assert.equal(exit, 2);
   assert.equal(out.code, "launch-workdir-absent");
-  assert.match(out.message, /--workdir \/absolute\/path/);
+  assert.match(out.message, /workdir=\/absolute\/path/);
   assert.equal(calls.length, 0);
 });
 
@@ -103,7 +103,7 @@ test("the instance's stream appends to the log the launch names; a log that take
   const refused = await answer(["--cap", "claude-cli", "--prompt", LINE, "--cwd", "/tmp", "--log", "/srv/logs/a.log"], { spawn: shut.spawn, holdsDir: () => true, openLog: () => { throw new Error("EACCES"); } });
   assert.equal(refused.exit, 2);
   assert.equal(refused.out.code, "launch-log-unwritable");
-  assert.match(refused.out.message, /--log \/absolute\/file/);
+  assert.match(refused.out.message, /log=\/absolute\/file/);
   assert.equal(shut.calls.length, 0);
 });
 

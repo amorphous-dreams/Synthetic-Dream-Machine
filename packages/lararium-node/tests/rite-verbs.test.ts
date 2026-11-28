@@ -244,16 +244,16 @@ test("RED: a face rehived since its begin (its old half verifies under no trust 
   const rehivedRed = async () => (await conferre(wiki, { hand: () => false, vessel: () => false, lead: () => false }, "new-group")).red;
   expect(await standingKukuluBegins([0], rehivedRed, "develop")).toEqual([]);
   const debt = await pendingBegins(wiki, "kukulu", "develop");
-  expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite land --abandon --tessera`)) }));
+  expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite land abandon=true tessera=true`)) }));
   // abandon-follow-ups (b): the half no lent face carries refuses rite-begun-absent under every trust held now, so its cure names
   // what runs there (unlock the face that carries its group, then set it down as that face), never a bare abandon.
   let said = "";
   try { refuseStandingBegin(debt); } catch (e) { said = (e as Error).message; }
-  expect(said).toMatch(new RegExp(`group old-group[\\s\\S]*no lent face carries[\\s\\S]*lares vault unlock[\\s\\S]*lares rite land --abandon --tessera ${begun.tessera} --face <that face>`));
+  expect(said).toMatch(new RegExp(`group old-group[\\s\\S]*no lent face carries[\\s\\S]*lares vault unlock[\\s\\S]*lares rite land abandon=true tessera=${begun.tessera} face=<that face>`));
   // CONTROL: a half a lent face carries names that face in its cure.
   let named = "";
   try { refuseStandingBegin(debt.map((p) => ({ ...p, face: "h2" }))); } catch (e) { named = (e as Error).message; }
-  expect(named).toContain(`lares rite land --abandon --tessera ${begun.tessera} --face 2`);
+  expect(named).toContain(`lares rite land abandon=true tessera=${begun.tessera} face=2`);
 });
 
 test("RED (land-names-its-face): a landing or an abandon acting as a face that does not carry the begun half names the face that does, and the --face cure; CONTROL: a half no lent face carries names its group and the unlock, and another refusal passes untouched", async () => {
@@ -272,9 +272,9 @@ test("RED (land-names-its-face): a landing or an abandon acting as a face that d
   expect(refused).toMatchObject({ code: "rite-begun-absent", message: expect.stringContaining("(group)") });
   const named = await tesseraFaceRefusal(refused, wiki, begun.tessera, new Map([["keep-group", "h0"], ["worn-group", "h1"]]), "land");
   expect(named).toMatchObject({ code: "rite-begun-absent", message: expect.stringContaining(`rests under h0`) });
-  expect((named as Error).message).toContain(`lares rite land --tessera ${begun.tessera} --face 0`);
+  expect((named as Error).message).toContain(`lares rite land tessera=${begun.tessera} face=0`);
   const setDown = await tesseraFaceRefusal(refused, wiki, begun.tessera, new Map([["keep-group", "h0"]]), "abandon");
-  expect((setDown as Error).message).toContain(`lares rite land --abandon --tessera ${begun.tessera} --face 0`);
+  expect((setDown as Error).message).toContain(`lares rite land abandon=true tessera=${begun.tessera} face=0`);
   // CONTROL: no lent face carries the half's group (shut or rehived): the group and the unlock, never a face it cannot name.
   const unlent = await tesseraFaceRefusal(refused, wiki, begun.tessera, new Map([["worn-group", "h1"]]), "land");
   expect((unlent as Error).message).toMatch(/group keep-group[\s\S]*no lent face carries[\s\S]*unlock/);

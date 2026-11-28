@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.trial.runs"
 
 ! sense.trial.runs ~ a frozen trial, supervised end to end
 
-`lares sense trial-run --trial-root <root>` supervises one receipt-bearing operation under a disposable absolute root: intake, the typed content frontier and the semantic view, each leaving a receipt `search` and `status --trial-root` read later. `--freeze-receipt`, `--intent`, `--source-host`, `--model-home` and `--device` (auto, cpu or cuda) shape it.
+`lares sense trial-run trial-root=<root>` supervises one receipt-bearing operation under a disposable absolute root: intake, the typed content frontier and the semantic view, each leaving a receipt `search` and `status --trial-root` read later. `--freeze-receipt`, `--intent`, `--source-host`, `--model-home` and `--device` (auto, cpu or cuda) shape it.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;G5Uku98fHGcSkfVkvkVVXPyOmn8VfACOTHuakZROLaU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xCnLaM2QxAqdlaqrjrZkUp2KaXnWKtvfd8LhttluUjs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

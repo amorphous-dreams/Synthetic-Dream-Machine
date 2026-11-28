@@ -44,7 +44,7 @@ export async function cmdBake(args: ParsedArgs): Promise<number> {
   return runTsxScript(plan.script, [], { ...process.env, ...plan.env });
 }
 
-/** `lares vessel stand --foreground` — boot the lararium node only (no Vite).
+/** `lares vessel stand foreground=true` — boot the lararium node only (no Vite).
  *
  *  Runs the BUILT dist, never tsx-source: the sovereign island workers spawn from
  *  compiled `.js` siblings (`node-daemon-island.js` / `node-wiki-island.js`, no
@@ -52,11 +52,11 @@ export async function cmdBake(args: ParsedArgs): Promise<number> {
  *  worker ERR_MODULE_NOT_FOUND). `node dist/src/main.js` names the only sound boot
  *  (= the package `start` script, the e2e harness). */
 export async function cmdStandForeground(args: ParsedArgs): Promise<number> {
-  if (engineHeldByHost()) return refuseEngineAct("vessel stand --foreground would boot a second daemon");
+  if (engineHeldByHost()) return refuseEngineAct("vessel stand foreground=true would boot a second daemon");
   const { existsSync } = await import("node:fs");
   const distMain = join(NODE_PKG, "dist", "src", "main.js");
   if (!existsSync(distMain)) {
-    console.error(`[lares vessel stand --foreground] ${distMain} not found — run \`pnpm build\` first (the island workers run compiled; tsx-source cannot spawn them).`);
+    console.error(`[lares vessel stand foreground=true] ${distMain} not found — run \`pnpm build\` first (the island workers run compiled; tsx-source cannot spawn them).`);
     return 1;
   }
   const extraArgs: string[] = [];
@@ -66,9 +66,9 @@ export async function cmdStandForeground(args: ParsedArgs): Promise<number> {
   return runCommand("node", [distMain, ...extraArgs], NODE_PKG);
 }
 
-/** `lares vessel stand --with-web` — boot node + Vite web surface concurrently (full dev experience). */
+/** `lares vessel stand with-web=true` — boot node + Vite web surface concurrently (full dev experience). */
 export async function cmdStandWithWeb(_args: ParsedArgs): Promise<number> {
-  if (engineHeldByHost()) return refuseEngineAct("vessel stand --with-web would boot a second daemon and a dev server");
+  if (engineHeldByHost()) return refuseEngineAct("vessel stand with-web=true would boot a second daemon and a dev server");
   // Defer to the workspace-root `pnpm dev` script which already wires
   // `concurrently -n node,vite`. Touching that orchestration here would
   // duplicate config that's better kept at one site.
@@ -139,7 +139,7 @@ async function stopIncumbentFor(args: ParsedArgs, label: string): Promise<number
 }
 
 /**
- * `lares vessel stand --restart` — converge to ONE live vessel for the dev/test loop. Idempotent
+ * `lares vessel stand restart=true` — converge to ONE live vessel for the dev/test loop. Idempotent
  * with a running, stale, or absent vessel: stop the incumbent by ACCESS to the
  * OS port-table (graceful SIGTERM, waited out to its own real exit — never a forced SIGKILL,
  * no PID file, no supervisor), then serve. The port is the single-
@@ -147,7 +147,7 @@ async function stopIncumbentFor(args: ParsedArgs, label: string): Promise<number
  * to hang silently; `serve` stays fail-fast.
  */
 export async function cmdRestart(args: ParsedArgs): Promise<number> {
-  const stopCode = await stopIncumbentFor(args, "[lares vessel stand --restart]");
+  const stopCode = await stopIncumbentFor(args, "[lares vessel stand restart=true]");
   if (stopCode !== 0) return stopCode;
   return cmdStandForeground(args);
 }

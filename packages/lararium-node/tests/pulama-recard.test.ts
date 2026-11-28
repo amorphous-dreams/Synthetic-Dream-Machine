@@ -5,7 +5,7 @@
  *   Q1  an unlit pūlama refuses `pulama-locked` before the route reads; a face shut at the pūlama refuses `face-shut`, naming
  *       `pulama light`; a face no index names refuses `face-not-standing`. None of them grants.
  *   Q2  a route that opens no slot of the face refuses `no-slot-opens`, naming the attempts left; nothing grants.
- *   Q3  the face's own route grants ONE recard: the answer names the vessel's next act (`lares vault recard --face N`), and
+ *   Q3  the face's own route grants ONE recard: the answer names the vessel's next act (`lares vault recard face=N`), and
  *       no answer or log line carries the route. The vessel's session spends the grant once (`face.recard`): the second ask reads
  *       none. A face outside the session's lend refuses `outside-the-lei`.
  *   Q4  the lock forgets every grant, as it forgets the worn face.
@@ -80,7 +80,7 @@ describe("the pūlama's hand door proves a stale face's own route for its recard
     const p = await stalePulama();
     const a = await p.door({ op: "recard", face: 0, credentials: ROUTE });
     expect(a).toMatchObject({ op: "recard", reading: "granted", face: 0 });
-    expect((a["lines"] as string[]).join("\n")).toContain("lares vault recard --face 0");
+    expect((a["lines"] as string[]).join("\n")).toContain("lares vault recard face=0");
     expect(JSON.stringify([a, p.lines, fx!.lines])).not.toContain(FIXTURE_PASSPHRASE);
     expect(fx!.kept.unlockedFaces(), "the proof leaves the face's key as it stood").toHaveLength(2);
     // h1 stands lit at the pūlama but outside this session's lend: the session never spends its grant.

@@ -1,5 +1,5 @@
 /**
- * floor-cut — the node's binding of the release wiring (offering#/the-canon-offer): `lares nexus release <file> --cut` cuts the
+ * floor-cut — the node's binding of the release wiring (offering#/the-canon-offer): `lares nexus release <file> cut=true` cuts the
  * next release's floor from LIVE house canon, so a promoted record rides the release a vessel accepts.
  *
  * REDS, each with its control:

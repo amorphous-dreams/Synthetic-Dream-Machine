@@ -6,7 +6,7 @@
  *
  *   lares walk                          where this vessel walks: per hearth, the Nexus, whether its invite still
  *                                       waits to settle, the grant it holds, and how many invites its wallet holds
- *   lares walk take <lar-invite:…> [--face N]
+ *   lares walk take <lar-invite:…> [face=N]
  *                                       keep a carried invite; this vessel's hearth dial walks in on it, as the
  *                                       face named (else the one face standing open)
  *   lares walk invite                   hand the newest invite out of the wallet, as one string to carry

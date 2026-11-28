@@ -203,7 +203,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     await seatVault();
     // The rite arms itself, so the nexus door reads no arming flag: the front door refuses it before any act.
     for (const verb of ["seat", "rotate"]) {
-      expect(await dispatch(["nexus", "seal", verb, "--next-key-commit", "f".repeat(64)])).not.toBe(0);
+      expect(await dispatch(["nexus", "seal", verb, `next-key-commit=${"f".repeat(64)}`])).not.toBe(0);
     }
     expect(readNexusDoc(larSealHome())).toBeNull();
     expect(listSeatKeys()).toEqual([]);

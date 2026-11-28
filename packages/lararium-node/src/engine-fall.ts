@@ -62,13 +62,13 @@ export const ENGINE_DOWN_HAND_ACT =
   + "no verb reaches it). `lares vessel read` reads the resting falls and every held id from the files beside the store, with no "
   + "verb; `lares vessel stop` stops it by hand (the stop clears the count, and with it the hold on each document a fall named in "
   + "flight, and exits 0); preserve the hearth (copy it aside); `lares vessel read vessel` probes every document, and "
-  + "`lares vessel lay --apply --yes` lays a torn one again from its disk holding; then `lares vessel stand`: the vessel may rise "
+  + "`lares vessel lay apply=true --yes` lays a torn one again from its disk holding; then `lares vessel stand`: the vessel may rise "
   + "once more, and each document a fall named in flight mounts writable. A hearth past repair restores from its keep onto a "
   + "brand-new house, the damaged one kept aside and never reset: walk founding runbook 11a "
   + "(lar:///ha.ka.ba/lararium/mesh/founding-runbook#/carry-across-refound) whole, its lay and census steps with it; on the new "
-  + "house it opens with `LARES_HOUSE=<new root> lares found --hearth --name <pet> --chair <chair>`, binds the keep by "
+  + "house it opens with `LARES_HOUSE=<new root> lares found hearth=true name=<pet> chair=<chair>`, binds the keep by "
   + "`lares up --workspace house-backup=<keep checkout>`, and imports each worn face by "
-  + "`lares import /lar/workspaces/house-backup/house --apply`";
+  + "`lares import /lar/workspaces/house-backup/house apply=true`";
 
 const FALLS_FILE = ".engine-falls";
 

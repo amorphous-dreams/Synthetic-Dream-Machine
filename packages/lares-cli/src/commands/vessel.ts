@@ -20,7 +20,7 @@
  *   lay    lays every bags holding back into its doc, kind-routed, diff-gated — idempotent
  *   read   the pure inspection that starts nothing
  *
- * `release` ends one quarantine hold (`<documentId> [--keep|--fresh]`): a hand's write over the stopped store, so it holds a
+ * `release` ends one quarantine hold (`<documentId> [keep=true|fresh=true]`): a hand's write over the stopped store, so it holds a
  * door of its own rather than riding a flag on the read.
  *
  * Re-deriving the genesis island is NOT a standalone door: advancing the composition is a MESH act that
@@ -75,12 +75,12 @@ const under = (args: ParsedArgs): ParsedArgs => ({ ...args, positional: args.pos
  * `vessel stand` — the ENTRY POINT, and the one sub-door that carries modes.
  *
  * Standing a vessel runs ONE motion with several postures, and each posture rides a flag:
- * `--foreground` chooses who owns the terminal, `--with-web` adds the Vite face beside it, `--restart`
+ * `foreground=true` chooses who owns the terminal, `with-web=true` adds the Vite face beside it, `restart=true`
  * frees the port first. None of them names a different motion.
  *
  * THEY DO, HOWEVER, REACH IT THROUGH FOUR PROGRAMS, and each program reads a different slice of the
  * command line — `cmdStandWithWeb` reads none of it. `posturePlan` holds that difference so a flag
- * the chosen posture cannot carry names itself, and `--observe` refuses rather than performing the
+ * the chosen posture cannot carry names itself, and `observe=` refuses rather than performing the
  * act it vowed to withhold.
  */
 async function standVessel(args: ParsedArgs): Promise<number> {
@@ -172,7 +172,7 @@ async function runRite(args: ParsedArgs): Promise<number> {
   return rite.run({ ...args, positional: args.positional.slice(2) });
 }
 
-/** `census --docs` reads the document census; `census` alone reads what a stop would drop. */
+/** `census docs=true` reads the document census; `census` alone reads what a stop would drop. */
 export const VESSEL_CENSUS_ROUTE = (args: ParsedArgs): "docs" | "stop" => (args.flags["docs"] === true ? "docs" : "stop");
 
 /** The door's map. Every entry names a primitive, a read, or the one composed sub-door. */
@@ -196,7 +196,7 @@ const SUBS: Readonly<Record<string, { readonly run: Sub }>> = {
   census: { run: (a) => (VESSEL_CENSUS_ROUTE(a) === "docs" ? cmdDocCensus(under(a)) : cmdCensus(under(a))) },
   fresher: { run: async (a) => {
     const named = a.options["bag"];
-    if (!named) { console.error("lares vessel fresher: --bag <slug|lar:///ha.ka.ba/bags/<slug>> names the canon bag"); return 2; }
+    if (!named) { console.error("lares vessel fresher: bag=<slug|lar:///ha.ka.ba/bags/<slug>> names the canon bag"); return 2; }
     const bag = fresherBagOf(named);
     const did = await vesselDid();
     const ask: FresherAsk = async (args) => {
@@ -230,7 +230,7 @@ function printVesselHelp(): void {
   // as a fault.
   console.log("\n  A fresh founding, end to end:");
   console.log("    lares vessel rite founding            found · stand · lay");
-  console.log("    lares persona new 0 --name '<label>'  light a face — this lifts it off the floor");
+  console.log("    lares persona new 0 name='<label>'  light a face — this lifts it off the floor");
   console.log("    lares vessel stand                    stand again; the lift lands here");
   console.log("    lares home tend                       keep this device's homes on intent (another door, another radius)");
 }

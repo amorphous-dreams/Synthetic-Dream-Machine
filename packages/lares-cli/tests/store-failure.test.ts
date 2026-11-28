@@ -77,9 +77,9 @@ describe("storeFailure names a failure by its own type", () => {
 });
 
 describe("a command's JSON carries the name", () => {
-  const list = () => cmdKapae(parseArgs(["nexus", "kapae", "--list", "--json"]));
+  const list = () => cmdKapae(parseArgs(["nexus", "kapae", "list=true", "--json"]));
 
-  it("★ `lares nexus kapae --list` at a floor reads `waking-floor` and exits 2, never `error` ★", async () => {
+  it("★ `lares nexus kapae list=true` at a floor reads `waking-floor` and exits 2, never `error` ★", async () => {
     vi.mocked(invokeLocal).mockResolvedValue({ status: "error", requestId: "r", errorMessage: "the vessel holds no face", refusal: { reason: "waking-floor" } });
     const { code, payload } = await jsonOf(list);
     expect(payload.ok).toBe(false);

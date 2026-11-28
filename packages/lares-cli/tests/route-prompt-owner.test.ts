@@ -30,13 +30,13 @@ describe("RED route prompts name their owner", () => {
   });
 
   test("route-prompt-names-the-face", async () => {
-    await gatherCredentials("lares vault bind --face 1", { kind: "face", ordinal: 1 } as never);
+    await gatherCredentials("lares vault bind face=1", { kind: "face", ordinal: 1 } as never);
     expect(asked[0]).toMatch(/face h1's key/);
     expect(asked[1]).toMatch(/face h1's passphrase/);
   });
 
   test("route-prompt-names-the-bundle", async () => {
-    await gatherCredentials("lares vessel found --hearth --restore", { kind: "bundle" } as never);
+    await gatherCredentials("lares vessel found hearth=true restore=true", { kind: "bundle" } as never);
     expect(asked[0]).toMatch(/the backup bundle's key/);
   });
 });
@@ -56,7 +56,7 @@ describe("RED the ward prompt names the face", () => {
     const { readWardPassphrase } = await vi.importActual<typeof import("../src/prompt-secret.js")>("../src/prompt-secret.js");
     const written: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((c) => { written.push(String(c)); return true; });
-    const route = await (readWardPassphrase as (verb: string, opts: object) => Promise<string>)("lares vault backup --face 2", { stream: new FakeTty(), env: {}, face: 2 });
+    const route = await (readWardPassphrase as (verb: string, opts: object) => Promise<string>)("lares vault backup face=2", { stream: new FakeTty(), env: {}, face: 2 });
     expect(route).toBe("the-ward-route");
     expect(written.join("")).toMatch(/face h2's passphrase for this one act/);
   });
@@ -73,7 +73,7 @@ describe("RED the ward prompt names the face", () => {
     const { readWardPassphrase } = await vi.importActual<typeof import("../src/prompt-secret.js")>("../src/prompt-secret.js");
     const written: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((c) => { written.push(String(c)); return true; });
-    expect(await readWardPassphrase("lares vault backup --face 2", { stream: new FakeTty() as never, env: {} })).toBe("the-ward-route");
-    expect(written.join("")).toMatch(/^lares vault backup --face 2: /);
+    expect(await readWardPassphrase("lares vault backup face=2", { stream: new FakeTty() as never, env: {} })).toBe("the-ward-route");
+    expect(written.join("")).toMatch(/^lares vault backup face=2: /);
   });
 });

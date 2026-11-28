@@ -119,9 +119,9 @@ describe("a restore hands the vessel a sealed body and the bundle's own key", ()
     expect(text).toContain("took a NEW seat");
     expect(text).toContain("the check read the bundle's own log, as far as its cut");
     expect(text).toContain("every reader that holds the newer head refuses this seat");
-    expect(text).toContain("--memory");
+    expect(text).toContain("memory=");
     expect(text).toContain(SEALED_BYTES_LINE);
-    expect(text).toContain("lares vessel stand --restart");
+    expect(text).toContain("lares vessel stand restart=true");
     expect(text).toContain("PROVISIONAL");
     expect(text).toContain("a chair seated in a charter this face stands in");
     const boarded = restoreLines({ ...landed, via: "direct", checked: { seq: 4, from: "board" }, holds: [], resumed: true }).join("\n");
@@ -129,7 +129,7 @@ describe("a restore hands the vessel a sealed body and the bundle's own key", ()
     expect(boarded).toContain("sequence 4");
     expect(boarded).toContain("stood pending completed");
     expect(boarded).toContain("carries no content key");
-    expect(boarded).not.toContain("--restart");
+    expect(boarded).not.toContain("restart=");
     const imported = importLines({ ok: true, kind: "import", face: FACE, results: [{ bagId: HOLD.bagId, keyVersion: HOLD.keyVersion, outcome: "imported" }, { bagId: "lar:///x", keyVersion: "33".repeat(32), outcome: "key-forged", cause: "why" }] }).join("\n");
     expect(imported).toContain("imported");
     expect(imported).toContain("key-forged");

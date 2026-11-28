@@ -19,11 +19,11 @@ const unstrung = { body: { act: "lei-unstrung", group: "g", rite: "kukulu", bran
 
 describe("lares lei land plans the rows that land hand records", () => {
   it("RED: the pūlama's answer lands by the kui row with its face, an unstring by the unstring row, and a bare record with --face; CONTROL: kui plans as it stood", () => {
-    expect(plan("kui", "--rite", "push", "--branch", "feature/x", "--returns", "3")).toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", returns: 3, after: null } });
+    expect(plan("kui", "rite=push", "branch=feature/x", "returns=3")).toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", returns: 3, after: null } });
     expect(land(JSON.stringify({ op: "lei", act: "kui", reading: "signed", face: 2, record: lei, cid: CID }))).toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei, face: 2 } }] });
     expect(land(JSON.stringify({ op: "lei", act: "restring", reading: "signed", face: 0, record: lei, restrung: CID }))).toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei, face: 0 } }] });
     expect(land(JSON.stringify({ op: "lei", act: "unstring", reading: "signed", face: 0, record: unstrung }))).toEqual({ plans: [{ verb: "swarm-lei-unstring", args: { signed: unstrung, face: 0 } }] });
-    expect(land(JSON.stringify(lei), "--face", "1")).toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei, face: 1 } }] });
+    expect(land(JSON.stringify(lei), "face=1")).toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei, face: 1 } }] });
     expect(land(JSON.stringify(lei))).toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei } }] });
   });
 
@@ -35,15 +35,15 @@ describe("lares lei land plans the rows that land hand records", () => {
     expect(land(JSON.stringify({ op: "lei", act: "kui", reading: "face-group-unread", faces: [signed(0), stop] })))
       .toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei, face: 0 } }], stopped: { face: 1, reading: "face-group-unread", detail: "no group" } });
     expect(() => land(JSON.stringify({ op: "lei", act: "kui", reading: "ward-no-slot-opens", faces: [{ ...stop, reading: "ward-no-slot-opens" }] }))).toThrow(LeiUsage);
-    expect(() => land(JSON.stringify({ op: "lei", act: "kui", reading: "signed", faces: [signed(0)] }), "--face", "0")).toThrow(LeiUsage);
+    expect(() => land(JSON.stringify({ op: "lei", act: "kui", reading: "signed", faces: [signed(0)] }), "face=0")).toThrow(LeiUsage);
   });
 
   it("RED: no record, a record that reads as no JSON, an answer the pūlama refused, a body no lei forms, and a face the answer and the line name apart each refuse by usage; CONTROL: the same answer with one face plans", () => {
     for (const line of [[], ["not json"], ["[1]"], [JSON.stringify({ op: "lei", reading: "ward-no-slot-opens", face: 0 })],
-      [JSON.stringify({ ...lei, body: { ...lei.body, act: "receipt" } })], [JSON.stringify({ op: "lei", reading: "signed", face: 0, record: lei }), "--face", "2"],
+      [JSON.stringify({ ...lei, body: { ...lei.body, act: "receipt" } })], [JSON.stringify({ op: "lei", reading: "signed", face: 0, record: lei }), "face=2"],
       [JSON.stringify(lei), "extra"]]) {
       expect(() => land(...line), line.join(" ")).toThrow(LeiUsage);
     }
-    expect(land(JSON.stringify({ op: "lei", reading: "signed", face: 2, record: lei }), "--face", "2")).toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei, face: 2 } }] });
+    expect(land(JSON.stringify({ op: "lei", reading: "signed", face: 2, record: lei }), "face=2")).toEqual({ plans: [{ verb: "swarm-lei-kui", args: { signed: lei, face: 2 } }] });
   });
 });

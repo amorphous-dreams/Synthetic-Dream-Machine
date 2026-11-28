@@ -4,7 +4,7 @@
  *
  * Two far-side events stand here.
  *
- *   THE SETTLE WORD OVER AN INGEST RESULT. `lares ingest --apply` lands records, then asks the vessel to say when the
+ *   THE SETTLE WORD OVER AN INGEST RESULT. `lares ingest apply=true` lands records, then asks the vessel to say when the
  *   projection those records cause has run (`data.settle`). `settleWordOver` reads that word off the result and
  *   fails by name when it is missing, refused or short: the file the test reads next stands as the projection
  *   left it. A word that ended `far-side-closed` or `projector-stopped` reads here as the refusal it names.
@@ -17,7 +17,7 @@
 import { expect } from "vitest";
 import type { CliResult, LarInstance } from "./instance.js";
 
-/** The reading `lares ingest --apply` reports under `data.settle`. */
+/** The reading `lares ingest apply=true` reports under `data.settle`. */
 export interface SettleWord {
   readonly settled: boolean;
   readonly shore?: boolean;

@@ -23,11 +23,11 @@ async function bagHelp(): Promise<string> {
 }
 
 describe("lares bag cas --help", () => {
-  test("★ the cas usage names --sweep · --dry-run · --pin <cid> · --release <cid> · --fetch <cid> · --all ★", () => {
+  test("★ the cas usage names sweep= · dry-run= · pin=<cid> · release=<cid> · fetch=<cid> · all= ★", () => {
     const help = casHelp();
     const usage = help.split("\n").find((l) => l.startsWith("usage:")) ?? "";
     expect(usage, `no usage line in:\n${help}`).toContain("lares bag cas");
-    for (const word of ["--sweep", "--dry-run", "--pin <cid>", "--release <cid>", "--fetch <cid>", "--all"]) expect(usage).toContain(word);
+    for (const word of ["sweep=<true>", "dry-run=<true>", "pin=<cid>", "release=<cid>", "fetch=<cid>", "all=<true>"]) expect(usage).toContain(word);
   });
 
   test("`lares bag help` lists the door's verbs, one carrier each, and points at `--help` per verb", async () => {

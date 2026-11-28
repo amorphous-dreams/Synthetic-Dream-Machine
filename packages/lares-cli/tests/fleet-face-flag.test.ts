@@ -1,5 +1,5 @@
 /**
- * `lares fleet join --face N` hands the root holder's two acts the face it names; a bare `--face`, a negation or
+ * `lares fleet join face=N` hands the root holder's two acts the face it names; a bare `--face`, a negation or
  * a value that reads as no index refuses, and no act reaches the store door, since a silent fallback would sign the
  * join under the founding face's root.
  */
@@ -48,13 +48,13 @@ describe("fleet join --face", () => {
   });
 
   test("--face 2 reaches offer and answer as the number 2", async () => {
-    expect(await run("offer", "--face", "2")).toBe(0);
-    expect(await run("answer", "request.json", "--face=2")).toBe(0);
+    expect(await run("offer", "face=2")).toBe(0);
+    expect(await run("answer", "request.json", "face=2")).toBe(0);
     expect(seam.asked.map(([verb, args]) => [verb, args["face"]])).toEqual([["fleet-join-offer", 2], ["fleet-join-answer", 2]]);
   });
 
   test("NONSENSE: a bare --face, a negation or a non-index refuses and asks nothing", async () => {
-    for (const argv of [["offer", "--face"], ["offer", "--no-face"], ["answer", "request.json", "--face"], ["offer", "--face", "one"], ["offer", "--face", "-1"], ["offer", "--face", "1.5"], ["offer", "--face", "01"]]) {
+    for (const argv of [["offer", "face=true"], ["offer", "face=false"], ["answer", "request.json", "face=true"], ["offer", "face=one"], ["offer", "face=-1"], ["offer", "face=1.5"], ["offer", "face=01"]]) {
       expect(await run(...argv), argv.join(" ")).toBe(1);
     }
     expect(seam.asked).toEqual([]);
@@ -71,9 +71,9 @@ describe("fleet join --face", () => {
     const errors: string[] = [];
     vi.spyOn(console, "error").mockImplementation((line: unknown) => { errors.push(String(line)); });
     for (const argv of [
-      ["request", "offer.json", "--face", "1"], ["request", "offer.json", "--face=1"], ["request", "offer.json", "--face"], ["request", "offer.json", "--no-face"],
-      ["land", "answer.json", "--face", "1"], ["land", "answer.json", "--face=0"],
-      ["abandon", "--face", "1"], ["abandon", "--face=1"],
+      ["request", "offer.json", "face=1"], ["request", "offer.json", "face=1"], ["request", "offer.json", "face=true"], ["request", "offer.json", "face=false"],
+      ["land", "answer.json", "face=1"], ["land", "answer.json", "face=0"],
+      ["abandon", "face=1"], ["abandon", "face=1"],
     ]) {
       errors.length = 0;
       expect(await run(...argv), argv.join(" ")).toBe(1);

@@ -1,5 +1,5 @@
 /**
- * pulama-sign-hand — ONE SIGNING DOOR FOR EVERY WARD ACT UNDER A PŪLAMA (gate-unifier: `lares kahua lift … --face 1` refused
+ * pulama-sign-hand — ONE SIGNING DOOR FOR EVERY WARD ACT UNDER A PŪLAMA (gate-unifier: `lares kahua lift … face=1` refused
  * `kahua-act-refused: operator-grant-absent … needs-the-human` after asking the passphrase).
  *
  * Under a pūlama the vessel holds no face root, so a ward act that signs as the face found no door. The hand door's `sign` act

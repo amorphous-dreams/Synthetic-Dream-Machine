@@ -41,13 +41,13 @@ test("rite-walk-binds-every-line: every `lares` command of the rite's fences bin
 });
 
 test("rite-walk-binds-every-line: a runbook that gains a `lares` line no step walks reads red, by line and command", () => {
-  const fixture = LIVE.replace("lares wiki init notes\n", "lares wiki init notes\nlares frobnicate --now      # a command no step walks\n");
+  const fixture = LIVE.replace("lares wiki init notes\n", "lares wiki init notes\nlares frobnicate now=true      # a command no step walks\n");
   assert.notEqual(fixture, LIVE);
   const joined = bindSteps(fixture);
   assert.equal(joined.unmapped.length, 1);
-  assert.equal(joined.unmapped[0].command, "lares frobnicate --now");
+  assert.equal(joined.unmapped[0].command, "lares frobnicate now=true");
   assert.equal(fixture.split("\n")[joined.unmapped[0].line - 1].startsWith("lares frobnicate"), true);
-  refuses(() => assertBound(joined), /unmapped: runbook line \d+ instructs `lares frobnicate --now`/);
+  refuses(() => assertBound(joined), /unmapped: runbook line \d+ instructs `lares frobnicate now=true`/);
 });
 
 test("rite-walk-binds-every-line: the walker refuses a drifted runbook before any act (rc 2, no root minted, no receipt)", () => {
@@ -67,7 +67,7 @@ test("rite-walk-binds-every-line: the walker refuses a drifted runbook before an
 });
 
 test("rite-walk-binds-every-line: a step whose command the rite dropped reads orphan; an expected answer the rite stopped quoting reads unquoted", () => {
-  const dropped = bindSteps(LIVE.replace("lares wiki share notes --list\n", ""));
+  const dropped = bindSteps(LIVE.replace("lares wiki share notes list=true\n", ""));
   assert.deepEqual(dropped.orphans.map((o) => o.step), ["notes-list"]);
   refuses(() => assertBound(dropped), /orphan: step notes-list/);
   const requoted = bindSteps(LIVE.replaceAll("ok — 1 of 1 seats", "ok, one seat"));
@@ -80,7 +80,7 @@ test("CONTROL rite-walk-binds-every-line: a passing stand step names its runbook
   const share = row(rows, "share-lares");
   const line = Number(share.runbook.split(":")[1]);
   assert.match(share.runbook, /^founding-runbook\.mem:\d+$/);
-  assert.equal(LIVE.split("\n")[line - 1].startsWith("lares wiki share lares --write joshua-fontany-engineer --read joshua-fontany-referee"), true);
+  assert.equal(LIVE.split("\n")[line - 1].startsWith("lares wiki share lares write=joshua-fontany-engineer read=joshua-fontany-referee"), true);
   assert.equal(share.outcome, "pass");
   assert.ok(LIVE.includes(share.expect), "the step's expected answer stands in the runbook, verbatim");
 });
@@ -169,7 +169,7 @@ test("CONTROL walk-holds-the-kahua-item: a preview naming the item lifts it, and
   const lifts = [];
   const lifted = await liftEngineer.run(kahuaCtx({ liftKahua: 1, layText: `kahua: 1 item(s) stand pending\n${KAHUA_ITEM}` }, { list: KAHUA_ITEM, lifts }));
   assert.equal(lifted.ok, true);
-  assert.ok(lifts[0].includes("--lift-kahua 1"));
+  assert.ok(lifts[0].includes("lift-kahua=1"));
   assert.equal((await liftEngineer.run(kahuaCtx({ liftKahua: 0 }, { list: KAHUA_ITEM }))).ok, true);
 });
 

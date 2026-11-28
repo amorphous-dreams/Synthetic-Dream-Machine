@@ -48,7 +48,7 @@ describe("the kapae door checks its --out before any act", () => {
     expect(await answer(run([verb, NYM], { out: join(root, "absent", "p.json") }))).toMatch(/its directory does not exist/);
     const carried = join(root, "p.json");
     writeFileSync(carried, "{}");
-    expect(await answer(run([verb], { from: carried, out: carried }))).toMatch(/--out names the partial you carried/);
+    expect(await answer(run([verb], { from: carried, out: carried }))).toMatch(/out= names the partial you carried/);
   });
 
   test("K2 — CONTROL: a writable --out reaches the store door, which refuses on its own ground", async () => {

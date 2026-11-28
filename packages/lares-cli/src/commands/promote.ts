@@ -18,15 +18,15 @@ export async function promotionDoor(args: ParsedArgs, command: "trust" | "kapae"
       payload.digest = digest;
     }
     const face = args.options["face"];
-    if (args.flags["face"] !== undefined || (face !== undefined && (!/^(?:0|[1-9][0-9]*)$/.test(face) || !Number.isSafeInteger(Number(face))))) throw new Error("face-malformed: --face needs a whole persona index from 0");
+    if (args.flags["face"] !== undefined || (face !== undefined && (!/^(?:0|[1-9][0-9]*)$/.test(face) || !Number.isSafeInteger(Number(face))))) throw new Error("face-malformed: face= needs a whole persona index from 0");
     if (face !== undefined) payload.face = Number(face);
     if (args.options["wiki"] !== undefined) payload.wiki = args.options["wiki"];
     const why = args.options["why"];
-    if ((act === "prepare" || act === "flag") && !why?.trim()) throw new Error("promote-why-missing: name --why");
+    if ((act === "prepare" || act === "flag") && !why?.trim()) throw new Error("promote-why-missing: name why=");
     if (why !== undefined) payload.why = why;
     if (act === "orphan") {
       const keep = args.flags["keep"] === true, drop = args.flags["drop"] === true;
-      if (keep === drop) throw new Error("promote-decision-malformed: name --keep or --drop");
+      if (keep === drop) throw new Error("promote-decision-malformed: name keep=true or drop=true");
       payload.decision = keep ? "keep" : "drop";
     }
     const { output } = await storeVerb(`${command === "trust" ? "promote" : command}-${act}` as Parameters<typeof storeVerb>[0], payload);

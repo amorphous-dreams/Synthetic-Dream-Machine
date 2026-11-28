@@ -1,5 +1,5 @@
 /**
- * setup-sensorium — `lares vessel stand --init`: stand up the SOVEREIGN sensorium organs. Idempotent. A thin
+ * setup-sensorium — `lares vessel stand init=true`: stand up the SOVEREIGN sensorium organs. Idempotent. A thin
  * CLI wrapper: the logic lives ONCE in @lararium/node's palace-organ registry (`setupPalaceOrgans`),
  * the SAME enumerator `lares sense teardown` reads — so setup and teardown can never drift over
  * which organs exist.
@@ -17,7 +17,7 @@
  *      the meshpalace doc's feed/federation logic lives in the mesh domain.
  *
  * Per-project mining is NOT done here (kept fast + idempotent); it accumulates live via the ingest
- * hook, or runs on demand via `lares sense pour --all`.
+ * hook, or runs on demand via `lares sense pour all=true`.
  */
 
 export { setupPalaceOrgans as setupSensorium } from "@lararium/node";

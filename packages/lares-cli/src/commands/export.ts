@@ -1,5 +1,5 @@
 /**
- * `lares export <dest> [--accept-omissions]` — the command face of `houseExport` (`./house-bundle.ts`).
+ * `lares export <dest> [accept-omissions=true]` — the command face of `houseExport` (`./house-bundle.ts`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */

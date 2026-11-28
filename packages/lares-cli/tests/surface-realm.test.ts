@@ -41,7 +41,7 @@ beforeEach(() => {
 });
 afterEach(() => { stub.restore(); rig.close(); });
 
-describe("lares surface init --realm", () => {
+describe("lares surface init realm=true", () => {
   test("★ makes the realm's root a pool under the realm's identity, and a second run says already ★", async () => {
     const garden = realmRoot(rig.projections, "Garden");
     expect(await run(["init"], { realm: "Garden" })).toBe(0);
@@ -162,7 +162,7 @@ describe("lares surface check, from a realm pool", () => {
   });
 });
 
-describe("lares surface commit --realm", () => {
+describe("lares surface commit realm=true", () => {
   beforeEach(async () => {
     expect(await run(["init"])).toBe(0);
     expect(await run(["init"], { realm: "Garden" })).toBe(0);

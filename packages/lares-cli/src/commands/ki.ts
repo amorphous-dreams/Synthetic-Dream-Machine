@@ -1,9 +1,9 @@
 /**
- * `lares sense analyze --lens couple` — the Ki (氣) coupling verdict: do the ADDRESSED sensorium's coupled
+ * `lares sense analyze lens=couple` — the Ki (氣) coupling verdict: do the ADDRESSED sensorium's coupled
  * peers RECONCILE, and does the reconciliation hold power? Coupling is a GENERAL cap a sensorium `#has` —
  * any sensorium whose manifest declares `coupling.children` answers; one without reports the honest
- * "no coupling children". `lares sense <sensorium> analyze --lens couple` reads that sensorium (the memetic-wikitext testbed
- * carries formal ⋈ informal peers today); bare `lares sense analyze --lens couple` reads the memory default, which carries no
+ * "no coupling children". `lares sense <sensorium> analyze lens=couple` reads that sensorium (the memetic-wikitext testbed
+ * carries formal ⋈ informal peers today); bare `lares sense analyze lens=couple` reads the memory default, which carries no
  * coupling cap. No sensorium is hardcoded.
  *
  * The read is TS-NATIVE (no python, no daemon): `readCoupling` resolves the sensorium's `coupling.children`,
@@ -11,7 +11,7 @@
  * admit a global section) or HOLD-OPEN (H¹≠0: a genuine cocycle, routed to Talk-Story, never a silent
  * average). Until the child salience sidecars fill it reports the honest insufficient/no-coupling.
  *
- *   lares sense <sensorium> analyze --lens couple   the coupling verdict — readable peers · shared units · fuse|hold-open · note
+ *   lares sense <sensorium> analyze lens=couple   the coupling verdict — readable peers · shared units · fuse|hold-open · note
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cohomological-gate
  *
@@ -42,7 +42,7 @@ export function cmdKi(args: ParsedArgs): number {
       note: coupling.note,
     },
     human: () => {
-      console.log(`lares sense analyze --lens couple — coupling (${coupling.sensorium})`);
+      console.log(`lares sense analyze lens=couple — coupling (${coupling.sensorium})`);
       console.log(`  verdict:      ${verdict}`);
       console.log(`  readable:     ${coupling.readable} peer(s) · ${coupling.sharedUnits} shared unit(s)`);
       if (coupling.fusion && coupling.fusion.verdict === "hold-open") {

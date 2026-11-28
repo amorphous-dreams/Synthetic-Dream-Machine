@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.cabal.vouches"
 
 ! realm.cabal.vouches ~ one hand's own standing, staked on one joiner
 
-`lares cabal vouch <joiner-nym> --realm <id>` writes the acting face's vouch for one joiner onto the realm's vouch board: one hand, its own standing, no steward asked. It admits nobody; the voucher's score splits across everyone it vouches for, and the answer names the out-degree this replica sees as a floor. A repeat re-mints the one edge.
+`lares cabal vouch <joiner-nym> realm=<id>` writes the acting face's vouch for one joiner onto the realm's vouch board: one hand, its own standing, no steward asked. It admits nobody; the voucher's score splits across everyone it vouches for, and the answer names the out-degree this replica sees as a floor. A repeat re-mints the one edge.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UD_YVLRV7T2Ane_GfuWSHKw0gFgetZ9M7TtKN6imPNQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r1_LSkrZz3hJC_BSejS4W5y66zralOEh9JV2FMWpz5c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

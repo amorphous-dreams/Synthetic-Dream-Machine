@@ -3,7 +3,7 @@
  *
  *   lares vessel read             NODE HEALTH — bootstrap presence, storage size, port in use. Pure
  *                                 local inspection, no vm boot.
- *   lares vessel read --palaces   PALACE ORGANS — the local organ health table.
+ *   lares vessel read palaces=true   PALACE ORGANS — the local organ health table.
  *   lares vessel read vessel      THE DEEP PROBE — every Automerge doc, mounted vs condemned.
  *   lares sense status            SENSORIUM TAXONOMY — what the Memory sensorium holds; the read rides
  *                                 the sense door over the daemon's composed caps.
@@ -31,7 +31,7 @@ import type { ParsedArgs } from "../parse-args.js";
 
 
 /**
- * `lares vessel read --palaces` — the palace-organ health table (re-runnable). Reads the SAME registry
+ * `lares vessel read palaces=true` — the palace-organ health table (re-runnable). Reads the SAME registry
  * `lares sense setup` stands up + `lares sense teardown` removes, so the health view never drifts
  * from what setup/teardown act on. Pure inspection (each organ's cheap probe), no vm boot.
  */
@@ -93,11 +93,11 @@ function dirSizeHint(dir: string): string {
  * could tear a save the crash-atomic adapter's guarantee never promised to survive a deliberate kill. A free
  * port reads as already-stopped, not an error. A wedged daemon past its grace is NAMED, once, rather than
  * left to hang silently; the wait itself keeps going. It ENDS a vessel and nothing else — `vessel stand
- * --restart` stops then stands, `hooks pause` suppresses capture alone.
+ * restart=true` stops then stands, `hooks pause` suppresses capture alone.
  *
- * `--cut` (M4) — past the already-reported grace, deliver the holder ONE further signal (never a
+ * `cut=true` (M4) — past the already-reported grace, deliver the holder ONE further signal (never a
  * SIGKILL): the operator's own SECOND signal, which the vessel's own shutdown (main.ts) reads as the
- * event that cuts a hung teardown and exits 75. Without `--cut` this stays exactly as above — a report,
+ * event that cuts a hung teardown and exits 75. Without `cut=true` this stays exactly as above — a report,
  * never a decision this door makes for the vessel.
  *
  * `stopped: true` waits on the HOLDER, never the port alone (H5). `main.ts`'s shutdown closes the http
@@ -135,12 +135,12 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
  * `lares vessel read vessel` — the DEEP health lens (the `git fsck` role, reached through the one
  * read door rather than a verb of its own): probes every Automerge doc in the vessel store through a
  * disposable child-process boundary and charts MOUNTED vs CONDEMNED (a torn doc that would
- * abort the WASM runtime on load). Read-only; a condemned doc can be laid again from its disk holding with `lares vessel lay --apply --yes`.
+ * abort the WASM runtime on load). Read-only; a condemned doc can be laid again from its disk holding with `lares vessel lay apply=true --yes`.
  * Exits non-zero on a tear, so a boot/CI gate reads health off the exit code.
  *
  * THE HELD IDS. The lens also names each id the store holds in quarantine: its bytes rest aside, and every boot mounts its
  * plane read-only until the hand releases it by the vessel door's own write, `lares vessel release <documentId>
- * [--keep|--fresh]`. The lens itself writes nothing.
+ * [keep=true|fresh=true]`. The lens itself writes nothing.
  */
 async function cmdReadVessel(args: ParsedArgs): Promise<number> {
   const storageDir = larDataDir();
@@ -176,7 +176,7 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
   // EVERY LENS ANSWERS A PIPE IN PROSE (render.ts `proseFirst`): the deep probe's JSON names every document in the store, so a
   // piped read prints the terminal's lines and only `--json` answers the envelope.
   const args = proseFirst(given);
-  // An explicit --root moves the whole reading, as it does for `vessel found` (never a default).
+  // An explicit root= moves the whole reading, as it does for `vessel found` (never a default).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
   // The one named lens is `vessel`; any other positional names a door that does not exist (no alias stands),
   // so it refuses by name rather than answering as the bare node read.
@@ -185,7 +185,7 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
     console.error(`lares vessel read: unknown lens "${lens}" (the door answers one lens, \`vessel\`; bare \`read\` gives the node health reading)`);
     return 2;
   }
-  // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).
+  // palaces=true: the palace-organ health table (re-runnable; same registry as setup/teardown).
   if (args.flags["palaces"] === true) return cmdReadPalaces(args);
   // The named lens: the deep vessel probe (THE VESSEL DOOR: no aliases) — the sensorium taxonomy has exactly
   // one door, `lares sense status`.

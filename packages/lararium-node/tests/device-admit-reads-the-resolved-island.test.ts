@@ -12,7 +12,7 @@
  * and never unlinks the source ("NEVER EMPTIES THE SOURCE. A carry copies."), so the lower board
  * keeps its chain and the wrong-key read still finds one. The correctness rests on copy semantics in
  * a different package, one refactor away — and when it goes, device-admit throws
- * "persona-KEL chain … absent from the local board — run `lares vessel found --force`", a message
+ * "persona-KEL chain … absent from the local board — run `lares vessel found force=true`", a message
  * pointing at a torn founding over a founding that is perfectly sound.
  *
  * ── WHAT THIS PINS ───────────────────────────────────────────────────────────────────────────────

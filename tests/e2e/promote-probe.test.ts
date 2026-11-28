@@ -45,9 +45,9 @@ const said = (r: CliResult): string => `rc ${r.code}; stdout: ${r.stdout.slice(-
 const answer = (r: CliResult): Record<string, any> => JSON.parse(r.stdout.trim().split("\n").pop() ?? "{}") as Record<string, any>;
 /** A lift names a STAGED row: stage the body into the face's local canon first, then lift it by the digest the stage answers. */
 const stageThenLift = async (title: string, body: string, fields: string, extra: readonly string[] = []): Promise<CliResult> => {
-  const staged = await hearth!.cli(["kahua", "stage", title, "--text", body, "--fields", fields]);
+  const staged = await hearth!.cli(["kahua", "stage", title, `text=${body}`, `fields=${fields}`]);
   if (staged.code !== 0) return staged;
-  return hearth!.cli(["kahua", "lift", title, "--digest", String(answer(staged)["digest"]), "--taint", "none", "--sources", SOURCES, ...extra]);
+  return hearth!.cli(["kahua", "lift", title, `digest=${String}`(answer(staged)["digest"]), "taint=none", `sources=${SOURCES}`, ...extra]);
 };
 // The staged hearth routes no plain title to a bag (its wiki bag holds nothing), so a tiddler the module writes never persists; the island
 // adaptor names each write it could not land (`unrouted-save: "<title>"`) in the daemon's log. That line IS the observable: the module ran
@@ -177,7 +177,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
   test("CONTROL — a re-lift with changed bytes changes nothing that boots; the row reads `update-waits`", async () => {
     const digest = digestOf(await list(), "rites/probe-module");
     const head = answer(await hearth!.cli(["kahua", "get", "rites/probe-module"]))["item"]?.heads?.[0]?.cid as string;
-    const relift = await stageThenLift("rites/probe-module", `${MODULE}/*v2*/`, JSON.stringify({ "module-type": "startup", type: "application/javascript" }), ["--parent", head]);
+    const relift = await stageThenLift("rites/probe-module", `${MODULE}/*v2*/`, JSON.stringify({ "module-type": "startup", type: "application/javascript" }), [`parent=${head}`]);
     expect(relift.code, said(relift)).toBe(0);
     const listing = await list();
     expect((listing["rows"] as Array<{ digest: string; state: string }>).find((r) => r.digest === digest)?.state).toBe("update-waits");
@@ -187,12 +187,12 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
 
   test("P5 — the stage withdraws the item: the boot names the orphan, the module keeps running, and a keep ends the asking", async () => {
     const digest = digestOf(await list(), "rites/probe-module");
-    const got = answer(await hearth!.cli(["kahua", "get", "rites/probe-module", "--history"]));
+    const got = answer(await hearth!.cli(["kahua", "get", "rites/probe-module", "history=true"]));
     for (const rev of got["history"] as Array<{ cid: string; withdrawn: boolean }>) if (!rev.withdrawn) await hearth!.cli(["kahua", "withdraw", rev.cid]);
     await restart();
     expect((await settle(ranFiles, (f) => f.length >= 1, 60_000)).length).toBe(1);
     expect(hearth!.bootLog()).toMatch(new RegExp(`\\[promote\\].*orphan.*${digest.slice(0, 12)}`));
-    const kept = await hearth!.cli(["trust", "orphan", digest, "--keep"]);
+    const kept = await hearth!.cli(["trust", "orphan", digest, "keep=true"]);
     expect(kept.code, said(kept)).toBe(0);
     await restart();
     expect(hearth!.bootLog()).not.toMatch(new RegExp(`\\[promote\\].*orphan.*${digest.slice(0, 12)}`));

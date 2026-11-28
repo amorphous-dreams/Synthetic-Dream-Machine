@@ -135,7 +135,7 @@ export const indexText = (repo: string) => (rel: string): string | null => {
 
 export function itemsFor(door: Door, staged = false, persist = false, familiar: string | null = null, repo: string = repoRoot): { items: Item[]; ledger: Ledger; root: string } {
   if (door === "repo") {
-    // `--staged` reads the carrier and the seed the commit carries, never the working tree's.
+    // `staged=true` reads the carrier and the seed the commit carries, never the working tree's.
     const items = staged ? repoItems(repo, declared(repo, indexText(repo)), indexText(repo), { staged: true }) : repoItems(repo);
     return { items, ledger: new Ledger(repoLedgerDir(repo)), root: repo };
   }
@@ -151,24 +151,24 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => Ha
     return refuseUsage(args, door, helpLines(door), args.flags["help"] === true ? undefined : verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
   }
   if (args.flags["staged"] === true && !(door === "repo" && verb === "read")) {
-    console.error(`lares ${door} ${verb}: --staged reads the index, and only \`lares repo read\` reads it`);
+    console.error(`lares ${door} ${verb}: staged=true reads the index, and only \`lares repo read\` reads it`);
     return EXIT.usage;
   }
-  // `--familiar <pet>` names the familiar whose hooks a home tend seats; absent, the one already seated stands.
+  // `familiar=<pet>` names the familiar whose hooks a home tend seats; absent, the one already seated stands.
   const familiar = typeof args.options["familiar"] === "string" && args.options["familiar"].trim() !== "" ? args.options["familiar"].trim() : null;
   if (familiar !== null && door !== "home") {
-    console.error(`lares ${door} ${verb}: --familiar names a home's familiar; run \`lares home ${verb} --familiar ${familiar}\``);
+    console.error(`lares ${door} ${verb}: familiar= names a home's familiar; run \`lares home ${verb} familiar=${familiar}\``);
     return EXIT.usage;
   }
-  // `--root <dir>` names the checkout the repo door keeps; a commit gate names the repository the commit runs in. Absent, the
+  // `root=<dir>` names the checkout the repo door keeps; a commit gate names the repository the commit runs in. Absent, the
   // checkout this CLI lives in stands (`repoRoot`, a walk up from the module's own install path).
   const rootOpt = typeof args.options["root"] === "string" && args.options["root"].trim() !== "" ? resolve(args.options["root"].trim()) : null;
   if (rootOpt !== null && door !== "repo") {
-    console.error(`lares ${door} ${verb}: --root names a checkout, and only \`lares repo\` keeps one; run \`lares repo ${verb} --root ${rootOpt}\``);
+    console.error(`lares ${door} ${verb}: root= names a checkout, and only \`lares repo\` keeps one; run \`lares repo ${verb} root=${rootOpt}\``);
     return EXIT.usage;
   }
   if (rootOpt !== null && !(existsSync(rootOpt) && statSync(rootOpt).isDirectory())) {
-    console.error(`lares repo ${verb}: --root ${rootOpt} names no directory; run \`lares repo ${verb} --root "$(git rev-parse --show-toplevel)"\` from inside the checkout`);
+    console.error(`lares repo ${verb}: root=${rootOpt} names no directory; run \`lares repo ${verb} root="$(git rev-parse --show-toplevel)"\` from inside the checkout`);
     return EXIT.usage;
   }
   const repo = rootOpt ?? repoRoot;
@@ -179,7 +179,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => Ha
     const reader = args.flags["staged"] === true ? indexReader(repo) : undefined;
     const rows = read(items, ledger, reader);
     const code = exitOf(rows);
-    // `--brief` prints the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
+    // `brief=true` prints the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
     if (args.flags["brief"] === true) { show(rows, true, door); return code; }
     // `root` names the tree the reading judged, so a gate's refusal shows which checkout it read.
     emit(args, { ok: code === 0, data: { radius: door, root, rows, exit: code }, human: () => show(rows, false) });
@@ -203,7 +203,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => Ha
         for (const w of r.wrote) if (![...setIds].some((id) => w.endsWith(` (${id})`))) console.log(`  wrote ${w}`);
         for (const x of stores) console.log(x);
         for (const x of lifted) console.log(x);
-        for (const f of r.refused) console.log(`  refused ${f.path}: ${f.detail} (--force takes it; the ledger keeps its bytes)`);
+        for (const f of r.refused) console.log(`  refused ${f.path}: ${f.detail} (force=true takes it; the ledger keeps its bytes)`);
         for (const f of r.failed) console.log(`  unreachable ${f.id}: ${f.detail}`);
         const off = r.rows.filter((x) => x.state !== "aligned" && x.state !== "absent");
         if (off.length) show(off, false);
@@ -223,7 +223,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => Ha
     emit(args, { ok: r.refused.length === 0, data: { radius: door, generation: g?.gen ?? null, undoes: g?.undoes ?? n ?? null, restored: g?.entries.map((e) => e.path) ?? [], refused: r.refused }, human: () => {
       if (g) console.log(`restored generation ${g.undoes} · recorded as generation ${g.gen}`);
       for (const e of g?.entries ?? []) console.log(`  restored ${e.path}`);
-      for (const p of r.refused) console.log(`  refused ${p}: a hand changed it after that generation wrote it (--force restores it anyway)`);
+      for (const p of r.refused) console.log(`  refused ${p}: a hand changed it after that generation wrote it (force=true restores it anyway)`);
     } });
     if (r.refused.length > 0) return EXIT.foreign;
     return EXIT.aligned;

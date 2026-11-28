@@ -629,7 +629,7 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   if (err instanceof VesselLocked) return { code: VESSEL_LOCKED, message, hint: "open the vessel key with `lares vault unlock`, then run again." };
   // THE DIRECT HOLDER'S REFUSED UNLOCK, by name: a row that needs the control document and could not open the vessel's key.
   if (err instanceof ControlHomeUnavailable) {
-    return { code: err.refusal, message, ...(err.refusal === VESSEL_LOCKED ? { hint: "open the vessel key with `lares vault unlock`, then run again." } : err.refusal === "control-home-unnamed" ? { hint: "this place holds no face; light one with `lares persona new 0 --name '<label>'`." } : {}) };
+    return { code: err.refusal, message, ...(err.refusal === VESSEL_LOCKED ? { hint: "open the vessel key with `lares vault unlock`, then run again." } : err.refusal === "control-home-unnamed" ? { hint: "this place holds no face; light one with `lares persona new 0 name='<label>'`." } : {}) };
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof StoreDoorSilent) return { code: "store-door-timeout", message, hint: silentCure(err) };

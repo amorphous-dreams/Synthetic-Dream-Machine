@@ -36,7 +36,7 @@ reference to the new title.
 The packed bytes ride under `packages/lararium-tw5/offerings/relink/` (`offering.json`,
 `relink-plugin.json`, `NOTICES.txt`), minted by `scripts/pack-relink-offering.ts` from the pinned
 commit; a re-pack comes out byte-identical. The descriptor stays UNSIGNED: the operator signs it as
-PUBLISHER through `lares nexus publish plugins --source packages/lararium-tw5/offerings/relink`. A
+PUBLISHER through `lares nexus publish plugins source=packages/lararium-tw5/offerings/relink`. A
 wiki loads it by naming the signed offering in its recipe's `plugin-offerings`; it never joins the boot
 set, and `packages/lararium-tw5/plugins/` never carries it.
 
@@ -57,6 +57,6 @@ offering carries another.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4bGD3K51YAG-pSGBDdkDyEBbXxpTkKzTTsvUn5iFoGI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3_7bTKOz6CoqkP9cVP2tmBsO-uooTRPiqxHNkAWkksE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

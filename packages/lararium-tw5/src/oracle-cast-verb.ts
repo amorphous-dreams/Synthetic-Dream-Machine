@@ -37,7 +37,7 @@
  * standing and answers it, `replayed`, with no new draw: a retried cast never commits twice.
  *
  * NAME THE QUERY BEFORE THE CAST. A seat's bare cast (no asking, nonce or seed) answers `asks`, its cure naming
- * `--asking '<the fork>'`, so a seat never re-rolls by asking nothing. A person's bare cast mints its own nonce.
+ * `asking='<the fork>'`, so a seat never re-rolls by asking nothing. A person's bare cast mints its own nonce.
  *
  * THE PERSON'S HAND opens the second mode: `fresh` (a new nonce minted at the word, so the same words throw again) and
  * `seed` (the coins draw from a door seeded by the person's words). A seat asks either, or names a nonce of its own, and the door answers `asks`,
@@ -128,15 +128,15 @@ export function bookedAsker(ctx: Pick<VerbContext, "asker" | "presenter" | "worn
 /** The line a person runs to give what the seat asked: the asking's own words, with the hand's flag. */
 function handLine(args: Readonly<Record<string, unknown>>, asking: string, mode: "fresh" | "seed" | "coins"): string {
   const kind = wordArg(args["by"]);
-  const by = kind !== "" && kind !== DEFAULT_ORACLE_KIND ? ` --by ${kind}` : "";
-  const words = `${by}${asking !== "" ? ` --asking ${JSON.stringify(asking)}` : ""}`;
-  const hand = mode === "fresh" ? "--fresh" : mode === "seed" ? "--seed <your words>" : "--coins <the six values you threw>";
+  const by = kind !== "" && kind !== DEFAULT_ORACLE_KIND ? ` by=${kind}` : "";
+  const words = `${by}${asking !== "" ? ` asking=${JSON.stringify(asking)}` : ""}`;
+  const hand = mode === "fresh" ? "fresh=true" : mode === "seed" ? "seed=<your words>" : "coins=<the six values you threw>";
   return `lares oracle cast ${containerFlag(args)}${words} ${hand}`;
 }
 
 /** The container flag a line repeats: the one the caller named. */
 function containerFlag(args: Readonly<Record<string, unknown>>): string {
-  return typeof args["bag"] === "string" ? `--bag ${args["bag"]}` : `--recipe ${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
+  return typeof args["bag"] === "string" ? `bag=${args["bag"]}` : `recipe=${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
 }
 
 /** The container param a call repeats (`bag=<slug>` or `recipe=<slug>`): the one the caller named. */
@@ -226,7 +226,7 @@ async function readShelf(kind: string, get: VerbReactor, container: Record<strin
   const standing = kinds.length > 0
     ? `the shelves that stand: ${kinds.map((k) => `${k} (${shelves[k]!.method})`).join(" · ")}`
     : `list the shelves with \`lares get filter='[prefix[lar:///ha.ka.ba/lares/library/oracles/]suffix[/index]]' ${containerParam(container)}\``;
-  const cure = `consult a shelf that stands (\`lares oracle cast --by ${DEFAULT_ORACLE_KIND}\`); ${standing}`;
+  const cure = `consult a shelf that stands (\`lares oracle cast by=${DEFAULT_ORACLE_KIND}\`); ${standing}`;
   if (!KIND_RE.test(kind)) throw new VerbRefusal("oracle-shelf-unknown", `oracle-shelf-unknown: \`by\` names a shelf in lower-case words joined by hyphens; got "${kind}"; ${cure}`);
   const title = oracleShelfTitle(kind);
   // THE STACK, THEN THE FLOOR (comms-ux-enacts landing 3's fork, folded in landing 4): no canon-recipe rung; the target's stack
@@ -263,7 +263,7 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions, consult: OracleC
     const seed = wordArg(args["seed"]);
     const fresh = args["fresh"] === true;
     let nonce = wordArg(args["nonce"]);
-    if (fresh && nonce === "") throw new VerbRefusal("oracle-cast-fresh-unminted", "oracle-cast-fresh-unminted: a fresh throw carries the nonce its caller minted at the word; run `lares oracle cast --fresh`, which mints one");
+    if (fresh && nonce === "") throw new VerbRefusal("oracle-cast-fresh-unminted", "oracle-cast-fresh-unminted: a fresh throw carries the nonce its caller minted at the word; run `lares oracle cast fresh=true`, which mints one");
     // THE PERSON'S HAND: a seat never re-throws an asking or seeds the coins; it asks, and nothing moves.
     // A seat's own nonce re-throws as surely as `fresh`, so it meets the same hand.
     // A SEAT NEVER PICKS THE FIGURE: typed coins name `operator:three-coins`, a person's own throw, so a seat's coins meet the
@@ -283,7 +283,7 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions, consult: OracleC
         const band: DoorBand = "asks";
         return {
           band, decision: "asks",
-          asks: { who: "the seat itself", answer: `lares oracle cast ${containerFlag(args)} --uncertain '<what you hold>' --asking '<the fork>'`, why: "name your query before the cast; a seat's throw stands on its asking" },
+          asks: { who: "the seat itself", answer: `lares oracle cast ${containerFlag(args)} uncertain='<what you hold>' asking='<the fork>'`, why: "name your query before the cast; a seat's throw stands on its asking" },
           note: ORACLE_THROW_STANDS,
         };
       }

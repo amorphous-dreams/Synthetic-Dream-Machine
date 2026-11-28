@@ -1,5 +1,5 @@
 /**
- * stand-page -- `lares vessel stand --page` is an explicit act: it names the prepared Web root and receipt for
+ * stand-page -- `lares vessel stand page=true` is an explicit act: it names the prepared Web root and receipt for
  * the child daemon where the desk holds both, declares same origin only where nothing declared an origin, and
  * overwrites no declared value. Without the flag, the stand's child environment stays exactly as it was.
  */

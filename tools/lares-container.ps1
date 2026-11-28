@@ -228,7 +228,7 @@ function HasRunningVessel {
 # for this script, never a prompt.
 $script:ObserveFailed = $false
 function ObserveStanding {
-  $out = & docker compose @Base exec -T lares node $Cli vessel stand --observe --json
+  $out = & docker compose @Base exec -T lares node $Cli vessel stand observe=true --json
   $script:ObserveFailed = ($LASTEXITCODE -ne 0)
   return ,@($out)
 }
@@ -299,12 +299,11 @@ function LastWornFace {
   if ($w -match '^[0-9]+$') { return $w } else { return '' }
 }
 $NoFaceRemembered = "no face rests remembered (config/last-worn-face reads empty), so the shim wears none and the vessel's own mount stands; another face: wear N"
-# The face an unlock's argv names (`--face N` or `--face=N`), '' where it names none or no ordinal.
+# The face an unlock's argv names (`face=N`), '' where it names none or no ordinal.
 function NamedFace([string[]]$argv) {
   $face = ''
   for ($i = 0; $i -lt $argv.Count; $i++) {
-    if ($argv[$i] -eq '--face' -and $i + 1 -lt $argv.Count) { $face = $argv[$i + 1]; $i++ }
-    elseif ($argv[$i] -like '--face=*') { $face = $argv[$i].Substring(7) }
+    if ($argv[$i] -like 'face=*') { $face = $argv[$i].Substring(5) }
   }
   if ($face -match '^[0-9]+$') { return $face } else { return '' }
 }
@@ -368,7 +367,7 @@ function UnlockOrName {
   }
   $wear = LastWornFace
   if ($PulamaMode) {
-    if ((DetachedUnlock @('--all')) -eq 0) {
+    if ((DetachedUnlock @('all=true')) -eq 0) {
       WearAfterUnlock $wear
     } else {
       [Console]::Error.WriteLine('lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.ps1 pulama status`, light it with `lares-container.ps1 pulama light`, admit the image that stands with `lares-container.ps1 pulama admit`, or raise a served vessel with `lares rite kukulu`')
@@ -378,17 +377,17 @@ function UnlockOrName {
   $thenWear = if ($wear) { ", then wear h$wear" } else { ", then the vessel's own mount" }
   if ($script:Tty) {
     [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens$thenWear)")
-    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock --all
+    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock all=true
     $unlockRc = $LASTEXITCODE; DropReport; $global:LASTEXITCODE = $unlockRc
     if ($LASTEXITCODE -ne 0) {
-      if ($wear) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock --all``, then ``lares-container.ps1 wear $wear``") }
-      else { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.ps1 vault unlock --all`') }
+      if ($wear) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock all=true``, then ``lares-container.ps1 wear $wear``") }
+      else { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.ps1 vault unlock all=true`') }
     }
     else { WearAfterUnlock $wear }
   } elseif ($wear) {
-    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock --all, then lares-container.ps1 wear $wear (every face the credential opens, then wear h$wear; another face: wear N)")
+    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock all=true, then lares-container.ps1 wear $wear (every face the credential opens, then wear h$wear; another face: wear N)")
   } else {
-    [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock --all (every face the credential opens; no face rests remembered, so the vessel mounts its own; another face: wear N)')
+    [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock all=true (every face the credential opens; no face rests remembered, so the vessel mounts its own; another face: wear N)')
   }
 }
 
@@ -446,7 +445,7 @@ function HostRead([string]$why) {
     }
   }
   foreach ($id in $held.Keys) { "held in quarantine: $id ($($held[$id]))" }
-  'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand''s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
+  'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand''s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [keep=true|fresh=true]` ends a quarantine hold'
 }
 
 # `vessel read`: inside the container where docker reaches one, on the host where it reaches none. A fallen engine answers
@@ -469,41 +468,24 @@ function VesselRead([string[]]$rest) {
 # vessel names the standing verdict as it leaves, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
-  # A put's one host file rides the call shape's `file=` param (`lares put title=… file=<path>`); the spirit verbs keep `--file`.
+  # A put's one host file rides the call shape's `file=` param (`lares put title=… file=<path>`); the spirit verbs take `file=`
+  # or `append=` the same way, each a token of its own. A token past a bare `--` rides untouched.
   $isCallPut = $argv.Count -ge 2 -and $argv[0] -ceq 'put'
   $isPut = $isCallPut -or ($argv.Count -ge 3 -and $argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue', 'handback'))
   if ($argv.Count -gt 0) {
-    $alwaysValued = @('--fields', '--note', '--reason', '--text')
-    $boolean = @('abandon', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'commit', 'cosign', 'confirm', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skip-build', 'spectral', 'split-root', 'staged', 'streams', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'witness', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
       if ($word -ceq '--' -and -not $isCallPut) { break }
-      if ($isCallPut -and $word -cmatch '(?s)^file=(.*)$') {
-        $sources += ,@($i, $Matches[1], 'file=')
-        continue
-      }
-      if ($isCallPut) { continue }
-      if ($word -cmatch '(?s)^--(file|append)=(.*)$') {
-        $sources += ,@($i, $Matches[2], "--$($Matches[1])")
-        continue
-      }
-      if ($word -clike '--*' -and $word -cnotlike '--no-*' -and $word -cnotlike '*=*' -and $word.Substring(2) -cnotin $boolean) {
-        if ($i + 1 -lt $argv.Count -and ($word -cin $alwaysValued -or $argv[$i + 1] -cnotlike '--*')) {
-          if ($word -cin @('--file', '--append')) { $sources += ,@(($i + 1), $argv[$i + 1], $word) }
-          $i++
-        }
-      }
+      if ($word -cmatch '(?s)^file=(.*)$') { $sources += ,@($i, $Matches[1], 'file='); continue }
+      if (-not $isCallPut -and $word -cmatch '(?s)^append=(.*)$') { $sources += ,@($i, $Matches[1], 'append='); continue }
     }
     foreach ($source in $sources) {
       if ($source[1] -cne '-' -and $source[1].StartsWith('-')) { Die 'name a host file whose path starts with ./ when it begins with -' }
     }
-    if ($isPut -and $sources.Count -gt 1) { Die $(if ($isCallPut) { 'name one host file: file=, once' } else { 'name one text source: --file or --append, once' }) }
-    if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -cne '-' -and $argv[$sources[0][0]] -cmatch '^--(file|append)=') {
-      Die "SeparateSourceToken: use $($sources[0][2]) <path> as separate tokens"
-    }
+    if ($isPut -and $sources.Count -gt 1) { Die $(if ($isCallPut) { 'name one host file: file=, once' } else { 'name one text source: file= or append=, once' }) }
     if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
-    # Every put streams its one named source: a call's `file=` (the whole text), a spirit verb's `--file` or `--append`.
+    # Every put streams its one named source: a call's `file=` (the whole text), a spirit verb's `file=` or `append=`.
     if ($isPut -and $sources.Count -eq 1) {
       $source = $sources[0]
       if ($source[1] -ne '-') {
@@ -520,9 +502,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
         catch { Die "cannot read host file $($source[1])" }
         $script:HostInputFile = $hostPath
         $argv = @($argv)
-        if ($argv[$source[0]] -cmatch '^file=') { $argv[$source[0]] = 'file=-' }
-        elseif ($argv[$source[0]] -cmatch '^--(file|append)=') { $argv[$source[0]] = "$($source[2])=-" }
-        else { $argv[$source[0]] = '-' }
+        $argv[$source[0]] = "$($source[2])-"
       }
     }
   }
@@ -609,7 +589,7 @@ function RefuseUnreadStop {
 function Indent([string]$text) {
   foreach ($line in ($text -split "`r?`n")) { if ($line) { [Console]::Error.WriteLine("  $line") } }
 }
-# THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
+# THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep if-due=true` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
 # host's lares door, else the checkout's own bin under the host's node. A keep that refuses leaves the house's
 # `run/keep-owed` mark, which outlives this invocation (a Ctrl+C, a later run), and a keep that keeps clears it.
@@ -623,14 +603,14 @@ function KeepBeforeDown {
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
   # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
-  [Console]::Error.WriteLine('lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop')
+  [Console]::Error.WriteLine('lares-container: keeping first (rite keep if-due=true): a house that moved cuts and pushes its keep before the stop')
   # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
   # THE KEEP'S WORDS OUTLIVE THE PASTE: its stderr rests at the house's run/keep-last.log (overwritten each keep), then reaches the terminal.
   $kbLog = Join-Path (Join-Path $House 'run') 'keep-last.log'
   New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') -ErrorAction SilentlyContinue | Out-Null
   # No world-read: on a POSIX pwsh the log is created empty at 0600 before the keep writes it.
   if (-not $IsWindows -and (Get-Command chmod -ErrorAction SilentlyContinue)) { New-Item -ItemType File -Force -Path $kbLog -ErrorAction SilentlyContinue | Out-Null; & chmod 600 $kbLog 2>$null }
-  $kbLines = @(& $cmd @pre rite keep --if-due --json 2> $kbLog)
+  $kbLines = @(& $cmd @pre rite keep if-due=true --json 2> $kbLog)
   $kbRc = $LASTEXITCODE
   if (Test-Path -LiteralPath $kbLog) { $kbSaid = Get-Content -LiteralPath $kbLog -Raw; if ($kbSaid) { [Console]::Error.Write($kbSaid) } }
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty),
@@ -664,7 +644,7 @@ function KeepBeforeDown {
     New-Item -ItemType File -Force -Path (KeepOwedMark) | Out-Null
     [Console]::Error.WriteLine('lares-container: the keep did not complete (above, and in run/keep-last.log of the house); down goes on, and `lares rite keep` keeps by hand')
   }
-  else { $script:KeepSaid = 'kept (rite keep --if-due)'; Remove-Item -LiteralPath (KeepOwedMark) -Force -ErrorAction SilentlyContinue }
+  else { $script:KeepSaid = 'kept (rite keep if-due=true)'; Remove-Item -LiteralPath (KeepOwedMark) -Force -ErrorAction SilentlyContinue }
 }
 # The census exec, bounded: `--no-json` gives the lines down prints, `--json` the frame a mount read greps.
 function RunCensus([string]$fmt = '--no-json') {
@@ -859,7 +839,7 @@ function StandPulama {
   # stdout line; a read that prints no frame falls back to the bare digest, so a seed read never blocks a stand.
   $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
   $frame = ''
-  try { $frame = ((& docker run --rm -e LAR_ROOT=/lar $image node $Cli vessel floor seed --genesis /app/genesis --image $digest 2>$null) | Select-Object -Last 1) } catch { $frame = '' }
+  try { $frame = ((& docker run --rm -e LAR_ROOT=/lar $image node $Cli vessel floor seed genesis=/app/genesis "image=$digest" 2>$null) | Select-Object -Last 1) } catch { $frame = '' }
   $report = if ("$frame".StartsWith('{')) { "$frame" } else { $digest }
   & docker compose @Base --profile pulama exec -T $svc node $PulamaMain image $report
   if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image report for $digest; nothing raised" }
@@ -1432,7 +1412,7 @@ function KeepAfterRaise {
   if ($c.Rc -eq 0 -and ($c.Out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
     [Console]::Error.WriteLine("lares-container: the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now")
     KeepBeforeDown
-    if ($script:KeepSaid -eq 'kept (rite keep --if-due)') { $script:KeepSaid = 'kept after the raise (rite keep --if-due)' }
+    if ($script:KeepSaid -eq 'kept (rite keep if-due=true)') { $script:KeepSaid = 'kept after the raise (rite keep if-due=true)' }
   } else {
     $script:KeepSaid = 'deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean'
   }
@@ -1567,7 +1547,7 @@ function StandHouse {
     if (-not $light -and $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest) -and -not (KeyHeld)) { $admit = $true }
     if (-not $script:Tty) {
       if ($light) { Die "rebuild stops before anything moves: $why, and its light reads your route on a terminal; $HandLine" }
-      if ($admit) { Die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HandLine (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)" }
+      if ($admit) { Die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HandLine (or string a kukulu lei first: lares lei kui rite=kukulu branch=<name> returns=<n> all=true)" }
     }
   }
   # THE VEST RUNS BEFORE THE DOWN: a red pair, or a crash, leaves the vessel standing on the old fire, and nothing moved.
@@ -1611,11 +1591,11 @@ function StandHouse {
     if ($admit) {
       [Console]::Error.WriteLine('lares-container: rebuild: the pūlama admits the image; it reads your route on this terminal')
       & docker compose @Base --profile pulama exec (PulamaSvc) node $PulamaMain admit
-      if ($LASTEXITCODE -ne 0) { Die 'the pūlama admitted nothing (above); the vessel stands at the floor: `tools/lares-container.ps1 pulama admit`, then `tools/lares-container.ps1 vault unlock --all`' }
+      if ($LASTEXITCODE -ne 0) { Die 'the pūlama admitted nothing (above); the vessel stands at the floor: `tools/lares-container.ps1 pulama admit`, then `tools/lares-container.ps1 vault unlock all=true`' }
     }
     if ($stays) { UnlockOrName }
     else {
-      if ((DetachedUnlock @('--all')) -ne 0) { Die 'the vessel did not open (above); read it with `tools/lares-container.ps1 pulama status`, then `tools/lares-container.ps1 vault unlock --all`' }
+      if ((DetachedUnlock @('all=true')) -ne 0) { Die 'the vessel did not open (above); read it with `tools/lares-container.ps1 pulama status`, then `tools/lares-container.ps1 vault unlock all=true`' }
       if (NoneWorn) { WearLastFace }
     }
   } elseif ($stays) { UnlockOrName }
@@ -1662,7 +1642,7 @@ function KeepOwedVerb([string[]]$kargs) {
   # The read names a face, so a house with several faces open never refuses it for no face named: the
   # face last worn, else face 0, the keep's face.
   $koFace = LastWornFace; if ($koFace -eq '') { $koFace = '0' }
-  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts --rite kukulu --face $koFace --json 2>$null) -join '') -replace '\s', ''
+  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts rite=kukulu "face=$koFace" --json 2>$null) -join '') -replace '\s', ''
   $koRc = $LASTEXITCODE
   if ($koRc -ne 0 -or -not $debt.Contains('"pending":[]')) {
     $why = ''
@@ -1757,13 +1737,13 @@ switch ($verb) {
           [Console]::Error.WriteLine('lares-container: name-successor: the re-check reads the same closure')
         } else { [Console]::Error.WriteLine('lares-container: name-successor: the re-check skipped by your word') }
         # THE DEVICE COUNT rides the commit's own body (the co-sign fails closed): the standing vessel reads each lit face's signed
-        # admission fold (`lares intent show --face N`), and the most any face holds goes in; none read sends none.
+        # admission fold (`lares intent show face=N`), and the most any face holds goes in; none read sends none.
         $most = 0; $unread = $false
         $census = RunCensus '--json'
         $lit = ([regex]::Match((($census.Out) -replace '\s', ''), '"facesLit":\[([0-9,]*)\]')).Groups[1].Value
         if ($census.Rc -ne 0 -or -not $lit) { $unread = $true }
         foreach ($face in ($lit -split ',' | Where-Object { $_ })) {
-          $shown = $null | & docker compose @Base exec -T lares node $Cli intent show --face $face --json 2>$null
+          $shown = $null | & docker compose @Base exec -T lares node $Cli intent show "face=$face" --json 2>$null
           $m = [regex]::Match((($shown -join '') -replace '\s', ''), '"devices":([0-9]+)')
           if (-not $m.Success) { $unread = $true } elseif ([int]$m.Groups[1].Value -gt $most) { $most = [int]$m.Groups[1].Value }
         }
@@ -1792,14 +1772,14 @@ switch ($verb) {
           $faces = @()
           foreach ($face in ($lit -split ',' | Where-Object { $_ })) {
             $errFile = Join-Path $House 'cache/keeper-cosign.err'
-            $one = $null | & docker compose @Base exec -T lares node $Cli intent keeper-cosign $d --prev $prev --nonce $nonce --face $face 2>$errFile
+            $one = $null | & docker compose @Base exec -T lares node $Cli intent keeper-cosign $d "prev=$prev" "nonce=$nonce" "face=$face" 2>$errFile
             $text = ($one -join '')
             if ($LASTEXITCODE -ne 0) {
               $why = if (Test-Path $errFile) { ((Get-Content -Raw $errFile) -replace '\s+', ' ').Trim() } else { '' }
               Remove-Item -Force -ErrorAction SilentlyContinue $errFile
               $text = $why
-              if ($text -match 'ward-awaiting-cosign: ([0-9a-f]{64})') { Die "pulama name-successor: face h$face asks a second device to co-sign the vest ($($Matches[1])); approve it on another device of the face (its ward dialog, or ``lares intent answer <ask> --face $face --executor <this vessel's atom>`` on a node), then run ``lares pulama name-successor`` again (no successor named)" }
-              Die "pulama name-successor: the co-sign of face h$face refused ($text); no successor named: read it with ``lares intent show --face $face``, or light the successor by hand: ``lares rite kukulu``"
+              if ($text -match 'ward-awaiting-cosign: ([0-9a-f]{64})') { Die "pulama name-successor: face h$face asks a second device to co-sign the vest ($($Matches[1])); approve it on another device of the face (its ward dialog, or ``lares intent answer <ask> face=$face executor=<this vessel's atom>`` on a node), then run ``lares pulama name-successor`` again (no successor named)" }
+              Die "pulama name-successor: the co-sign of face h$face refused ($text); no successor named: read it with ``lares intent show face=$face``, or light the successor by hand: ``lares rite kukulu``"
             }
             $faces += $text.Trim()
           }
@@ -1842,7 +1822,7 @@ switch ($verb) {
       }
       'recard' {
         # recard proves a stale face's OWN route (its light on the vessel refused FaceHoldsNoPrekeySecret) on a real terminal inside
-        # the pūlama, which holds its key; one grant rests, and `lares vault recard --face N` at the vessel spends it and arms the light.
+        # the pūlama, which holds its key; one grant rests, and `lares vault recard face=N` at the vessel spends it and arms the light.
         if ($rest.Count -ne 2 -or $rest[1] -notmatch '^[0-9]+$') { Die 'pulama recard takes one face ordinal (a number)' }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'recard', $rest[1]))
       }
@@ -1897,10 +1877,10 @@ switch ($verb) {
   }
   'found' {
     EnsureHouse
-    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline', 'vessel', 'found', '--skip-build', '--root', '/lar', '--genesis', '/app/genesis') + $rest)
+    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline', 'vessel', 'found', '--skip-build', 'root=/lar', 'genesis=/app/genesis') + $rest)
   }
   'vessel' {
-    $observing = $rest -contains '--observe'
+    $observing = $rest -contains 'observe=true'
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     if ($sub -eq 'stand' -and -not $observing -and $rest.Count -eq 1) {
       # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints the standing.
@@ -1950,12 +1930,12 @@ switch ($verb) {
   }
   'kahua' {
     # A kahua hand act under a pūlama, in the lei pattern: `kahua lift|withdraw|carry …` reads the terms in the vessel on this
-    # terminal (`--terms`: the preview, the digest typed back, then one `{"face":…}` line), the pūlama checks it, reads the route
-    # here and its face root signs that one record (`sign`), and the vessel lands it (`--land`) over the act it builds afresh.
-    if ($PulamaMode -and $rest.Count -ge 1 -and @('lift', 'withdraw', 'carry') -contains $rest[0] -and -not ($rest | Where-Object { $_ -eq '--terms' -or $_ -like '--land*' })) {
+    # terminal (`terms=true`: the preview, the digest typed back, then one `{"face":…}` line), the pūlama checks it, reads the route
+    # here and its face root signs that one record (`sign`), and the vessel lands it (`land=`) over the act it builds afresh.
+    if ($PulamaMode -and $rest.Count -ge 1 -and @('lift', 'withdraw', 'carry') -contains $rest[0] -and -not ($rest | Where-Object { $_ -like 'terms=*' -or $_ -like 'land=*' })) {
       if (-not $script:Tty) { Die "kahua $($rest[0]) under a pūlama reads its route on a terminal; run it on one (nothing signed)" }
       $terms = ''
-      & docker compose @Base exec --no-TTY=false @PassEnv lares node $Cli kahua @rest --terms | ForEach-Object {
+      & docker compose @Base exec --no-TTY=false @PassEnv lares node $Cli kahua @rest terms=true | ForEach-Object {
         [Console]::Error.WriteLine($_)
         $l = "$_".Trim("`r")
         if ($l.StartsWith('{"face":')) { $terms = $l }
@@ -1969,20 +1949,20 @@ switch ($verb) {
         $answer += $l
       }
       if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
-      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli kahua @rest --land $answer
+      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli kahua @rest "land=$answer"
       $landRc = $LASTEXITCODE; DropReport; exit $landRc
     }
     RouteCli (@($verb) + $rest) $true
   }
   'nexus' {
     # The offering's signature under a pūlama, in the lei pattern: the vessel holds no face root, so `nexus publish plugins …
-    # --apply` reads the terms in the vessel (`--terms`), the pūlama reads the route on this terminal and its face root signs
-    # that one descriptor (`publish`), and the vessel lands the signed offering over the same source (`--land`). A signing that
-    # answers no offering lands nothing. Without a pūlama, or without --apply, every nexus act routes as before.
-    if ($PulamaMode -and $rest.Count -ge 2 -and $rest[0] -eq 'publish' -and $rest[1] -eq 'plugins' -and ($rest -contains '--apply')) {
+    # apply=true` reads the terms in the vessel (`terms=true`), the pūlama reads the route on this terminal and its face root signs
+    # that one descriptor (`publish`), and the vessel lands the signed offering over the same source (`land=`). A signing that
+    # answers no offering lands nothing. Without a pūlama, or without apply=true, every nexus act routes as before.
+    if ($PulamaMode -and $rest.Count -ge 2 -and $rest[0] -eq 'publish' -and $rest[1] -eq 'plugins' -and ($rest -contains 'apply=true')) {
       if (-not $script:Tty) { Die 'nexus publish under a pūlama reads its route on a terminal; run it on one (nothing signed)' }
-      $line = @($rest | Where-Object { $_ -ne '--apply' })
-      $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli nexus @line --terms) -join ''
+      $line = @($rest | Where-Object { $_ -ne 'apply=true' })
+      $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli nexus @line terms=true) -join ''
       if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       $answer = ''
       & docker compose @Base --profile pulama exec --no-TTY=false (PulamaSvc) node $PulamaMain publish $terms | ForEach-Object {
@@ -1992,7 +1972,7 @@ switch ($verb) {
         $answer += $l
       }
       if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
-      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli nexus @line --land $answer
+      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli nexus @line "land=$answer"
       $landRc = $LASTEXITCODE; DropReport; exit $landRc
     }
     RouteCli (@($verb) + $rest) $true
@@ -2002,7 +1982,7 @@ switch ($verb) {
     # operator wears, which the shim keeps for the next stand.
     RouteCli (@($verb) + $rest) $true
     $face = @($rest | Where-Object { $_ -match '^[0-9]+$' } | Select-Object -First 1)
-    if ($face.Count -gt 0) { RememberWornFace @('--face', $face[0]) }
+    if ($face.Count -gt 0) { RememberWornFace @("face=$($face[0])") }
   }
   'vault' {
     # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
@@ -2014,7 +1994,7 @@ switch ($verb) {
       if ($rc -ne 0) { exit $rc }
       RememberWornFace $rest
       # An unlock under a pūlama that named no face can leave faces lent and none worn: the shim wears the last one.
-      $namedFace = @($rest | Where-Object { $_ -eq '--face' -or $_ -like '--face=*' }).Count -gt 0
+      $namedFace = @($rest | Where-Object { $_ -like 'face=*' }).Count -gt 0
       if (-not $namedFace -and (NoneWorn)) { WearLastFace }
       # THE UNLOCK'S FACE REACHES THE PŪLAMA. The pūlama keeps the face worn in memory and wears it again after a restart,
       # and only `wear` writes that memory, never the unlock: the shim follows a named face with `wear N`, the chain `up`

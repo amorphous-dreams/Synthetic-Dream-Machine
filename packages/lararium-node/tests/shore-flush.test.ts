@@ -136,7 +136,7 @@ describe("the shore's flush", () => {
     expect(await answerShoreSeats(seats, { op: "list", face: 0 })).toMatchObject({ ok: true, op: "list", face: 0 });
     const unprojected = await answerShoreSeats(seats, { op: "list", face: 1 });
     expect(unprojected).toMatchObject({ ok: false, refusal: "face-unprojected", face: 1 });
-    expect(String(unprojected["why"])).toMatch(/lares vessel census.*lares vault unlock --face 1/);
+    expect(String(unprojected["why"])).toMatch(/lares vessel census.*lares vault unlock face=1/);
     expect(await answerShoreSeats(seats, { op: "list", face: "h2" })).toMatchObject({ ok: false, refusal: "face-malformed" });
     // The sibling's failed carrier reads through its face, and a flush naming no face reaches it beside the worn one.
     expect((await answerShoreSeats(seats, { op: "census", face: 2 }))["carriers"]).toEqual([{ state: "failed", uri: RETRIES, bagId: BAG }]);

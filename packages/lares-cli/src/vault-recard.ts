@@ -1,5 +1,5 @@
 /**
- * `lares vault recard --face N` — a face whose Archive fell behind its own cards lights again under its own identity.
+ * `lares vault recard face=N` — a face whose Archive fell behind its own cards lights again under its own identity.
  *
  * A face that restored a stale Archive light after light walked its live prekeys past every secret it held: its light refuses
  * `FaceHoldsNoPrekeySecret`, and the vessel holds it served and dark. The recard proves the FACE's own route (as `vault rehive` does, never the vessel's) on a TTY (no flag,
@@ -29,16 +29,16 @@ export function recardLines(face: number): string[] {
   return [
     `face h${face} recarded: it lit again under its own identity, its card minted before its bags and its Archive rests after that card.`,
     "  kept: the face's identity and every seal its stand still reaches.",
-    "  may not open: content that reads ContentKeyNotHeld is unreadable for now (its key may still arrive by sync, or a peer sealed it to a card whose secret no kept Archive held), and content under a Document the recard reminted (SealedUnderLostDocument; the vessel's log names each bag). The stand that holds such content shares it anew (`lares bag share <bag> --read <this face>` there).",
+    "  may not open: content that reads ContentKeyNotHeld is unreadable for now (its key may still arrive by sync, or a peer sealed it to a card whose secret no kept Archive held), and content under a Document the recard reminted (SealedUnderLostDocument; the vessel's log names each bag). The stand that holds such content shares it anew (`lares bag share <bag> read=<this face>` there).",
     `  next: \`lares vault status\` reads face h${face} lit.`,
   ];
 }
 
-/** `vault recard --face <N>`. */
+/** `vault recard face=<N>`. */
 export async function vaultRecard(args: ParsedArgs): Promise<number> {
   const raw = args.options["face"];
   if (typeof raw !== "string" || !/^(0|[1-9]\d*)$/.test(raw) || !Number.isSafeInteger(Number(raw))) {
-    throw new RecardUsage("recard names the face's handle-index: `lares vault recard --face <N>` (indices print under `lares vessel roster`)");
+    throw new RecardUsage("recard names the face's handle-index: `lares vault recard face=<N>` (indices print under `lares vessel roster`)");
   }
   const face = Number(raw);
   const refuse = (code: string, message: string, data?: CustodyDoorAnswer): number => {
@@ -51,7 +51,7 @@ export async function vaultRecard(args: ParsedArgs): Promise<number> {
   // the pūlama's hand door (`tools/lares-container.sh pulama recard N`), so this asks nobody anything and the frame carries none:
   // the door spends the grant that proof rested, or names the pūlama's command.
   const underPulama = typeof door["pulama"] === "object" && door["pulama"] !== null;
-  const credentials = underPulama ? [] : await gatherCredentials(`lares vault recard --face ${face}`, { kind: "face", ordinal: face });
+  const credentials = underPulama ? [] : await gatherCredentials(`lares vault recard face=${face}`, { kind: "face", ordinal: face });
   const a = await sendCustodyFrame({ op: "recard", credentials, face });
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the recard answered: read `lares vault status`, then recard again");
   if (a["status"] === "error") {

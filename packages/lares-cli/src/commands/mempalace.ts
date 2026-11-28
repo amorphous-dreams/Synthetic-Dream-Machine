@@ -10,7 +10,7 @@
  * warm daemons (`quiesce`), and un-pause when the storm passes (`resume`).
  *
  * THE GUEST LANE. `~/.mempalace` is a GUEST — a standalone sidecar the operator raises deliberately,
- * never a runtime binding the vessel boots into. `lares vessel stand --init` stands only the sovereign
+ * never a runtime binding the vessel boots into. `lares vessel stand init=true` stands only the sovereign
  * sensorium; standing the guest from the boot wrote the very store the COMPARATOR ruling reserves
  * as an untouched baseline — a measurement never writes the thing it measures against. So every guest verb lives
  * HERE, behind an explicit operator act. Its uses: a sanity-check sidecar to compare the sovereign
@@ -19,7 +19,7 @@
  * Verbs:
  *   setup                raise the guest standalone: `mempalace init` + pin hooks.auto_save=false
  *   status               live table: every daemon/holder/mine/hook-leg + its SPAWNER
- *   quiesce [--hold]     graceful stop-the-world: pause hooks → drain daemons → confirm zero
+ *   quiesce [hold=true]     graceful stop-the-world: pause hooks → drain daemons → confirm zero
  *   resume               un-pause the hooks (the warm daemon re-spawns lazily on next use)
  *
  * Golden principles: observability-first · graceful-lifecycle (flush-then-force via
@@ -274,7 +274,7 @@ export interface QuiesceResult {
 
 /**
  * The quiesce core (shared by `lares mempalace quiesce`, `lares sense quiesce` AND
- * `lares sense teardown --drain`): when it manages the hooks, pause them FIRST (stop
+ * `lares sense teardown drain=true`): when it manages the hooks, pause them FIRST (stop
  * the minting); drain every warm holder AND wedged spawner job the door OWNS (SIGTERM →
  * poll → bounded SIGKILL), then confirm zero. Un-pauses on a clean quiet unless `hold`
  * (a teardown keeps minting suppressed until it finishes). Idempotent.
@@ -283,7 +283,7 @@ export interface QuiesceResult {
  * plus the minting legs only when `includeSpawners`); absent → the UNSCOPED drain that
  * teardown needs (every island). `manageHooks` (default true) gates the auto-pause /
  * auto-resume of the SHARED hook marker — the guest door passes false, so it never
- * touches the sovereign minting lever nor clobbers a sovereign `--hold`.
+ * touches the sovereign minting lever nor clobbers a sovereign `hold=true`.
  */
 export async function quiescePalace(opts: {
   hold?: boolean;
@@ -346,7 +346,7 @@ export async function runQuiesce(args: ParsedArgs, door: DoorScope, hold: boolea
       }
       if (quiet) {
         console.log("  confirm: 0 holders remain — QUIESCENT. ✓");
-        if (hooksManaged && hold) console.log(`  hooks HELD paused (--hold) — run \`${door.label} resume\` when done.`);
+        if (hooksManaged && hold) console.log(`  hooks HELD paused (hold=true) — run \`${door.label} resume\` when done.`);
         else if (hooksManaged)    console.log("  hooks un-paused — the warm daemon re-spawns lazily on next use.");
       } else {
         console.log(`  confirm: ⚠ ${holdersLeft.length} holder(s) SURVIVED${hooksManaged ? " — hooks held paused" : ""}:`);
@@ -431,16 +431,16 @@ function printHelp(): void {
   console.log("  setup               raise the guest: `mempalace init` + pin hooks.auto_save=false (idempotent)");
   console.log("  harvest [--wing w]  mine EVERY harness transcript into the guest through the vendored miner's");
   console.log("                      OWN vanilla path — no lar_* metadata, no sensorium planes. The clean");
-  console.log("                      comparator. `--dry-run` enumerates without staging or mining.");
-  console.log("  repave [--confirm]  the RITE: quiesce → verify → tear → stand → harvest. Idempotent; a rite");
+  console.log("                      comparator. `dry-run=true` enumerates without staging or mining.");
+  console.log("  repave [confirm=true]  the RITE: quiesce → verify → tear → stand → harvest. Idempotent; a rite");
   console.log("                      that dies halfway re-runs from the top. Preview by default. REFUSES while");
   console.log("                      anything holds the store, or while the worldline KG still sits inside it.");
   console.log("  status              live topology: every daemon/holder/mine/hook-leg + its SPAWNER");
-  console.log("  quiesce [--hold]    graceful stop-the-world: pause hooks → drain daemons → confirm zero");
+  console.log("  quiesce [hold=true]    graceful stop-the-world: pause hooks → drain daemons → confirm zero");
   console.log("  resume              un-pause the hooks (the warm daemon re-spawns lazily on next use)");
   console.log("\n  superset: ANY other subverb passes through to the vendored CLI against the guest palace —");
   console.log("            `lares mempalace search <q>` · `compress` · `sweep` · `hallways` · `<verb> --help` · …");
-  console.log("            (run `lares mempalace --help-mempalace` for the vendored command list).");
+  console.log("            (run `lares mempalace help-mempalace=true` for the vendored command list).");
   console.log("\n  lane law: `lares mempalace *` touches ONLY the guest ~/.mempalace comparator;");
   console.log("            `lares sense *` touches ONLY the sovereign sensorium.");
   console.log("\nThe status output teaches kill-the-spawner-not-the-children; quiesce is idempotent.");
@@ -483,7 +483,7 @@ export async function cmdMempalace(args: ParsedArgs): Promise<number> {
  *
  * FOUNDING NEVER REACHES IT (operator ruling). This writes OUTSIDE the vessel root, into the
  * operator's real Python environment — so a founding that ran it could never stay isolated, and a throwaway
- * rehearsal would touch the machine it rehearses on. `vessel stand --init` stands the vessel; a separate tool
+ * rehearsal would touch the machine it rehearses on. `vessel stand init=true` stands the vessel; a separate tool
  * answers on its own door.
  *
  * The mempalace is a READ-ONLY sidecar submodule. A vessel founds and serves without it; what it unlocks is

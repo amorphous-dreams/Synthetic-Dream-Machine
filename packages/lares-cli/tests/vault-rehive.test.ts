@@ -1,5 +1,5 @@
 /**
- * `lares vault rehive --face N` — what the operator reads once a rehive lands.
+ * `lares vault rehive face=N` — what the operator reads once a rehive lands.
  *
  *   V1  a rehive from the seed names the moved row, what was lost, and the next acts in order: wear the face, land its shares
  *       again, read the kahu share's standing by the face's own PersonaGroup.
@@ -20,14 +20,14 @@ describe("the rehive's answer", () => {
     expect(text).toContain(`rest aside at ${ANSWER.aside}`);
     expect(text).toContain("nothing was deleted");
     expect(text).toMatch(/LOST with the old Archive: the prekey secrets/);
-    const wear = text.indexOf("lares vault unlock --all --face 1"), share = text.indexOf("lares bag share --list"), kahu = text.indexOf("lares nexus cabal standing 0xfeed");
+    const wear = text.indexOf("lares vault unlock all=true face=1"), share = text.indexOf("lares bag share list=true"), kahu = text.indexOf("lares nexus cabal standing 0xfeed");
     expect(wear).toBeGreaterThan(-1);
     expect(share).toBeGreaterThan(wear);
     expect(kahu).toBeGreaterThan(share);
-    expect(text).toContain("lares kahua get --face 1");
-    expect(text).toContain("lares kahua carry --all --face 1");
-    expect(text).toContain("lares bag share --list --json > shares-before.json");
-    expect(text).toContain("--note '<its note>'");
+    expect(text).toContain("lares kahua get face=1");
+    expect(text).toContain("lares kahua carry all=true face=1");
+    expect(text).toContain("lares bag share list=true --json > shares-before.json");
+    expect(text).toContain("[note='<its note>']");
     expect(text).toContain("with * kept, its note, workspace and owner");
     expect(text).toMatch(/owner back into config\/share\.tid by hand/);
     expect(text).toContain("it promises no mechanical round trip");

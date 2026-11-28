@@ -1,5 +1,5 @@
 /**
- * recard-arms — the faces whose NEXT light recards (`lares vault recard --face N`; the custody door arms one).
+ * recard-arms — the faces whose NEXT light recards (`lares vault recard face=N`; the custody door arms one).
  *
  * An arm never outlives the act that armed it: the light that follows TAKES it the moment it starts, before it reads custody,
  * proves the face or reads `live()`, so a light that fails anywhere spends the arm and the next ordinary light recards

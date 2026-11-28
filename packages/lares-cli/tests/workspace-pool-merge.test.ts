@@ -1,7 +1,7 @@
 /**
  * workspace-pool-merge — TAKE-DISK MERGES PER SLOT AGAINST A WORKSPACE'S OWN GIT BASE (face-pools; cabal-realm#/the-workbench).
  *
- * A shared wiki bound to a workspace (`lares wiki share notes --workspace notes`) projects its workbench at
+ * A shared wiki bound to a workspace (`lares wiki share notes workspace=notes`) projects its workbench at
  * `<root>/workspaces/notes` (or by default `<projections>/wikis/notes`). Where that folder's git tree stands (`lares surface
  * init`, Lares-Alpha's lane, stubbed here with a plain `git init`), the vessel commits it at each sitting's close
  * (`workspaceCommitSeam`), so a both-moved stand-off there reads its base's words from the folder's own history and merges per

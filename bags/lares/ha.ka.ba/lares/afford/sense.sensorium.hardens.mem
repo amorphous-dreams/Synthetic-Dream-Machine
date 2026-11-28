@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.hardens"
 
 ! sense.sensorium.hardens ~ an ephemeral sensorium turns durable
 
-`lares sense harden <name> --approve` runs on a person's hand at a real terminal: the house hand gate reads the command's own branch, and `--approve` names the intent. It hardens the named sensorium durable in its manifest, `--store-swap <target>` swapping its store as it does.
+`lares sense harden <name> approve=true` runs on a person's hand at a real terminal: the house hand gate reads the command's own branch, and `--approve` names the intent. It hardens the named sensorium durable in its manifest, `--store-swap <target>` swapping its store as it does.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;n8yLWSosvs_FZQJ4ILNfzK2_arO-MN5fzeT7oELE-U0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uKfeIw-3mBwj9s47fdgLhJ2CZvhB5Uz-2yN0LaJbU24`>>
 
 <<^ code=`&#x0004;` to=`?`>>

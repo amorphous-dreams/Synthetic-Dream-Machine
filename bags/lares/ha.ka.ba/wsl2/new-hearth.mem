@@ -199,9 +199,9 @@ The backup lands at `~/.lares/config/face-0.bundle` on the host, sealed under a 
 The first keep, on the host:
 
 ```sh
-lares lei show --rite keep --branch house-backup --face 0   # the lei the unlock strung; none: lares lei kui --rite keep --branch house-backup --returns 12 --face 0
-lares rite keep --workspace house-backup --face 0
-lares rite receipts --face 0                                 # conferre reads the keep par
+lares lei show rite=keep branch=house-backup face=0   # the lei the unlock strung; none: lares lei kui rite=keep branch=house-backup returns=12 face=0
+lares rite keep workspace=house-backup face=0
+lares rite receipts face=0                                 # conferre reads the keep par
 ```
 
 <<~/ahu>>
@@ -235,7 +235,7 @@ Install Claude Code inside WSL (Anthropic's install page names the current insta
 
 ```sh
 lares home tend                                    # seats `lares mcp aho` in the harness just installed
-lares home read --brief                            # every item holds
+lares home read brief=true                            # every item holds
 cd ~/Synthetic-Dream-Machine && claude
 ```
 
@@ -263,6 +263,6 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3_dvHu7vdAXrmf26tDElieOjNYfDUb22o1jA1MpVrPI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1iRxWJ1Nljbag7f_jhrpvDsAbpFjpuapxonad6RymX4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

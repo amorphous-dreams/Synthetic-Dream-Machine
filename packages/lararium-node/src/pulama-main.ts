@@ -17,7 +17,7 @@
  *                                                   hive again from its seed at its next wear
  *   node dist/src/pulama-main.js recard <N>         the operator proves a stale face's OWN route (its light on the vessel refused
  *                                                   FaceHoldsNoPrekeySecret) on a real terminal: one recard grant rests for the
- *                                                   vessel that lends it, whose `lares vault recard --face N` arms its next light
+ *                                                   vessel that lends it, whose `lares vault recard face=N` arms its next light
  *   node dist/src/pulama-main.js lock               drop every session, zero-fill every key
  *   node dist/src/pulama-main.js status             lit or not, faces open, sessions, attempts left, the reported image
  *   node dist/src/pulama-main.js image <digest>     the host shim reports the image digest it raises; as
@@ -40,14 +40,14 @@
  *                                                   to admit the image the host reports (the lei's caps license it); exit 1 where
  *                                                   none covers it, and the hand's `admit` stays the path
  *   node dist/src/pulama-main.js hoala-unstring   end the hoʻāla lei at once, lit or unlit, no route: its slot and device key die
- *   node dist/src/pulama-main.js publish '<terms>'  the operator signs one plugin offering (`lares nexus publish plugins --terms`
+ *   node dist/src/pulama-main.js publish '<terms>'  the operator signs one plugin offering (`lares nexus publish plugins terms=true`
  *                                                   prints the terms: the face and the closed descriptor): reads the route on a
  *                                                   real terminal, the face root signs that one descriptor here, and the answer
- *                                                   prints the signed offering for the vessel to land (`--land`)
+ *                                                   prints the signed offering for the vessel to land (`land=`)
  *   node dist/src/pulama-main.js sign '<terms>'     the operator signs ONE record of the closed set (`lares kahua lift|withdraw|carry
- *                                                   --terms` prints the terms: the face, the kind, the record): the door checks it
+ *                                                   terms=true` prints the terms: the face, the kind, the record): the door checks it
  *                                                   first, then reads the route on a real terminal, the face root signs that one
- *                                                   record here, and the answer prints it for the vessel to land (`--land`)
+ *                                                   record here, and the answer prints it for the vessel to land (`land=`)
  *
  * Environment (every name required for `serve`; the hand verbs need `LAR_PULAMA_HAND` alone):
  *   LAR_ROOT            the house root whose hearth this pūlama keeps (the same root the vessel names)

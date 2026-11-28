@@ -174,15 +174,15 @@ export function skinOmits(skin: HasRow | undefined): Set<string> {
 
 /** An argument's spelling on one surface: the skin's exception where it names one, the rule otherwise. */
 /**
- * A CLI SKIN ROW READING `grammar/call` speaks the call shape (comms-ux-enacts landing 8): its params ride `name=value`, a flag
- * `name=true`, and no position; every other cli row keeps its door's `--flag` table until that door flips.
+ * A CLI SKIN ROW READING `grammar/call` speaks the call shape (comms-ux-enacts landing 8): its params ride `name=value`, a switch
+ * `name=true`, and no position. Every other cli row speaks the same params beside the positional words its seats lead with.
  */
 export const callGrammar = (skin?: HasRow): boolean => skin?.params["grammar"] === "call";
 
 export function spellArg(surface: AffordSurface, name: string, skin?: HasRow): string {
   const own = skinMaps(skin).get(name) ?? name;
   switch (surface) {
-    case "cli": return callGrammar(skin) ? kebab(own) : `--${kebab(own)}`;
+    case "cli": return kebab(own);
     case "mcp": return snake(own);
     case "tw5": return kebab(own);
     case "console": return own;
@@ -304,8 +304,8 @@ export function renderCall(surface: RenderSurface, spells: string, call: Neutral
         .filter(([k]) => seats?.has(k))
         .sort((a, b) => seats!.get(a[0])!.seat - seats!.get(b[0])!.seat)
         .map(([k, v]) => shellQuote(`${seats!.get(k)!.lead}${v === true ? "" : v}`));
-      const flags = call.args.filter(([k]) => !seats?.has(k)).map(([k, v]) => [spellArg(surface, k, skin), v] as const);
-      return [spells, ...seated, ...flags.map(([k, v]) => (v === true ? k : `${k} ${shellQuote(v)}`))].join(" ");
+      const params = call.args.filter(([k]) => !seats?.has(k)).map(([k, v]) => shellQuote(`${spellArg(surface, k, skin)}=${v === true ? "true" : v}`));
+      return [spells, ...seated, ...params].join(" ");
     }
     case "mcp": {
       const named = call.args.map(([k, v]) => [spellArg(surface, k, skin), v] as const);
@@ -352,8 +352,7 @@ export function usageOf(surface: AffordSurface, spells: string, takes: readonly 
       if (own !== null) return own.as;
       const flag = spellArg(surface, r.name, skin);
       const value = r.params["takes"];
-      if (called) return `${flag}=<${value ?? "true"}>`;
-      if (surface === "cli") return value ? `${flag} <${value}>` : flag;
+      if (surface === "cli") return `${flag}=<${value ?? "true"}>`;
       return value ? `${flag}=<${value}>` : flag;
     };
     const choice = oneOf(row);

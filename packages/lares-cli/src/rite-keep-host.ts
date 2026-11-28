@@ -87,7 +87,7 @@ export interface KeepHostPorts {
    */
   readonly sessions?: SessionSources | null;
   /**
-   * The keep line as `lares lei show --rite keep --branch <name> [--face N] --json` reads it (one `{ lei }`, or `{ faces }`),
+   * The keep line as `lares lei show rite=keep branch=<name> [face=N] --json` reads it (one `{ lei }`, or `{ faces }`),
    * asked FIRST, so a spent lei refuses in seconds, before the mirror, the scan or the flush. Absent, the vessel half decides alone.
    */
   leiShow?(branch: string, face?: number): Promise<RiteVerbAnswer>;
@@ -183,8 +183,8 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
   let stage = "guard";
   try {
     const unsafe = unsafeRelPath(into);
-    if (unsafe !== null || into.split("/").some((s) => s.startsWith("."))) throw new HostRefused("keep-into-unsafe", `--into ${JSON.stringify(into)} names ${unsafe ?? "a dotted segment"}; it names a plain relative place inside the workspace`);
-    if (under(into, DEVICES_DIR) || under(DEVICES_DIR, into)) throw new HostRefused("keep-into-unsafe", `--into ${JSON.stringify(into)} crosses ${DEVICES_DIR}/, where each device's sessions rest; name another place`);
+    if (unsafe !== null || into.split("/").some((s) => s.startsWith("."))) throw new HostRefused("keep-into-unsafe", `into=${JSON.stringify(into)} names ${unsafe ?? "a dotted segment"}; it names a plain relative place inside the workspace`);
+    if (under(into, DEVICES_DIR) || under(DEVICES_DIR, into)) throw new HostRefused("keep-into-unsafe", `into=${JSON.stringify(into)} crosses ${DEVICES_DIR}/, where each device's sessions rest; name another place`);
     const dir = ports.workspaceDir(name);
     // THE DEVICE'S SESSIONS: on unless the line, the ports or the house config say otherwise. The identity reads (or mints)
     // before the guard, so the guard knows the one device dir it allows.
@@ -235,7 +235,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       let spent = keepLeiGate(await ports.leiShow(name, opts.face), name, opts.face);
       if (spent !== null && ports.refill) {
         // A SPENT KEEP LEI OFFERS ITS OWN REFILL on a terminal; the keep goes on once strung.
-        const returns = /--returns (\d+)/.exec(spent.message)?.[1], at = /--face (\d+)/.exec(spent.message)?.[1];
+        const returns = /\breturns=(\d+)/.exec(spent.message)?.[1], at = /\bface=(\d+)/.exec(spent.message)?.[1];
         const again = await ports.refill({ rite: "keep", branch: name, ...(returns ? { returns: Number(returns) } : {}), ...(at ? { face: Number(at) } : opts.face !== undefined ? { face: opts.face } : {}) });
         if (again.strung) spent = keepLeiGate(await ports.leiShow(name, opts.face), name, opts.face);
       }
@@ -279,7 +279,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     let cut = await cutRow();
     if (!cut.ok && cut.code === RETURNS_SPENT && ports.refill) {
       // A SPENT KEEP LEI OFFERS ITS OWN REFILL on a terminal (the returns and the face the refusal names), then the keep goes on once.
-      const returns = /--returns (\d+)/.exec(cut.message)?.[1], at = /--face (\d+)/.exec(cut.message)?.[1];
+      const returns = /\breturns=(\d+)/.exec(cut.message)?.[1], at = /\bface=(\d+)/.exec(cut.message)?.[1];
       const again = await ports.refill({ rite: "keep", branch: name, ...(returns ? { returns: Number(returns) } : {}), ...(at ? { face: Number(at) } : face.face !== undefined ? { face: face.face } : {}) });
       if (again.strung) cut = await cutRow();
     }
@@ -346,7 +346,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
         ports.say(`keep: the sessions moved over an unmoved house; they ride the return tessera ${waits[0]!} spent and never landed`);
       } else {
         const begun = await ports.row("begin", { rite: RITE_KEEP, branch: name, head: bundleId, staging: into, ...face });
-        if (!begun.ok) throw new HostRefused(begun.code, `${KEEP_VESSEL_UNREACHED.has(begun.code) ? `${KEEP_VESSEL_DOWN} (${begun.message})` : begun.message}. The sessions rest mirrored in ${devRel!}/ with no return spent, so nothing commits or pushes; with a keep lei holding a return (\`lares lei show --rite ${RITE_KEEP} --branch ${name}\`), run the rite again`);
+        if (!begun.ok) throw new HostRefused(begun.code, `${KEEP_VESSEL_UNREACHED.has(begun.code) ? `${KEEP_VESSEL_DOWN} (${begun.message})` : begun.message}. The sessions rest mirrored in ${devRel!}/ with no return spent, so nothing commits or pushes; with a keep lei holding a return (\`lares lei show rite=${RITE_KEEP} branch=${name}\`), run the rite again`);
         base["sessions"] = { device: devRel, moved: true, spent: true, tessera: String(begun.output["tessera"]) };
         ports.say(`keep: the sessions moved over an unmoved house; a return spent for them (tessera ${String(begun.output["tessera"])})`);
       }
@@ -396,9 +396,9 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     const t = base["tessera"] as string | undefined, id = base["bundleId"] as string | undefined;
     // THE LANDING NAMES ITS FACE: the half rests under the face the cut acted as (the keep's face where none was named), so a
     // terminal wearing another face lands it only by naming that face.
-    const at = typeof base["face"] === "number" ? ` --face ${base["face"]}` : "";
+    const at = typeof base["face"] === "number" ? ` face=${base["face"]}` : "";
     const cure = stage === "push" || stage === "land"
-      ? ` The bundle rests in the workspace and ${t !== undefined ? `tessera ${t} reads red (landed-absent)` : "any tessera it owes reads red"}: mend the remote and run \`lares rite keep --workspace ${name}${opts.into !== undefined ? ` --into ${into}` : ""}\` again (it pushes what waits and lands it)${t !== undefined && id !== undefined ? `, or by hand: git push, then \`lares rite land --tessera ${t} --head ${id}${at}\`` : ""}.`
+      ? ` The bundle rests in the workspace and ${t !== undefined ? `tessera ${t} reads red (landed-absent)` : "any tessera it owes reads red"}: mend the remote and run \`lares rite keep workspace=${name}${opts.into !== undefined ? ` into=${into}` : ""}\` again (it pushes what waits and lands it)${t !== undefined && id !== undefined ? `, or by hand: git push, then \`lares rite land tessera=${t} head=${id}${at}\`` : ""}.`
       : stage === "guard" && t !== undefined ? ` The return stays spent and tessera ${t} reads red until a keep lands it.`
       : stage === "commit" && (base["sessions"] as { tessera?: string } | undefined)?.tessera !== undefined ? ` The return the sessions spent stays spent, and tessera ${(base["sessions"] as { tessera: string }).tessera} reads red until a keep lands it.` : "";
     const message = `${err.message}${cure}`;

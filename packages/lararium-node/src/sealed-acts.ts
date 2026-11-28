@@ -764,7 +764,7 @@ export async function runSealedAct(name: unknown, rawArgs: unknown, ctx: SealedA
   const row: ActRow = SEALED_ACTS[name];
   const args = readArgs(name, row.shape, rawArgs);
   // A RESTORED FACE that still stands provisional refuses every authority-changing act by one name, from any row.
-  // An act that resolves no face among several refuses by that name too: the command names one (`--face N`).
+  // An act that resolves no face among several refuses by that name too: the command names one (`face=N`).
   try { return await row.run(args as never, ctx); }
   catch (err) {
     if (err instanceof FaceProvisional) throw new SealedActRefused("face-provisional", err.message);

@@ -383,7 +383,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     }
   }
 
-  /** Mark this stand a RECARD (`lares vault recard --face N`): each bag it reminted from here on names its lost Document. */
+  /** Mark this stand a RECARD (`lares vault recard face=N`): each bag it reminted from here on names its lost Document. */
   markRecard(): void { this.recarding = true; }
 
   /** The Archive of this stand WITH its card's prekey inside: mints the stand's card first when none stands yet. */

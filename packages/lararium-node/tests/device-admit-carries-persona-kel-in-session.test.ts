@@ -14,7 +14,7 @@
  * `device-admit` both run as store-direct doors, exactly like the fleet harness's `found:` callback in
  * `tests/harness/instance.ts:478-495`) reaches the charter board with nothing ever carried onto it,
  * and `device-admit` throws "persona-KEL chain … absent from the local board — run
- * `lares vessel found --force`" over a founding that never tore.
+ * `lares vessel found force=true`" over a founding that never tore.
  *
  * DIAGNOSIS: this names a PRODUCT gap, not a harness artifact. `device-admit` runs store-direct in
  * every environment — the harness's shortcut carries no shortcut here; it matches this door's real shape.

@@ -109,7 +109,7 @@ describe("the keep rite, vessel half", () => {
     const spent = rig({ lei: { standing: false, refusal: "returns-spent", after: LEI, returns: 6 } });
     // THE PLAIN REMEDY: the spent lei's own returns and its face, and no cid (a kui follows the tip itself).
     const said = await riteKeep(spent.ports, { workspace: "backup" }).then(() => "", (e: Error) => e.message);
-    expect(said).toContain("`lares lei kui --rite keep --branch backup --returns 6 --face 0`");
+    expect(said).toContain("`lares lei kui rite=keep branch=backup returns=6 face=0`");
     expect(said).not.toMatch(/[0-9a-f]{64}/);
     expect(spent.calls.length).toBe(1);
     expect(await refusal(riteKeep(spent.ports, { workspace: "backup" }))).toBe("swarm-lei-returns-spent");
@@ -210,13 +210,13 @@ describe("the keep rite, vessel half", () => {
     const whole = await riteKeep(r.ports, { workspace: "backup" }).catch((e: unknown) => e as KeepRefused);
     expect(whole).toBeInstanceOf(KeepRefused);
     expect((whole as KeepRefused).code).toBe("keep-dest-foreign");
-    expect((whole as KeepRefused).message).toMatch(/name another place with --into/);
+    expect((whole as KeepRefused).message).toMatch(/name another place with into=/);
     expect((whole as KeepRefused).message).not.toMatch(/git -C/);
     mkdirSync(join(workspace(), "elsewhere"));
     writeFileSync(join(workspace(), "elsewhere", MANIFEST_FILE), `${JSON.stringify({ schema: "someone-elses/1" })}\n`);
     const foreign = await riteKeep(r.ports, { workspace: "backup", into: "elsewhere" }).catch((e: unknown) => e as KeepRefused);
     expect((foreign as KeepRefused).code).toBe("keep-dest-foreign");
-    expect((foreign as KeepRefused).message).toMatch(/name another place with --into/);
+    expect((foreign as KeepRefused).message).toMatch(/name another place with into=/);
     expect(r.calls).toEqual([]);
     expect(JSON.parse(readFileSync(join(standing, MANIFEST_FILE), "utf8")).schema).toBe("another-bundle");
   });
@@ -224,9 +224,9 @@ describe("the keep rite, vessel half", () => {
   test("K7 RED: a keep line that names no workspace refuses with usage; CONTROL: the line's workspace, place, partial flag and face each read", () => {
     const plan = (...argv: string[]) => keepPlan(parseArgs(["rite", "keep", ...argv]));
     expect(() => plan()).toThrow(RiteUsage);
-    expect(() => plan("--workspace", "backup", "--face", "x")).toThrow(RiteUsage);
-    expect(plan("--workspace", "backup")).toEqual({ workspace: "backup", acceptOmissions: false });
-    expect(plan("--workspace", "backup", "--into", "devices/one/house", "--accept-omissions", "--face", "1")).toEqual({ workspace: "backup", into: "devices/one/house", acceptOmissions: true, face: 1 });
+    expect(() => plan("workspace=backup", "face=x")).toThrow(RiteUsage);
+    expect(plan("workspace=backup")).toEqual({ workspace: "backup", acceptOmissions: false });
+    expect(plan("workspace=backup", "into=devices/one/house", "accept-omissions=true", "face=1")).toEqual({ workspace: "backup", into: "devices/one/house", acceptOmissions: true, face: 1 });
   });
 
   test("K8 keep-reads-the-keep-face: the face whose keep line stands acts on every row, else h0; a face the door will not read names itself", async () => {
@@ -268,7 +268,7 @@ describe("the keep rite, vessel half", () => {
     expect(zero.calls.filter((c) => c.startsWith("swarm-show"))).toHaveLength(1);
     // No lei stands on any lent face: the keep's face reads h0, and the cure strings the lei there.
     const none = rig({ leiOn: {}, mount: null });
-    await expect(riteKeep({ ...none.ports, houseFaces: lent }, { workspace: "backup" })).rejects.toThrow(/lares lei kui --rite keep --branch backup --returns <n> --face 0/);
+    await expect(riteKeep({ ...none.ports, houseFaces: lent }, { workspace: "backup" })).rejects.toThrow(/lares lei kui rite=keep branch=backup returns=<n> face=0/);
   });
 
   test("K11 keep-names-its-code-once: a refused row whose message already leads with its code reads the code once", async () => {
@@ -282,12 +282,12 @@ describe("the keep rite, vessel half", () => {
     expect(new KeepRefused("vessel-locked", "vessel-locked: run `lares vault unlock`").message).toBe("vessel-locked: run `lares vault unlock`");
   });
 
-  test("K9 keep-names-a-lei-it-cannot-see: none read standing while a face stands shut, or its line refused, names `lares rite keep --face N`; a row refused at the chore gate says the keep belongs to the operator's hand", async () => {
+  test("K9 keep-names-a-lei-it-cannot-see: none read standing while a face stands shut, or its line refused, names `lares rite keep face=N`; a row refused at the chore gate says the keep belongs to the operator's hand", async () => {
     // h2 stands shut: a lei may stand there, so the refusal names it and the line that keeps as it.
     const shut = rig({ leiOn: {} });
     const a = await riteKeep({ ...shut.ports, houseFaces: async () => ({ open: [0], shut: [2] }) }, { workspace: "backup" }).catch((e: unknown) => e as Error);
     expect((a as Error).message).toMatch(/a keep lei may stand on a face not open \(h2\)/);
-    expect((a as Error).message).toMatch(/lares rite keep --face N/);
+    expect((a as Error).message).toMatch(/lares rite keep face=N/);
     // h1 stands open, and its line refused at the gate (h0 wears): the same naming.
     const gated = rig({ leiOn: {} });
     const b = await riteKeep({ ...gated.ports, houseFaces: async () => ({ open: [0, 1], shut: [] }) }, { workspace: "backup" }).catch((e: unknown) => e as Error);
@@ -299,6 +299,6 @@ describe("the keep rite, vessel half", () => {
     expect((c as { message: string }).message).toMatch(/the keep belongs to the operator's hand/);
     // CONTROL: every face open and read, none standing: the plain absent refusal names h0's kui.
     const none = rig({ leiOn: {} });
-    await expect(riteKeep({ ...none.ports, houseFaces: async () => ({ open: [0], shut: [] }) }, { workspace: "backup" })).rejects.toThrow(/lares lei kui --rite keep --branch backup --returns <n> --face 0/);
+    await expect(riteKeep({ ...none.ports, houseFaces: async () => ({ open: [0], shut: [] }) }, { workspace: "backup" })).rejects.toThrow(/lares lei kui rite=keep branch=backup returns=<n> face=0/);
   });
 });

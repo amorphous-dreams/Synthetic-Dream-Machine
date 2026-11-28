@@ -54,9 +54,9 @@ describe("local session connector", () => {
         name: "SessionRefused", refusal: "face-unverified" });
       expect(new SessionRefused("named").refusal).toBe("named");
       // THE VESSEL'S OWN WORDS RIDE THE REFUSAL: a door that names the cause and its cure reaches the person who asked.
-      const worded = new SessionRefused("face-not-open", false, "face-not-open: h2 served by custody, dark here; recard it: lares vault recard --face 2");
+      const worded = new SessionRefused("face-not-open", false, "face-not-open: h2 served by custody, dark here; recard it: lares vault recard face=2");
       expect(worded.refusal).toBe("face-not-open");
-      expect(worded.message).toContain("lares vault recard --face 2");
+      expect(worded.message).toContain("lares vault recard face=2");
       const one = await openLocalSession({ faceRef: "a", dataDir: dir });
       expect(await one.call("load", { value: 1 }, { requestId: "call-1" })).toMatchObject({
         kind: "session:result", requestId: "call-1", status: "done" });

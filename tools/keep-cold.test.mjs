@@ -38,7 +38,7 @@ async function standHouse(tag, name) {
   const port = await freePort();
   const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true" };
   const lares = (args) => spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env });
-  const found = lares(["vessel", "found", "--hearth", "--name", name, "--root", root, "--skip-build"]);
+  const found = lares(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "--skip-build"]);
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
   // The daemon stands, then the custody opens; a restart walks both again (kept wikis live in the daemon alone).
   let child;
@@ -90,8 +90,8 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
     assert.deepEqual(held(), ["alpha", "bravo", "charlie"]);
 
     mkdirSync(join(h.root, "workspaces", "backup", ".git"), { recursive: true });
-    h.must(["lei", "kui", "--rite", "keep", "--branch", "backup", "--returns", "2", "--json"]);
-    const kept = h.answer(h.must(["rite", "keep-cut", "--workspace", "backup", "--json"])).data;
+    h.must(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "--json"]);
+    const kept = h.answer(h.must(["rite", "keep-cut", "workspace=backup", "--json"])).data;
     assert.equal(kept.kept, true, JSON.stringify(kept));
     const manifest = JSON.parse(readFileSync(join(kept.dest, "manifest.json"), "utf8"));
     const carried = (slug) => manifest.rows.filter((r) => r.layer === "wiki-working" && r.title === pageUri(slug)).map((r) => r.path);
@@ -143,8 +143,8 @@ test("W2 a restart over wikis that hold workbench folders wakes none of them; an
     }
     // The keep wakes each cold wiki, and a woken wiki projects its workbench: every wiki now holds a folder on disk.
     mkdirSync(join(h.root, "workspaces", "backup", ".git"), { recursive: true });
-    h.must(["lei", "kui", "--rite", "keep", "--branch", "backup", "--returns", "2", "--json"]);
-    assert.equal(h.answer(h.must(["rite", "keep-cut", "--workspace", "backup", "--json"])).data.kept, true);
+    h.must(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "--json"]);
+    assert.equal(h.answer(h.must(["rite", "keep-cut", "workspace=backup", "--json"])).data.kept, true);
     const folder = (slug) => join(h.root, "projections", "realms", slug, "wikis", slug);
     const pageFile = (slug) => join(folder(slug), "ha.ka.ba", "notes", "page", `${slug}-one.mem`);
     for (const slug of SLUGS) assert.ok(existsSync(pageFile(slug)), `${slug} holds a workbench folder`);

@@ -13,7 +13,7 @@
  *
  * ── THE MOVE IS AN ACT, AND IT ADMITS IT ─────────────────────────────────────────────────────────
  * Relocating a bag moves an operator's bytes across a boundary that matters: into a tracked history, or out
- * of one. So it runs HITL (`--approve`), it PLANS before it touches anything (both ends resolve first), it
+ * of one. So it runs HITL (`approve=true`), it PLANS before it touches anything (both ends resolve first), it
  * refuses to overwrite an occupied destination, and it moves the directory whole rather than merging into
  * whatever stands there. A move into a `repository` leaves the actual committing to the operator — this
  * writes files into a working tree and never runs a source-control verb, because deciding what enters a

@@ -1,5 +1,5 @@
 /**
- * watch-core — THE DRAIN, LIFTED (face-pools #/lanes W1, W2): one settle seat the CLI's `lares ingest --watch` and the vessel share,
+ * watch-core — THE DRAIN, LIFTED (face-pools #/lanes W1, W2): one settle seat the CLI's `lares ingest watch=true` and the vessel share,
  * and the vessel's host over the WORN face's pool (`projections/faces/<pet name>/`).
  *
  *   W1a the drain seat: hints inside one settle window ride ONE wave; a hint mid-wave queues exactly one rerun; `flush`

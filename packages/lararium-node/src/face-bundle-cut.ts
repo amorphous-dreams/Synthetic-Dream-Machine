@@ -179,8 +179,8 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   const worn = door?.mountFace() ?? null;
   if (door === null || worn !== face) {
     throw new BackupRefused("face-not-worn", worn === null
-      ? `this vessel's composition mounts no face, so no island counts keys for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`
-      : `this vessel's composition mounts h${worn}, so its island counts no key for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`);
+      ? `this vessel's composition mounts no face, so no island counts keys for h${face}: mount it (\`lares vault unlock face=${face}\`) on a standing vessel, and cut`
+      : `this vessel's composition mounts h${worn}, so its island counts no key for h${face}: mount it (\`lares vault unlock face=${face}\`) on a standing vessel, and cut`);
   }
   if (door.cutMemory === null) throw new BackupRefused("memory-unavailable", "no daemon island stands in this vessel, so no content-key holder answers the memory section");
 

@@ -3,7 +3,7 @@
  * (NEXT VECTOR build 4, the deferred cut; handoff #watcher-talk-story).
  *
  * A one-shot `lares ingest` walks disk, so a vanished carrier never appears in its
- * scan; the long-lived `lares ingest --watch` daemon, tracking what it last saw, witnesses a
+ * scan; the long-lived `lares ingest watch=true` daemon, tracking what it last saw, witnesses a
  * vanish. The watcher tombstones nothing by itself and holds no clock over a vanish:
  * it hands each vanished address to the vessel's shore, where the carrier stands as a
  * PENDING REMOVAL until a person answers through `lares shore`. This vector drives the
@@ -111,15 +111,15 @@ interface WatchProc {
   readonly stop: () => Promise<void>;
 }
 
-/** Spawn `lares ingest --watch --apply` against the staged vessel; stream its log. */
+/** Spawn `lares ingest watch=true apply=true` against the staged vessel; stream its log. */
 function spawnWatch(): WatchProc {
   let log = "";
   const child = spawn(
     process.execPath,
     [
-      CLI_BIN, "ingest", "--watch",
-      "--source", SRC, "--to", LARES_URI, "--apply",
-      "--debounce", "150",
+      CLI_BIN, "ingest", "watch=true",
+      `source=${SRC}`, `to=${LARES_URI}`, "apply=true",
+      "debounce=150",
     ],
     { cwd: REPO_ROOT, env: { ...process.env, LAR_ROOT: lar.root, LAR_PORT: String(lar.port) } },
   );
@@ -156,7 +156,7 @@ beforeAll(async () => {
 
   // Write all test carriers, then land them in ONE ingest wave.
   for (const slug of SLUGS) writeCarrier(slug);
-  const r = await cli(["ingest", "--source", SRC, "--to", LARES_URI, "--apply", "--yes", "--json"]);
+  const r = await cli(["ingest", `source=${SRC}`, `to=${LARES_URI}`, "apply=true", "--yes", "--json"]);
   const d = r.json?.["data"] as Record<string, unknown> | undefined;
   if (!d) throw new Error(`setup ingest produced no data: ${JSON.stringify(r.json)}\n${r.stderr.slice(-600)}`);
   const carriers = (d["carriers"] as Array<Record<string, unknown>>) ?? [];
@@ -169,7 +169,7 @@ beforeAll(async () => {
   // base stands pinned (the file in the framing the hand laid, beside the records' render) — the
   // watcher's baseline for "unchanged". No nap: the vessel says the moment.
   expect(d["settle"], `the apply names its settle word: ${JSON.stringify(d["settle"])}`).toMatchObject({ settled: true, mirrored: true, settledCount: landed.length });
-  const r2 = await cli(["ingest", "--source", SRC, "--to", LARES_URI, "--json"]);
+  const r2 = await cli(["ingest", `source=${SRC}`, `to=${LARES_URI}`, "--json"]);
   const d2 = r2.json?.["data"] as Record<string, unknown>;
   expect(d2["changed"], "the mirror must be settled before the watcher cases").toBe(0);
 }, 180_000);
@@ -274,12 +274,12 @@ describe.skipIf(!stagedTarget || seatLaunched)("watcher Cut C — the disk peer 
       expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-brake/);
 
       // An answer over many names the count that stands. One short refuses and changes nothing.
-      const short = await cli(["shore", "restore", "--all", "--count", String(pending.length + 1), "--yes", "--json"]);
+      const short = await cli(["shore", "restore", "all=true", `count=${String(pending.length + 1)}`, "--yes", "--json"]);
       expect(short.json?.["ok"]).toBe(false);
       expect((short.json?.["error"] as Record<string, unknown>)["code"]).toBe("pending-count-moved");
       for (const slug of slugs) expect(existsSync(carrierPath(slug))).toBe(false);
 
-      const restored = await cli(["shore", "restore", "--all", "--count", String(pending.length), "--yes", "--json"]);
+      const restored = await cli(["shore", "restore", "all=true", `count=${String(pending.length)}`, "--yes", "--json"]);
       expect(restored.json?.["ok"], JSON.stringify(restored.json)).toBe(true);
       // `restore` writes the RECORDS' RENDER back. A hand-laid carrier stands in its own framing while it
       // says what the records say (an unchanged carrier takes no write), so the render differs from the

@@ -2,7 +2,7 @@
  * pronaos-desk -- a desk checkout names its prepared Web root and build receipt by one pure derivation, and the
  * one composition (`composePronaosFromEnv`) serves what it names.
  *
- * `lares vessel stand --page` is the shore that calls it. The derivation holds no trust: it names two paths
+ * `lares vessel stand page=true` is the shore that calls it. The derivation holds no trust: it names two paths
  * when BOTH stand, and the composition's projection checks every byte against the receipt.
  */
 import { createHash } from "node:crypto";

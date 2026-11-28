@@ -1,11 +1,11 @@
 /**
  * `lares fleet join` — one face's fleet takes a new vessel of the same human (`@lararium/node` `commands/fleet-join`).
  *
- *   lares fleet join offer   [--face N] [--out FILE]         on the root holder: the face, its root key, a nonce,
+ *   lares fleet join offer   [face=N] [out=FILE]         on the root holder: the face, its root key, a nonce,
  *                                                            and the scopes the face stands at
- *   lares fleet join request <offer-file> [--out FILE]       on the joining PLACE: its face-scoped keys mint here,
+ *   lares fleet join request <offer-file> [out=FILE]       on the joining PLACE: its face-scoped keys mint here,
  *                                                            and the join stays pending until its answer lands
- *   lares fleet join answer  <request-file> [--face N] [--out FILE] [--sync-url URL] [--doc-url URL]
+ *   lares fleet join answer  <request-file> [face=N] [out=FILE] [sync-url=URL] [doc-url=URL]
  *                                                            on the root holder: the signed answer, with the gate
  *                                                            pin, the canon list and the face's sealed address secret
  *   lares fleet join land    <answer-file>                   on the joining place: the face lands
@@ -16,9 +16,9 @@
  * request named. The joinee reads the answer under the root key its kept offer named, so the courier carries that
  * key before the answer exists.
  *
- * `--face N` names which of the root holder's faces the join serves (unnamed: the one face standing open, else a refusal that lists them); the answer
+ * `face=N` names which of the root holder's faces the join serves (unnamed: the one face standing open, else a refusal that lists them); the answer
  * names the same face its offer named. The index stays local to the root holder: the offer and the answer name the
- * face by its PersonaGroup and root key, so the joining vessel takes no `--face`.
+ * face by its PersonaGroup and root key, so the joining vessel takes no `face=`.
  *
  * The root holder's two acts ride the store door (inside the standing vessel when one stands); the joining
  * vessel's acts run in this process with no vessel standing, as a founding does.
@@ -56,21 +56,21 @@ function emitFile(args: ParsedArgs, value: unknown, what: string): void {
   console.log(`[lares fleet join] ${what} written to ${at}`);
 }
 
-/** The face a root holder's act names: `--face N`, a whole number from 0, or nothing (the one face standing open resolves in the node). */
+/** The face a root holder's act names: `face=N`, a whole number from 0, or nothing (the one face standing open resolves in the node). */
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
-  // A bare `--face` (or `--no-face`) names no index: it refuses rather than fall back to the founding face.
-  if (args.flags["face"] !== undefined) throw new FleetJoinRefused("face-malformed", "--face names a persona index: give it one, as `--face 1`.");
+  // A bare `face=` (or `--no-face`) names no index: it refuses rather than fall back to the founding face.
+  if (args.flags["face"] !== undefined) throw new FleetJoinRefused("face-malformed", "face= names a persona index: give it one, as `face=1`.");
   if (raw === undefined) return {};
   const face = typeof raw === "string" && /^(?:0|[1-9][0-9]{0,5})$/.test(raw) ? Number(raw) : Number.NaN;
-  if (!Number.isSafeInteger(face)) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${JSON.stringify(raw)}.`);
+  if (!Number.isSafeInteger(face)) throw new FleetJoinRefused("face-malformed", `face= names a persona index: a whole number from 0, never ${JSON.stringify(raw)}.`);
   return { face };
 }
 
-/** The joinee's acts (request, land, abandon) name no face: the face rides the offer, so a `--face` here would pass silently and mean nothing. */
+/** The joinee's acts (request, land, abandon) name no face: the face rides the offer, so a `face=` here would pass silently and mean nothing. */
 function refuseFaceOnJoinee(args: ParsedArgs, act: string): void {
   if (args.options["face"] === undefined && args.flags["face"] === undefined) return;
-  throw new FleetJoinRefused("face-joinee", `\`lares fleet join ${act}\` takes no --face: the joinee never names a face — the face rides the offer, and \`--face N\` belongs to \`offer\` and \`answer\` on the root holder.`);
+  throw new FleetJoinRefused("face-joinee", `\`lares fleet join ${act}\` takes no face=: the joinee never names a face — the face rides the offer, and \`face=N\` belongs to \`offer\` and \`answer\` on the root holder.`);
 }
 
 /** The fleet door answers one group, `join`, and the group its acts. */
@@ -109,7 +109,7 @@ export async function cmdFleet(args: ParsedArgs): Promise<number> {
         refuseFaceOnJoinee(args, act);
         const answer = readJson(file, "answer");
         await ownedStore(larDataDir(), (repo) => runFleetJoinLand({ repo, answer }));
-        console.log("[lares fleet join] landed — the face stands on this vessel. Start with: lares vessel stand --with-web");
+        console.log("[lares fleet join] landed — the face stands on this vessel. Start with: lares vessel stand with-web=true");
         return 0;
       }
       case "abandon": {

@@ -33,11 +33,11 @@ describe("the adopt reads the seed and speaks its landing", () => {
     expect(preview).toContain(`would stage local floor ${"d".repeat(64)}`);
     expect(preview).toContain(`base:     ${"b".repeat(64)}`);
     expect(preview).toContain(`receipt:  seed ${"5".repeat(64)}`);
-    expect(preview).toContain("`lares vessel floor adopt --apply`");
+    expect(preview).toContain("`lares vessel floor adopt apply=true`");
     const landed = floorAdoptLines({ ...r, applied: true } as FloorAdoptOutcome).join("\n");
     expect(landed).toContain("STAGED local floor");
-    expect(landed).toContain("`lares vessel floor adopt --commit`");
-    expect(landed).toContain("`lares vessel floor adopt --revert`");
+    expect(landed).toContain("`lares vessel floor adopt commit=true`");
+    expect(landed).toContain("`lares vessel floor adopt revert=true`");
   });
 
   test("CONTROL: a refusal and a replay speak by name", () => {

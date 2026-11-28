@@ -23,7 +23,7 @@ export type CustodyFrame =
   | { readonly op: "custody" }
   /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */
   | { readonly op: "census" }
-  /** The document census: every document the stores hold and who names it, read-only (`vessel census --docs`). */
+  /** The document census: every document the stores hold and who names it, read-only (`vessel census docs=true`). */
   | { readonly op: "doc-census" }
   /** The shore's flush over every island the composition holds (`lares shore flush`): no credential; it places no record. */
   | { readonly op: "shore-flush" }

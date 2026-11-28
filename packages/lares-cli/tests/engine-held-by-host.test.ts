@@ -28,9 +28,9 @@ describe("the host holds the engine", () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     const { cmdStandForeground, cmdStandWithWeb } = await import("../src/commands/scripted.js");
     const { parseArgs } = await import("../src/parse-args.js");
-    expect(await cmdStandForeground(parseArgs(["vessel", "stand", "--foreground"]))).toBe(3);
-    expect(await cmdStandWithWeb(parseArgs(["vessel", "stand", "--with-web"]))).toBe(3);
-    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toMatch(/EngineHeldByHost: vessel stand --foreground[\s\S]*EngineHeldByHost: vessel stand --with-web/);
+    expect(await cmdStandForeground(parseArgs(["vessel", "stand", "foreground=true"]))).toBe(3);
+    expect(await cmdStandWithWeb(parseArgs(["vessel", "stand", "with-web=true"]))).toBe(3);
+    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toMatch(/EngineHeldByHost: vessel stand foreground=true[\s\S]*EngineHeldByHost: vessel stand with-web=true/);
     err.mockRestore();
   });
 

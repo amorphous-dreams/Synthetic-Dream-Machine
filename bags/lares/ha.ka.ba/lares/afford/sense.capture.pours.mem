@@ -25,7 +25,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ surface · pointer · bulk · writeback · dry-run · wing · room · project · limit · sensorium · all · reason
+!! takes ~ surface · pointer · bulk · writeback · dry-run · wing · room · project · limit · sensorium · all
 
 ```memetic-wikitext
 <<has entity=`arg` name=`surface` params=`takes/word ~ the transcript surface (claude, codex, copilot; all with bulk)`>>
@@ -39,7 +39,6 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 <<has entity=`arg` name=`limit` params=`takes/count ~ cap each surface's transcripts, oldest first`>>
 <<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
 <<has entity=`arg` name=`all` params=`skins/cli ~ walk the whole tending movement: quiesce, baseline, drawers, bearing, projection, verify, resume`>>
-<<has entity=`arg` name=`reason` params=`takes/word skins/cli ~ a word the door's row shares with the capture hooks' pause (lares hooks pause), which the pour's own pause leaves unread`>>
 ```
 
 <<~/ahu>>
@@ -91,6 +90,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zud8Pyuvbf7uLb7TJY5ju0Yw_SUx9Smqwmfbgfnmf28`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P6_rfzy3WJydV7Pxbt3fUQvOf4Hk31uZrgXzSD-Q_aE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

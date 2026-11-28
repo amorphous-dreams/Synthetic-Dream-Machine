@@ -137,13 +137,13 @@ const bytes = (text) => Buffer.byteLength(text, "utf8");
 export const LEI_RITES = ["push", "kukulu"];
 export const gitArgv = () => ["rev-parse", "HEAD", "--abbrev-ref", "HEAD"];
 /** The shim's argv for one rite's lei at a branch and head: the lei door's `show`. */
-export const leiArgv = (rite, branch, head) => ["lei", "show", "--rite", rite, "--branch", branch, "--head", head, "--json"];
+export const leiArgv = (rite, branch, head) => ["lei", "show", `rite=${rite}`, `branch=${branch}`, `head=${head}`, "--json"];
 /** The shim's argv for the tessera receipts the rite writes. */
 export const halvesArgv = () => ["rite", "receipts", "--json"];
 /** The shim's argv for the keep line at one workspace: a keep lei names its workspace as its branch, and no head. */
-export const keepArgv = (workspace) => ["lei", "show", "--rite", "keep", "--branch", workspace, "--json"];
+export const keepArgv = (workspace) => ["lei", "show", "rite=keep", `branch=${workspace}`, "--json"];
 /** The shim's argv for the vessel observation. */
-export const observeArgv = () => ["vessel", "stand", "--observe", "--json"];
+export const observeArgv = () => ["vessel", "stand", "observe=true", "--json"];
 /** The shim's argv for one page of the memory index, read in the worn face's daemon wiki. */
 export const indexArgv = (after) => [
   "get", `filter=${INDEX_FILTER}`, "fields=title,description",
@@ -163,7 +163,7 @@ export const lawArgv = () => [
 /** The shim's argv for the pins that stand, titles alone. */
 export const lawPinsArgv = () => ["get", `filter=${LAW_PINS_FILTER}`, `limit=${INDEX_ROWS}`, "--json"];
 /** The host CLI's argv for the homes line. */
-export const homesArgv = () => ["home", "read", "--brief"];
+export const homesArgv = () => ["home", "read", "brief=true"];
 
 /** The JSON answer a door printed: the whole output, else its last line that opens an object; null where none parses. */
 function parseAnswer(stdout) {
@@ -212,10 +212,10 @@ export function libraryLine(frame) {
 }
 
 /** The shim's argv for the TW5 docs library's read: its status, which composes it where the vessel answers it. */
-export const docsArgv = () => ["wiki", "status", "--recipe", "tw5-docs", "--json"];
+export const docsArgv = () => ["wiki", "status", "recipe=tw5-docs", "--json"];
 
 /**
- * The TW5 docs library's line, read off the vessel's own answer: where `wiki status --recipe tw5-docs` answers, the library
+ * The TW5 docs library's line, read off the vessel's own answer: where `wiki status recipe=tw5-docs` answers, the library
  * (the vendored tw5.com edition every face reads read-only, `tw5-docs-library`) with the read that opens a page and the one
  * that lists the operator vocabulary; where it refuses or stays silent (an older vessel image answers `wiki-unreached`),
  * `Library: tw5-docs unread (<cause>)`, so the wake never names a library the vessel does not answer.
@@ -237,7 +237,7 @@ export const RETRY_MS = 1_500;
  * line says the answer is owed and names the read to take, never that no vessel stands and never to stand one.
  */
 export function observation(result) {
-  const owed = (why) => ({ up: false, owed: true, line: `the hearth did not answer the wake in time (${why}); its reads are owed, not dark: take them by hand with \`${OWED_READ}\`, or read the observation with tools/lares-container.sh vessel stand --observe --json` });
+  const owed = (why) => ({ up: false, owed: true, line: `the hearth did not answer the wake in time (${why}); its reads are owed, not dark: take them by hand with \`${OWED_READ}\`, or read the observation with tools/lares-container.sh vessel stand observe=true --json` });
   if (result === BUDGET) return owed(CLOSED);
   const fault = readFault(result, "shim");
   if (fault) return owed(fault);
@@ -337,7 +337,7 @@ export function indexLines(result) {
 }
 
 const LAW_VIEW = `${viewOf(LAW_INDEX_FILTER).replace('"fields": "title,description"', '"fields": "title,description,role"')})`;
-const LAW_FURTHER = `read the rest: act(address="lar:///engine.law.indexes", args={"after": <next>}) or lares law index --all; the filter: ${LAW_VIEW}; pin or unpin: act(address="lar:///engine.law.pins", args={"uri": <title>}) · act(address="lar:///engine.law.unpins", args={"uri": <title>}) (lares law pin|unpin <uri>)`;
+const LAW_FURTHER = `read the rest: act(address="lar:///engine.law.indexes", args={"after": <next>}) or lares law index all=true; the filter: ${LAW_VIEW}; pin or unpin: act(address="lar:///engine.law.pins", args={"uri": <title>}) · act(address="lar:///engine.law.unpins", args={"uri": <title>}) (lares law pin|unpin <uri>)`;
 
 /** The line that frames the rows by provenance and weight: canon grounds each one, the five tools turn it, and both hands hold the frame. */
 export const LAW_WEIGHT_LINE = "these rows come from canon, the house's settled ground (🜃); read one whole (get(title=<title>, recipe=\"default\", aperture=\"arc\")) and turn it through the five tools beside the live work; operator and node hold the frame together";
@@ -545,7 +545,7 @@ export function workspaceBindsOf(env, envFileText) {
 export function workspaceOfferLines(workspaces, treeStands) {
   return (Array.isArray(workspaces) ? workspaces : [])
     .filter((w) => !treeStands(w.dir))
-    .map((w) => `workspace ${w.name} holds no git tree; lares surface init --workspace ${w.name}`);
+    .map((w) => `workspace ${w.name} holds no git tree; lares surface init workspace=${w.name}`);
 }
 
 /** The keep line: the keep lei standing at the configured workspace, or none with how one strings; a locked vessel says nothing here. */
@@ -556,16 +556,16 @@ export function keepLines(workspace, result) {
   if (refusesLocked(answer)) return null;
   if (answer.ok === false) return `Lares keep unread: ${answer.error?.code ?? "refused"}`;
   const lei = answer.data?.lei ?? {};
-  if (lei.standing === true) return `Lares keep: a keep lei stands for workspace "${workspace}" with ${Number(lei.returnsLeft ?? 0)} returns left; \`lares rite keep --workspace ${workspace}\` spends one`;
-  if (Array.isArray(lei.forks) && lei.forks.length > 0) return `Lares keep: the keep line for workspace "${workspace}" stands forked at ${lei.forks.map((c) => String(c).slice(0, 12)).join(" | ")}; settle it with lares lei show --rite keep --branch ${workspace}`;
-  return `Lares keep: no keep lei stands for workspace "${workspace}" (${lei.refusal ?? "absent"}); \`lares vault unlock\` offers one, or by hand: lares lei kui --rite keep --branch ${workspace} --returns <n>`;
+  if (lei.standing === true) return `Lares keep: a keep lei stands for workspace "${workspace}" with ${Number(lei.returnsLeft ?? 0)} returns left; \`lares rite keep workspace=${workspace}\` spends one`;
+  if (Array.isArray(lei.forks) && lei.forks.length > 0) return `Lares keep: the keep line for workspace "${workspace}" stands forked at ${lei.forks.map((c) => String(c).slice(0, 12)).join(" | ")}; settle it with lares lei show rite=keep branch=${workspace}`;
+  return `Lares keep: no keep lei stands for workspace "${workspace}" (${lei.refusal ?? "absent"}); \`lares vault unlock\` offers one, or by hand: lares lei kui rite=keep branch=${workspace} returns=<n>`;
 }
 
 /** The cure for one red keep tessera in conferre's reading. */
 function keepRedLine(t) {
   const at = `tessera ${String(t.tessera).slice(0, 12)} (workspace "${t.branch ?? "?"}", bundle ${String(t.head ?? "?").slice(0, 16)})`;
   return t.red === "landed-absent"
-    ? `Lares keep red: ${at} reads landed-absent: cut and never landed; cure: lares rite keep --workspace ${t.branch ?? "<workspace>"} (it pushes what waits and lands it)`
+    ? `Lares keep red: ${at} reads landed-absent: cut and never landed; cure: lares rite keep workspace=${t.branch ?? "<workspace>"} (it pushes what waits and lands it)`
     : `Lares keep red: ${at} reads ${t.red ?? "red"}; read it with lares rite receipts --json before any keep lands it`;
 }
 

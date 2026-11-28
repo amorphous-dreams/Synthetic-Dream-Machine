@@ -74,7 +74,7 @@ describe("where `lares surface` finds its house", () => {
   test("★ the route keeps `surface` on the host: no LAR_ROOT, the container house standing, nothing forwards ★", () => {
     const shim = "/checkout/tools/lares-container.sh";
     const envFile = join(home, ".lares", "lares-surface.env");
-    for (const argv of [["surface", "check"], ["surface", "open", "--launch"], ["surface", "commit", "-m", "x"], ["surface", "init", "--face", "1"]]) {
+    for (const argv of [["surface", "check"], ["surface", "open", "launch=true"], ["surface", "commit", "-m", "x"], ["surface", "init", "face=1"]]) {
       expect(decideRoute({ argv, env, fsProbe: { exists: (p) => p === envFile || p === shim }, tty: false, shim, commands: ["surface"] }), argv.join(" ")).toBe("local");
     }
     expect(commandScope("surface")).toBe("host");
@@ -100,7 +100,7 @@ describe("the face, as the host reads it", () => {
 
   test("a face no label names, with the vessel down: refuses by name", async () => {
     expect(await cmdSurface(surfaceArgs(["open"], { face: "2" }), hostDoors())).toBe(1);
-    expect(asked).toEqual([["surface", "face", "--json", "--face", "2"]]);
+    expect(asked).toEqual([["surface", "face", "--json", "face=2"]]);
     expect(rig.said()).toMatch(/surface-face-unanswered/);
   });
 });

@@ -1,15 +1,15 @@
 /**
- * `lares sense analyze --lens mismatch` — the one command that checks whether a node's coupling reads HONEST across both
+ * `lares sense analyze lens=mismatch` — the one command that checks whether a node's coupling reads HONEST across both
  * estimators. It runs the TS-hull Gaussian-CMI coupling (the `ki` engine, browser-carried) BESIDE the R
  * effective-transfer-entropy reference (`coupling.R`, the RUN's plane) over the SAME signals, and diffs the
  * directed edges. They should agree; the day they part ways on whether two streams couple, that is a real
  * bug — a drift between what the vessel feels locally and what the reference computes. This is the parity
  * check the machine-code-runs-py debt owed, made into a single human word.
  *
- * The signal rides `--signal <path>` — an NDJSON matrix, one JSON array per line (rows=time, cols=signals);
- * `--names a,b,c` labels the columns (else s0,s1,…). Needs R for the reference side; without it, it says so.
+ * The signal rides `signal=<path>` — an NDJSON matrix, one JSON array per line (rows=time, cols=signals);
+ * `names=a,b,c` labels the columns (else s0,s1,…). Needs R for the reference side; without it, it says so.
  *
- *   lares sense analyze --lens mismatch --signal flow.ndjson --names who,authority,flow
+ *   lares sense analyze lens=mismatch signal=flow.ndjson names=who,authority,flow
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/cohomological-gate
  */
@@ -37,11 +37,11 @@ function readSignalMatrix(path: string): number[][] {
 export async function cmdMismatch(args: ParsedArgs): Promise<number> {
   const signal = args.options["signal"];
   if (typeof signal !== "string" || signal.length === 0) {
-    emit(args, { ok: false, error: { code: "usage", message: "--lens mismatch needs --signal <ndjson> (rows=time, cols=signals)" },
+    emit(args, { ok: false, error: { code: "usage", message: "lens=mismatch needs signal=<ndjson> (rows=time, cols=signals)" },
                  human: () => {
-                   console.error("lares sense analyze --lens mismatch: needs --signal <ndjson> (rows=time, cols=signals)");
+                   console.error("lares sense analyze lens=mismatch: needs signal=<ndjson> (rows=time, cols=signals)");
                    console.error("  compares the TS-hull ki coupling against the R effective-TE reference on the same signals.");
-                   console.error("  example: lares sense analyze --lens mismatch --signal flow.ndjson --names who,authority,flow");
+                   console.error("  example: lares sense analyze lens=mismatch signal=flow.ndjson names=who,authority,flow");
                  } });
     return exitFor("usage");
   }
@@ -54,7 +54,7 @@ export async function cmdMismatch(args: ParsedArgs): Promise<number> {
     did = await vesselDid();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense analyze --lens mismatch: ${msg}`) });
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense analyze lens=mismatch: ${msg}`) });
     return exitFor("not-found");
   }
 
@@ -63,11 +63,11 @@ export async function cmdMismatch(args: ParsedArgs): Promise<number> {
     // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
     const f = verbFailure(err);
     failCode = f.code;
-    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand --foreground` (the comparator reaches both the TS hull and the R plane through it)." : f.hint;
+    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand foreground=true` (the comparator reaches both the TS hull and the R plane through it)." : f.hint;
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(hint !== undefined ? { hint } : {}) },
-      human: () => console.error(`lares sense analyze --lens mismatch: ${f.message}`),
+      human: () => console.error(`lares sense analyze lens=mismatch: ${f.message}`),
     });
     return null;
   });
@@ -75,7 +75,7 @@ export async function cmdMismatch(args: ParsedArgs): Promise<number> {
   if (submit.status === "error") {
     const msg = submit.errorMessage ?? "unknown";
     emit(args, { ok: false, requestId: submit.requestId, error: { code: "verb-error", message: msg },
-                 human: () => console.error(`lares sense analyze --lens mismatch failed: ${msg}`) });
+                 human: () => console.error(`lares sense analyze lens=mismatch failed: ${msg}`) });
     return exitFor("verb-error");
   }
   const result = summaryOutput(submit) ?? {};
@@ -86,7 +86,7 @@ export async function cmdMismatch(args: ParsedArgs): Promise<number> {
     human: () => {
       const agree = result["agree"];
       const edges = Array.isArray(result["edges"]) ? (result["edges"] as Array<Record<string, unknown>>) : [];
-      console.log(`lares sense analyze --lens mismatch — ki (Gaussian-CMI) ⋈ R (effective-TE)`);
+      console.log(`lares sense analyze lens=mismatch — ki (Gaussian-CMI) ⋈ R (effective-TE)`);
       console.log(`  signals:      ${rows[0]?.length ?? 0} · samples: ${rows.length}`);
       if (agree === null) {
         console.log(`  verdict:      cannot compare — ${String(result["note"] ?? "R unavailable")}`);

@@ -453,7 +453,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         await joined.keyhive.contactCard();
         try { await registerOwn(); }
         catch (again) {
-          if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${handle} held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
+          if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${handle} held no prekey secret even after its card; read \`lares vault status verbose=true\` and keep the face dark`);
           throw again;
         }
         recard = { stale: true, reminted: recard?.reminted ?? [], ...(recard?.held ? { held: recard.held } : {}), commit: recard?.commit ?? (async () => {}) };
@@ -2088,7 +2088,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
        * for the roster); a seat that can hand nothing answers the cure by name.
        */
       const ownerCure = (slug: string, owner: { readonly handleIndex: number }) =>
-        ({ cure: `wear the realm's owner face (\`lares vault unlock --face ${owner.handleIndex}\`, then \`lares wear ${owner.handleIndex}\`) and land the share again (\`lares wiki share ${slug}\`)` });
+        ({ cure: `wear the realm's owner face (\`lares vault unlock face=${owner.handleIndex}\`, then \`lares wear ${owner.handleIndex}\`) and land the share again (\`lares wiki share ${slug}\`)` });
       /** The realm owner's own seat under the session of the ask, which must wear that owner face; null where it does not. */
       const ownerUnderSession = async (owner: { readonly group: string }, context: Parameters<typeof sessionOf>[1] & { readonly asker?: Hand }) => {
         // A landing signs only under a hand: any other asker leaves the cure to the person (the socket refuses a seat first).

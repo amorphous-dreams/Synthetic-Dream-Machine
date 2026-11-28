@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.persona.mints"
 
 ! face.persona.mints ~ a persona root at one handle index
 
-`lares persona new <index> --name '<petname>'` mints a persona root at that handle index, or loads the one standing there, and keeps its private label. `--handle '<Handle>'` declares its outward name apart from the label; `--seat [--chair <label>]` stands it for a Kahu chair on this node, with a private chair label and no Handle needed; `--split-root` opts into the 2-of-3 recovery split. The index reads within the derivation's range and this vessel's slot ceiling (`LAR_PERSONA_SLOTS`); a herm mints no root, and a place with no face yet founds one first.
+`lares persona new <index> name='<petname>'` mints a persona root at that handle index, or loads the one standing there, and keeps its private label. `--handle '<Handle>'` declares its outward name apart from the label; `--seat [--chair <label>]` stands it for a Kahu chair on this node, with a private chair label and no Handle needed; `--split-root` opts into the 2-of-3 recovery split. The index reads within the derivation's range and this vessel's slot ceiling (`LAR_PERSONA_SLOTS`); a herm mints no root, and a place with no face yet founds one first.
 
 <<~/ahu>>
 
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qYnkAyb0DNCnQ3gCl7Few8H1ro6HJOrhW2EbMNz4-jk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ItoDUf5y27wTWD7OnaVRy6G30AnQVnmJtc3NDQclnJ0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

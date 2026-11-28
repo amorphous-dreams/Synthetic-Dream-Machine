@@ -42,12 +42,12 @@ export const ATTEMPT_STAKES = {
   vessel: {
     burn: "shuts this vessel's unlock door until the vessel restarts",
     spent: "this vessel refuses every unlock until it restarts",
-    recovery: "restart the vessel (`lares vessel stand --restart`) to restore the tries; where the vessel's tree binds a paper pin (`lares vault status` lists its slots), `lares vault unlock --paper` opens it under the sheet",
+    recovery: "restart the vessel (`lares vessel stand restart=true`) to restore the tries; where the vessel's tree binds a paper pin (`lares vault status` lists its slots), `lares vault unlock paper=true` opens it under the sheet",
   },
   face: {
     burn: "shuts this face's unlock and ward until the vessel restarts",
     spent: "this face refuses every unlock and ward act until the vessel restarts",
-    recovery: "restart the vessel (`lares vessel stand --restart`) to restore the face's tries; where the face binds a paper pin, `lares vault unlock --face <N> --paper` opens it under the sheet; a face beyond its routes returns from its backup bundle (`lares vault restore <file>`) or its split cards (`lares vault restore --cards --face <root-key> --as <N>`)",
+    recovery: "restart the vessel (`lares vessel stand restart=true`) to restore the face's tries; where the face binds a paper pin, `lares vault unlock face=<N> paper=true` opens it under the sheet; a face beyond its routes returns from its backup bundle (`lares vault restore <file>`) or its split cards (`lares vault restore --cards --face <root-key> --as <N>`)",
   },
   "page-ward": {
     burn: "shuts this page's ward until the page reloads",

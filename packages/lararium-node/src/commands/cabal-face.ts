@@ -44,13 +44,13 @@ export async function runCabalFace(opts: {
   readonly realm:     string;
   readonly nexusAid?: string;
   readonly present:   boolean;
-  /** The face that acts (`--face N`); absent, the one face standing open. */
+  /** The face that acts (`face=N`); absent, the one face standing open. */
   readonly face?:     number;
   readonly sealHome:  string;
   readonly repo:      Repo;
 }): Promise<CabalFaceResult> {
   const realm = opts.realm.trim().toLowerCase();
-  if (!HEX64.test(realm)) throw new CabalFaceError(`--realm expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
+  if (!HEX64.test(realm)) throw new CabalFaceError(`realm= expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
   const vesselKey = await loadFaceAtomKey(opts.face);
   if (!vesselKey) throw new CabalFaceError("this vessel surfaces no verifying key — it keeps no ledger to read the realm's Nexus off.");
   const nexusAid = await actingRealmNexus({
@@ -60,8 +60,8 @@ export async function runCabalFace(opts: {
   const leaf = opts.present ? await mintFaceNexusLeaf(nexusAid, opts.face) : await faceNexusLeaf(nexusAid, opts.face);
   if (!leaf) {
     throw new CabalFaceError(opts.present
-      ? "face-root-absent: this vessel holds no root for the face it acts as — name a face it founded (--face N)"
-      : "the acting face presents no key at the Nexus this realm stands under — `lares cabal face --realm <id>` presents it there");
+      ? "face-root-absent: this vessel holds no root for the face it acts as — name a face it founded (face=N)"
+      : "the acting face presents no key at the Nexus this realm stands under — `lares cabal face realm=<id>` presents it there");
   }
   leaf.seed.fill(0);
   if (opts.present) await noteVesselRealm(opts.repo, vesselKey, realm, nexusAid);
@@ -86,14 +86,14 @@ export async function runCabalFeed(opts: {
   readonly askIsland: AskIslandAsFace;
 }): Promise<{ readonly realm: string; readonly fed: boolean }> {
   const realm = opts.realm.trim().toLowerCase();
-  if (!HEX64.test(realm)) throw new CabalFaceError(`--realm expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
+  if (!HEX64.test(realm)) throw new CabalFaceError(`realm= expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
   const atomKey = await loadFaceAtomKey(opts.face);
   const nexusAid = await actingRealmNexus({
     repo: opts.repo, vesselKey: atomKey, realm, sealHome: opts.sealHome,
     ...(opts.nexusAid !== undefined ? { named: opts.nexusAid } : {}), refuse: (m) => new CabalFaceError(m),
   });
   const leaf = await mintFaceNexusLeaf(nexusAid, opts.face);
-  if (!leaf) throw new CabalFaceError("face-root-absent: this vessel holds no root for the face it acts as — name a face it founded (--face N)");
+  if (!leaf) throw new CabalFaceError("face-root-absent: this vessel holds no root for the face it acts as — name a face it founded (face=N)");
   await noteVesselRealm(opts.repo, atomKey, realm, nexusAid);
   const writer = leaf.verifyingKey.toLowerCase();
   const requestId = newRequestId();

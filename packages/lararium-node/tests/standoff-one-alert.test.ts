@@ -87,8 +87,8 @@ describe.skipIf(coreBlobSkip)("one alert per stand-off, through the island's mou
       expect(rail[0]!["auditOnly"], "the rail's alert stands live").toBeUndefined();
       expect(rail[0]!["standoff"]).toBe(s.key);
       expect(String(rail[0]!["drafts"])).toContain(head);
-      expect(String(rail[0]!["reason"])).toContain(`lares shore keep-both ${URI} --key ${s.key}`);
-      expect(String(rail[0]!["reason"])).toContain(`lares shore keep-disk ${URI} --key ${s.key}`);
+      expect(String(rail[0]!["reason"])).toContain(`lares shore keep-both ${URI} key=${s.key}`);
+      expect(String(rail[0]!["reason"])).toContain(`lares shore keep-disk ${URI} key=${s.key}`);
       expect(JSON.stringify(rail[0])).not.toContain("the operator's own words");
       expect((await s.temp.listVisible()).filter((t) => t.startsWith("$:/temp/lares/alert/")), "nothing in the wiki's own temp layer").toEqual([]);
       expect(readFileSync(s.file, "utf8"), "the operator's words stand on disk").toContain("the operator's own words");

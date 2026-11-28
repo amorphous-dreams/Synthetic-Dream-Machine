@@ -7,7 +7,7 @@ module-type: library
  * weave — project one memetic-wikitext carrier into a markdown + meta pair.
  *
  * The one mouth (`transposeMarkdown` / `projectSubmission`) every door calls: the CLI's
- * `lares meme project --to md`, the wiki's `meme-project` filter, and the daemon's `meme-project`
+ * `lares meme project to=md`, the wiki's `meme-project` filter, and the daemon's `meme-project`
  * verb. It WEAVES (carrier → markdown); TANGLE (markdown → carrier) reads the pair back elsewhere.
  * Same carrier bytes, same pair: no clock and no randomness anywhere in the path.
  *
@@ -78,7 +78,7 @@ module-type: library
  *                                             the separator row follows the first row
  *
  * Every door shares this one mouth: the in-VM face (`$tw.lares.meme.project(uri, "md")`), the
- * daemon's `meme-project` verb and `lares meme project --to md` all call {@link projectSubmission}.
+ * daemon's `meme-project` verb and `lares meme project to=md` all call {@link projectSubmission}.
  */
 
 import {
@@ -189,9 +189,9 @@ export interface WeaveProfile {
 }
 
 /**
- * `--dialect <variant>` names an RFC 7764-registered Markdown variant, matched case-insensitively
+ * `dialect=<variant>` names an RFC 7764-registered Markdown variant, matched case-insensitively
  * against {@link PROFILES}' own keys (`CommonMark`, `GFM`, `kramdown-rfc2629`) — never a house
- * abbreviation. Every door that reads a dialect name (the CLI's `--dialect`, the `meme-project`
+ * abbreviation. Every door that reads a dialect name (the CLI's `dialect=`, the `meme-project`
  * filter's second operand, the daemon verb's `dialect` arg) reads it through this ONE function, so
  * "unknown dialect" is one error message rather than three hand-written ones.
  */
@@ -200,7 +200,7 @@ export function profileOf(name: string): WeaveProfile {
     .find((k) => k.toLowerCase() === name.toLowerCase());
   if (!key) {
     const names = Object.keys(PROFILES).join(" · ");
-    throw new Error(`--dialect names an RFC 7764 variant, one of ${names} (got "${name}")`);
+    throw new Error(`dialect= names an RFC 7764 variant, one of ${names} (got "${name}")`);
   }
   return PROFILES[key];
 }
@@ -1107,7 +1107,7 @@ export function projectSubmission(
   // THE PLACEMENT LAW — ONE AUTHORITY PER QUESTION, both channels written from these SAME inputs so
   // they never disagree in practice: the `.md.meta` SIDECAR is authoritative for what TW5 loads as
   // the tiddler's own fields (title/type) and for the TARGET RECORD (`variant`/`tongue`) — the fact
-  // `--check` and the currency gate read back to know what to re-project THIS pair with, no flag
+  // `check=` and the currency gate read back to know what to re-project THIS pair with, no flag
   // needed at check time. The YAML FRONTMATTER is authoritative for the identity the file travels
   // WITH when it leaves the shelf alone (source/source-check/lang/tongue/the kramdown identity
   // keys) — what an external reader (an IANA tool, an RFC toolchain) sees with no sidecar beside it.
@@ -1121,7 +1121,7 @@ export function projectSubmission(
     "source-check": check,
     ...(profile.dialect !== "CommonMark" ? { variant: profile.dialect } : {}),
     ...(opts?.tongue ? { tongue: opts.tongue } : {}),
-    "projected-by": "weave (lares meme project --to md · meme-project)",
+    "projected-by": "weave (lares meme project to=md · meme-project)",
     law: "projected artifact — hand edits do not survive re-projection",
   };
   const meta = Object.keys(metaFields).sort().map((k) => `${k}: ${metaFields[k]}`).join("\n");

@@ -273,7 +273,7 @@ describe("R5 (H1) — a shared shell never retires", () => {
     await engineer.init();
     await engineer.stand();
     v.ledger.change((d) => noteWorkbenchSeat(d, privateCabalRealmId(ENGINEER, SLUG), SLUG, REFEREE, "ab".repeat(32)));
-    await expect(engineer.retire()).rejects.toThrow(/^wiki-shared: .*lares wiki share elyncia-referee --remove/);
+    await expect(engineer.retire()).rejects.toThrow(/^wiki-shared: .*lares wiki share elyncia-referee remove=true/);
     expect([...workbenchSeats(v.ledger.doc(), privateCabalRealmId(ENGINEER, SLUG), SLUG).keys()].sort()).toEqual([ENGINEER, REFEREE].sort());
     expect(engineer.rows()).toEqual(SHELL_ROWS);
   });

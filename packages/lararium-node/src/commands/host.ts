@@ -89,7 +89,7 @@ export class HostRefusal extends Error {}
 /** The Nexus a door acts on: the one named, else the hearth's own charter. It must be one this hearth carries. */
 async function hostedNexus(sealHome: string, nexusAid?: string): Promise<string> {
   const aid = (nexusAid ?? primaryNexusAid(sealHome) ?? "").trim().toLowerCase();
-  if (!aid) throw new HostRefusal("this vessel holds no charter — name the Nexus to host in (--nexus <aid>)");
+  if (!aid) throw new HostRefusal("this vessel holds no charter — name the Nexus to host in (nexus=<aid>)");
   const carried = await carriedSet(sealHome).catch(() => new Set<string>());
   if (![...carried].some((a) => a.toLowerCase() === aid)) {
     throw new HostRefusal(`this hearth does not carry ${aid.slice(0, 18)}… — it hosts only in a Nexus it carries`);
@@ -105,7 +105,7 @@ async function hostingLeaf(aid: string, mint: boolean, face?: number): Promise<N
   const leaf = mint ? await mintFaceNexusLeaf(aid, acting) : await faceNexusLeaf(aid, acting);
   if (!leaf) {
     throw new HostRefusal(mint
-      ? "this vessel holds no root for the face that would host — a hearth hosts as a face it founded: name one (--face N)"
+      ? "this vessel holds no root for the face that would host — a hearth hosts as a face it founded: name one (face=N)"
       : "the hosting face holds no key in this Nexus — `lares host roll` opens hosting here");
   }
   return leaf;
@@ -158,7 +158,7 @@ export interface HostRollResult {
  */
 export async function runHostRoll(opts: {
   readonly sealHome: string; readonly nexusAid?: string; readonly cap?: number; readonly repo: Repo;
-  /** The face the first roll hosts under (`--face N`); absent, the one face standing open. */
+  /** The face the first roll hosts under (`face=N`); absent, the one face standing open. */
   readonly face?: number;
 }): Promise<HostRollResult> {
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);

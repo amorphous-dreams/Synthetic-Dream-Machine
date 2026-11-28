@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.card.relights"
 
 ! face.card.relights ~ a dark face mints its card again before its bags
 
-`lares vault recard --face N` proves the face's own route on a TTY and hands it to the custody door in a `recard` frame (under a pūlama the route proves at the pūlama's hand door first, and this command asks none). The door refuses any face whose last light did not refuse for want of a prekey secret, then arms its next light: the stand mints its card before its bags. The identity stays; content sealed to a lost prekey stays lost.
+`lares vault recard face=N` proves the face's own route on a TTY and hands it to the custody door in a `recard` frame (under a pūlama the route proves at the pūlama's hand door first, and this command asks none). The door refuses any face whose last light did not refuse for want of a prekey secret, then arms its next light: the stand mints its card before its bags. The identity stays; content sealed to a lost prekey stays lost.
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4Xf9xyUVXJh0RNh8pGVJxTHmtzzYVdI5arBbAjnQH5E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QVzq3Ra4Sdvg0zdz25gI6D7Wt2RQGPzI5f-2KB5XYqI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

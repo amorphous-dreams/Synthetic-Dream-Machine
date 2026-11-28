@@ -13,7 +13,7 @@
  *     three re-derivations
  *   - mismatch (daemon)       → the existing ki↔R comparator (the TS-hull coupleMesh ⋈ the R reference)
  *
- * SIGNAL. The runner reads the passed `rows` matrix (mirrors the mismatch verb's `--signal`) OR, when a
+ * SIGNAL. The runner reads the passed `rows` matrix (mirrors the mismatch verb's `signal=`) OR, when a
  * target sensorium rides without an explicit signal, AUTO-EXTRACTS one from the target's child streams via
  * the injected `extractSignal` projector ({@link ../sensorium-signal}). Feature-gated: the projector STRUCTURE
  * runs now; today every real target reads an empty matrix (no child lands a signal.json yet), so the runner
@@ -35,7 +35,7 @@ export interface FlowRunDeps {
   /** mismatch (daemon) — the ki↔R honesty check, the one op that reaches both hulls. */
   mismatch:    (rows: number[][], names: string[], root?: string) => Promise<Record<string, unknown>>;
   /** the auto-extraction PROJECTOR (feature-gated) — project a poured target's child streams into a
-   *  signal-matrix when no explicit `--signal` rides. Absent (the calibration data-wait) returns empty
+   *  signal-matrix when no explicit `signal=` rides. Absent (the calibration data-wait) returns empty
    *  rows + a note; the runner then names the owed calibration rather than couple an empty matrix. */
   extractSignal?: (root: string) => { rows: number[][]; names: string[]; note: string };
 }
@@ -98,7 +98,7 @@ export async function runFlow(deps: FlowRunDeps, input: FlowRunInput): Promise<R
       flow: seed.petname, arity: seed.arity, capStack, ...targetsField,
       note: extractNote
         ? `no signal — auto-extract from the target: ${extractNote}`
-        : "no signal — pass --signal <ndjson>, or --target a poured sensorium to auto-extract its child streams",
+        : "no signal — pass signal=<ndjson>, or target= a poured sensorium to auto-extract its child streams",
       steps: [], outcome: null,
     };
   }

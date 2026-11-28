@@ -245,12 +245,12 @@ function nexusAidOrRefuse(sealHome: string): string {
 /** The membership door's sub-quorum refusal — it names the act a short quorum would have minted. */
 const subQuorum = (held: number, k: number): NexusContractError => new NexusContractError(
   `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seat key(s) of the seated roster, but a valid membership act carries ${k} distinct founding-kahu signatures. ` +
-  `Where the other seats rest in another vault, the act crosses as a partial: \`lares nexus contract <nym> --nexus <aid> --out <file>\` here, then \`--from <file>\` there.`,
+  `Where the other seats rest in another vault, the act crosses as a partial: \`lares nexus contract <nym> nexus=<aid> out=<file>\` here, then \`from=<file>\` there.`,
 );
 
 /**
  * Obtain the operator's "accepts carriage" contract-sig for an ADMIT. Two paths, fail-closed:
- *   · a `--contract <hex>` token supplied out-of-band → wrap it { signer: nym, sig } (the fold verifies it).
+ *   · a `contract=<hex>` token supplied out-of-band → wrap it { signer: nym, sig } (the fold verifies it).
  *   · else, if the nym is the per-Nexus leaf of a persona this vessel HOLDS (multitude-of-one) → self-sign the
  *     carriage token with that leaf. A root nym matches no leaf, so it never self-signs.
  * Neither → REFUSE (never admit an operator that has not consented to carriage).
@@ -277,7 +277,7 @@ async function resolveContractIn(
   }
   throw new NexusContractError(
     "admit REFUSED (fail-closed): no operator contract-in. The joining operator must sign 'accepts carriage' " +
-    "(`lares nexus accept-carriage` on their vessel) and supply the token via --contract, OR the nym must be the " +
+    "(`lares nexus accept-carriage` on their vessel) and supply the token via contract=, OR the nym must be the " +
     "per-Nexus leaf of a persona this vessel holds. A Nexus never conscripts an operator into carriage.",
   );
 }
@@ -298,7 +298,7 @@ async function resolveCarrierIn(
   if (!sig) {
     throw new NexusContractError(
       "carry REFUSED (fail-closed): no carrier seal. The place must sign 'I carry for this Nexus' with its OWN " +
-      "vessel key (`lares nexus carry-for` on that vessel) and supply the token via --carrier. A Nexus never " +
+      "vessel key (`lares nexus carry-for` on that vessel) and supply the token via carrier=. A Nexus never " +
       "conscripts a crossroads, and it never mints one's identity for it.",
     );
   }
@@ -357,18 +357,18 @@ export async function runNexusCarryFor(opts: {
 function floorPinOrRefuse(raw: string | undefined, nym: string, aid: string, carrierSeal: QuorumSignature, sealEpochCid: string):
   { readonly statement: PlaceFloorPinStatement; readonly kel: readonly PlaceKelEvent[] } {
   if (raw === undefined || raw.trim().length === 0) {
-    throw new NexusContractError("carry REFUSED: a carry lands with the place's floor pin claim — pass the `--floor-pin` file `lares nexus carry-for --out` wrote. Nothing was written.");
+    throw new NexusContractError("carry REFUSED: a carry lands with the place's floor pin claim — pass the `floor-pin=` file `lares nexus carry-for out=true` wrote. Nothing was written.");
   }
   let parsed: unknown;
-  try { parsed = JSON.parse(raw); } catch { throw new NexusContractError("carry REFUSED: the --floor-pin file does not parse as JSON — pass the file `carry-for --out` wrote, whole."); }
+  try { parsed = JSON.parse(raw); } catch { throw new NexusContractError("carry REFUSED: the floor-pin= file does not parse as JSON — pass the file `carry-for out=` wrote, whole."); }
   const file = (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed : {}) as { floorPin?: unknown; placeKel?: unknown };
   if (file.floorPin === undefined || !Array.isArray(file.placeKel)) {
-    throw new NexusContractError("carry REFUSED: the --floor-pin file names no `floorPin` claim and no `placeKel` rows — pass the file `carry-for --out` wrote, whole.");
+    throw new NexusContractError("carry REFUSED: the floor-pin= file names no `floorPin` claim and no `placeKel` rows — pass the file `carry-for out=` wrote, whole.");
   }
   const kel: PlaceKelEvent[] = [];
   for (const row of file.placeKel) { const event = decodePlaceKelEvent(row); if (event === null) throw new NexusContractError("carry REFUSED: a --floor-pin KEL row does not read. Nothing was written."); kel.push(event); }
   const read = readPlaceFloorPin(file.floorPin, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelEntries: kel, standing: { via: "carrier", carriers: new Set([nym]) } });
-  if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the --floor-pin claim does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
+  if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the floor-pin= claim does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
   const folded = foldClaimHead(kel, read.aid, read.head);
   if (!folded.ok || !verifyCarrierContractAtHead({ nym, sealEpochCid, sig: carrierSeal.sig }, folded.head)) {
     throw new NexusContractError("carry REFUSED: the carrier seal does not verify under the signer the place KEL seats at the claim's head. Nothing was written.");
@@ -1145,11 +1145,11 @@ export async function runNexusAcceptCarriage(opts: {
 }): Promise<{ aid: string; nym: string; sealEpochCid: string; contractSig: string }> {
   const aid  = opts.aid ?? primaryNexusAid(opts.sealHome);
   if (!aid) {
-    throw new NexusContractError("no charter stands to consent to — import the Nexus's charter (`lares nexus seal import --carry`) first.");
+    throw new NexusContractError("no charter stands to consent to — import the Nexus's charter (`lares nexus seal import carry=true`) first.");
   }
   const home = charterHomeFor(opts.sealHome, aid);
   if (!home) {
-    throw new NexusContractError(`this vessel holds no charter for ${aid.slice(0, 18)}… — import it (\`lares nexus seal import --carry\`) before consenting.`);
+    throw new NexusContractError(`this vessel holds no charter for ${aid.slice(0, 18)}… — import it (\`lares nexus seal import carry=true\`) before consenting.`);
   }
   const roster = foundingRoster(readNexusDoc(home));
   if (roster.sealEpochCid.length === 0) {

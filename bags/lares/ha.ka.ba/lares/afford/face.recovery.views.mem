@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.recovery.views"
 
 ! face.recovery.views ~ a recovery contact speaks for the head it sees
 
-`lares persona recovery-contact view --prefix persona-<64 hex>` reads the contact's card on a terminal and signs the contact's own view of that face's head, printing the view line a restore confirms by.
+`lares persona recovery-contact view prefix=persona-<64 hex>` reads the contact's card on a terminal and signs the contact's own view of that face's head, printing the view line a restore confirms by.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nRgAGClP54wv8aHfyqZCq01CLfVi1vjGORIO7POTMHo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_zPQ7L4Vr3vMd_4GyBd9pMz3Z8PobPf1mpJbZA55dWg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

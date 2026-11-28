@@ -13,7 +13,7 @@
  * flag, `persona raise-sign` signs under the persona door's own `signs` seat.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { dispatch, COMMANDS, MOVED } from "../src/bin/lares.js";
+import { dispatch, COMMANDS, MOVED, doorTakes } from "../src/bin/lares.js";
 
 async function run(argv: string[]): Promise<{ code: number; out: string; err: string }> {
   const out: string[] = []; const err: string[] = [];
@@ -27,7 +27,7 @@ afterEach(() => vi.restoreAllMocks());
 /** Each folded spelling and the door its refusal points at (an old name answers with its new seat, never a bare unknown). */
 const FOLDED: ReadonlyArray<readonly [argv: readonly string[], cure: string]> = [
   [["receipt"], "lares vessel request <id>"],
-  [["cancel"], "lares vessel request <id> --cancel"],
+  [["cancel"], "lares vessel request <id> cancel=true"],
   [["draft"], "lares act lar:///carriage.draft.pulls uri=<uri>"],
   [["raise", "sign"], "lares persona raise-sign <challenge-json-text>"],
   [["wing-of"], "node tools/wing-of.mjs"],
@@ -80,38 +80,38 @@ describe("fewer front doors", () => {
 
   test("each new spelling is accepted by the door's row, and `--cancel` rides vessel alone", () => {
     const row = (n: string) => COMMANDS.find((c) => c.name === n)!;
-    expect(row("ingest").accepts).toEqual(expect.arrayContaining(["watch", "debounce"]));
-    expect(row("persona").accepts).toContain("as");
-    expect(row("vessel").accepts).toContain("cancel");
-    for (const n of COMMANDS.map((c) => c.name).filter((x) => x !== "vessel")) expect(row(n).accepts, n).not.toContain("cancel");
+    expect(doorTakes("ingest")).toEqual(expect.arrayContaining(["watch", "debounce"]));
+    expect(doorTakes("persona")).toContain("as");
+    expect(doorTakes("vessel")).toContain("cancel");
+    for (const n of COMMANDS.map((c) => c.name).filter((x) => x !== "vessel")) expect(doorTakes(n), n).not.toContain("cancel");
   });
 
   test("vessel request names its usage and exits 2 with no id", async () => {
     const r = await run(["vessel", "request", "--no-json"]);
     expect(r.code).toBe(2);
     expect(r.err).toContain("usage: lares vessel request <requestId>");
-    const c = await run(["vessel", "request", "--cancel", "--no-json"]);
+    const c = await run(["vessel", "request", "cancel=true", "--no-json"]);
     expect(c.code).toBe(2);
-    expect(c.err).toContain("usage: lares vessel request <requestId> --cancel");
+    expect(c.err).toContain("usage: lares vessel request <requestId> cancel=true");
   });
 
   test("ingest --watch refuses the one-shot flags by name, and --debounce refuses without --watch", async () => {
-    const a = await run(["ingest", "--watch", "--yes", "--source", "x", "--to", "lar:///ha.ka.ba/bags/x"]);
+    const a = await run(["ingest", "watch=true", "--yes", "source=x", "to=lar:///ha.ka.ba/bags/x"]);
     expect(a.code).toBe(2);
-    expect(a.err).toContain("--yes");
-    const b = await run(["ingest", "--debounce", "100", "--source", "x", "--to", "lar:///ha.ka.ba/bags/x"]);
+    expect(a.err).toContain("yes= ride the one-shot ingest alone");
+    const b = await run(["ingest", "debounce=100", "source=x", "to=lar:///ha.ka.ba/bags/x"]);
     expect(b.code).toBe(2);
-    expect(b.err).toContain("unknown flag --debounce");
-    const c = await run(["ingest", "--watch"]);
+    expect(b.err).toContain("debounce= sets the watcher's quiet window and rides `watch=true` alone");
+    const c = await run(["ingest", "watch=true"]);
     expect(c.code).toBe(2);
-    expect(c.out).toContain("usage: lares ingest --source <dir-or-file> --to <bag-uri>");   // the carrier's spine: --watch rides it
-    expect(c.out).toContain("[--watch] [--debounce <ms>]");
+    expect(c.out).toContain("usage: lares ingest source=<dir-or-file> to=<bag-uri>");   // the carrier's spine: watch= rides it
+    expect(c.out).toContain("[watch=<true>] [debounce=<ms>]");
   });
 
   test("act rides the call door: a flag beside it refuses by name, naming the param spelling", async () => {
     const r = await run(["act", "--draft", "--no-json"]);
     expect(r.code).toBe(2);
-    expect(r.err).toContain("unknown flag --draft for a call; a call takes name=value params (draft=…)");
+    expect(r.err).toContain("dash-flag-burned: --draft reads as draft=true (a call takes name=value params");
   });
 
   test("persona raise-sign with no challenge refuses with its own menu", async () => {
@@ -126,7 +126,7 @@ describe("fewer front doors", () => {
     const vessel = await run(["vessel", "--help"]);
     expect(vessel.out).toContain("request");
     const ingest = await run(["ingest", "--help"]);
-    expect(ingest.out).toContain("--watch");
+    expect(ingest.out).toContain("watch=");
     const act = await run(["act", "--help"]);
     expect(act.out).toContain("lares act lar:///carriage.draft.pulls");
   });

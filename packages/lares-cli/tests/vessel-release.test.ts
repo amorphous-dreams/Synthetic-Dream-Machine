@@ -1,5 +1,5 @@
 /**
- * THE RELEASE OF A QUARANTINED ID HOLDS A DOOR OF ITS OWN: `lares vessel release <documentId> [--keep|--fresh]`.
+ * THE RELEASE OF A QUARANTINED ID HOLDS A DOOR OF ITS OWN: `lares vessel release <documentId> [keep=true|fresh=true]`.
  *
  * `read` inspects and starts nothing, so the hand's write that ends a hold rides its own sub-door, never a flag on the
  * read. The release claims the store for its act (the one claim a standing vessel also holds), so a vessel or another
@@ -59,25 +59,25 @@ function said(): { err: string[]; out: string[] } {
   return { err, out };
 }
 
-describe("lares vessel release <documentId> [--keep|--fresh]", () => {
+describe("lares vessel release <documentId> [keep=true|fresh=true]", () => {
   test("R1 — a release with no id refuses with its usage", async () => {
     const { root } = house();
     const s = said();
-    expect(await dispatch(["vessel", "release", "--root", root, "--skip-build"])).toBe(2);
-    expect(s.err.join("\n")).toMatch(/lares vessel release <documentId> \[--keep\|--fresh\]/);
+    expect(await dispatch(["vessel", "release", `root=${root}`, "--skip-build"])).toBe(2);
+    expect(s.err.join("\n")).toMatch(/lares vessel release <documentId> \[keep=true\|fresh=true\]/);
   });
 
   test("R2 — --keep and --fresh together refuse: one act at a time", async () => {
     const { root } = house();
     const s = said();
-    expect(await dispatch(["vessel", "release", DOC, "--keep", "--fresh", "--root", root, "--skip-build"])).toBe(2);
+    expect(await dispatch(["vessel", "release", DOC, "keep=true", "fresh=true", `root=${root}`, "--skip-build"])).toBe(2);
     expect(s.err.join("\n")).toMatch(/one act/);
   });
 
   test("R3 — an id no hold names refuses by name", async () => {
     const { root } = house();
     const s = said();
-    expect(await dispatch(["vessel", "release", DOC, "--keep", "--root", root, "--skip-build"])).toBe(2);
+    expect(await dispatch(["vessel", "release", DOC, "keep=true", `root=${root}`, "--skip-build"])).toBe(2);
     expect(s.err.join("\n")).toMatch(/no quarantine hold names this id/);
   });
 
@@ -87,7 +87,7 @@ describe("lares vessel release <documentId> [--keep|--fresh]", () => {
     const claim = await claimStore(storageDir);
     try {
       const s = said();
-      expect(await dispatch(["vessel", "release", DOC, "--root", root, "--skip-build"])).toBe(2);
+      expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(2);
       expect(s.err.join("\n")).toMatch(/`lares vessel stop`/);
       expect(quarantineHolds(storageDir).map((h) => h.manifest.documentId)).toEqual([DOC]);
     } finally { await claim.release(); }
@@ -97,7 +97,7 @@ describe("lares vessel release <documentId> [--keep|--fresh]", () => {
     const { root, storageDir } = house();
     held(storageDir);
     const s = said();
-    expect(await dispatch(["vessel", "release", DOC, "--root", root, "--skip-build"])).toBe(0);
+    expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(0);
     expect(s.out.join("\n")).toMatch(/released 4NMNnkMhL8jXrdJ9jamS2rUEaQDq/);
     expect(existsSync(join(storageDir, DOC.slice(0, 2), DOC.slice(2), "snapshot", "chunk"))).toBe(true);
     expect(quarantineHolds(storageDir)).toEqual([]);
@@ -106,13 +106,13 @@ describe("lares vessel release <documentId> [--keep|--fresh]", () => {
     await after.release();
   });
 
-  for (const flag of ["--release", "--release-keep", "--release-fresh"]) {
+  for (const flag of ["release=true", "release-keep=true", "release-fresh=true"]) {
     test(`R6 — \`vessel read vessel ${flag}\` answers the moved pointer to \`lares vessel release\`, exit 2, and reads nothing`, async () => {
       const { root, storageDir } = house();
       held(storageDir);
       const s = said();
-      expect(await dispatch(["vessel", "read", "vessel", "--root", root, "--skip-build", flag, DOC])).toBe(2);
-      expect(s.err.join("\n")).toMatch(/moved to `lares vessel release <documentId> \[--keep\|--fresh\]`/);
+      expect(await dispatch(["vessel", "read", "vessel", `root=${root}`, "--skip-build", flag, DOC])).toBe(2);
+      expect(s.err.join("\n")).toMatch(/moved to `lares vessel release <documentId> \[keep=true\|fresh=true\]`/);
       expect(quarantineHolds(storageDir).map((h) => h.manifest.documentId)).toEqual([DOC]);
     });
   }
@@ -124,7 +124,7 @@ describe("lares vessel release <documentId> [--keep|--fresh]", () => {
     try {
       restEngineFall(storageDir, { cause: "wasm-unreachable", path: "repo", detail: "x", since: "2026-11-23T01:00:00.000Z", lastSettled: null, inFlight: null }, "a".repeat(32), husk.pid!);
       const s = said();
-      expect(await dispatch(["vessel", "release", DOC, "--root", root, "--skip-build"])).toBe(2);
+      expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(2);
       const err = s.err.join("\n");
       expect(err).toContain(`pid ${husk.pid}`);
       expect(err).toMatch(/`lares vessel stop`/);
@@ -139,7 +139,7 @@ describe("lares vessel release <documentId> [--keep|--fresh]", () => {
     await new Promise((r) => gone.once("exit", r));
     restEngineFall(storageDir, { cause: "wasm-unreachable", path: "repo", detail: "x", since: "2026-11-23T01:00:00.000Z", lastSettled: null, inFlight: null }, "a".repeat(32), gone.pid!);
     said();
-    expect(await dispatch(["vessel", "release", DOC, "--root", root, "--skip-build"])).toBe(0);
+    expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(0);
     expect(quarantineHolds(storageDir)).toEqual([]);
   });
 });

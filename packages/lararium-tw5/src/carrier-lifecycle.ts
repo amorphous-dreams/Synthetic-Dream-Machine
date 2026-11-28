@@ -23,7 +23,7 @@
  * ── WHAT THIS READER CANNOT ANSWER ──────────────────────────────────────────────────────────────
  * `folded` and `retiring` both owe ZERO INBOUND EDGES, and inbound is a property of the SHELF rather
  * than of a file — no reader holding one carrier's bytes can see who names it. That half of the law
- * rides `lares meme check --edges` and `lares meme sitting`, which hold every carrier at once. This
+ * rides `lares meme check edges=true` and `lares meme sitting`, which hold every carrier at once. This
  * module answers only what a single text can answer, and says so by answering nothing else.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/otakiage

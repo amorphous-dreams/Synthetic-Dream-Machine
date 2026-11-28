@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.raise.signs"
 
 ! face.raise.signs ~ the recogniser's half of the raise ceremony
 
-`lares persona raise-sign <challenge-json> [--as <index>]` signs a floor vessel's raise challenge with your persona's per-Nexus leaf, never the root, and hands back a grant carrying that leaf's admit read off this vessel's own replica of the Nexus board. The caps that arrive ride your key, and the grant stands only until that Nexus's lease epoch rolls past it. It needs no daemon.
+`lares persona raise-sign <challenge-json> [as=<index>]` signs a floor vessel's raise challenge with your persona's per-Nexus leaf, never the root, and hands back a grant carrying that leaf's admit read off this vessel's own replica of the Nexus board. The caps that arrive ride your key, and the grant stands only until that Nexus's lease epoch rolls past it. It needs no daemon.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;38hHQzonRMvfqK5jYoP5WEYExFVDkEPfHN10mP1CGZY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JmVE5CrpMb823gaeSXH9Zf7ZUAt8x5rlQ4XxXbz8bIs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

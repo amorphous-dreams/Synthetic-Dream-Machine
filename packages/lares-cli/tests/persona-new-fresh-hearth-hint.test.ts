@@ -32,7 +32,7 @@ describe("persona new on a place with no face", () => {
     catch (e) { thrown = e instanceof Error ? e.message : String(e); }
     const said = [thrown, ...lines].join("\n");
     expect(code === undefined || code !== 0).toBe(true);
-    expect(said).toMatch(/lares found --hearth --name/);
+    expect(said).toMatch(/lares found hearth=true name=/);
     expect(said).not.toMatch(/persona new 0/);
   });
 });

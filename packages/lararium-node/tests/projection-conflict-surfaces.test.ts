@@ -14,7 +14,7 @@
  *
  *   1. the projector lands a carrier      → anchor := render, disk == anchor
  *   2. the operator edits the file        → disk moves
- *   3. `lares ingest --apply` ADOPTS it   → records move to render(parse(disk))
+ *   3. `lares ingest apply=true` ADOPTS it   → records move to render(parse(disk))
  *   4. the projector reconciles           → disk ≠ anchor, records ≠ anchor
  *
  * On the three byte-hashes alone that reads as a standoff, and a gate that cries

@@ -10,7 +10,7 @@ describe("admit-take warns when the bundle names no sync url", () => {
   it("RED: no syncUrl → a warning naming `nexus contract <leaf> --sync-url`", () => {
     const w = admitTakeSyncUrlWarning(JSON.stringify({ aid: "nexus-x", gatePubKey: "ab", admit: {}, lineage: [] }));
     expect(w).not.toBeNull();
-    expect(w).toContain("nexus contract <leaf> --sync-url");
+    expect(w).toContain("nexus contract <leaf> sync-url=<ws-url>");
   });
   it("CONTROL: a bundle naming a sync url, or text that does not parse, draws none", () => {
     expect(admitTakeSyncUrlWarning(JSON.stringify({ aid: "nexus-x", syncUrl: "ws://hearth:7700" }))).toBeNull();

@@ -5,8 +5,8 @@
  *
  * The pet name does the work. ONE RECORD answers it: `lar:///ha.ka.ba/lares/spirit/<pet>` (recipe default), a nameless entity the
  * house names by its pet name, holding a stack of what it holds (`@lararium/mesh/spirit-stack`; ruling 2026-11-25-one-spirit-record).
- * The stack reads and writes as the slot `#/has`, one cap per line: `ah --slot '#/has' --add '<a.b.c> <value>'` strings a cap (its
- * tag and its field in one write), `hum --fold '#/has'` unstrings one, and om hands the whole stack as one `has` line. A cap names
+ * The stack reads and writes as the slot `#/has`, one cap per line: `ah slot='#/has' add='<a.b.c> <value>'` strings a cap (its
+ * tag and its field in one write), `hum fold='#/has'` unstrings one, and om hands the whole stack as one `has` line. A cap names
  * what the spirit holds and grants nothing (tags gather, ocaps authorize), so any instance strings one. The records
  * that stood before the one address read through the same stack, none moved: `familiar/<pet>` or `spirit/<pet>` on the memory
  * stage (where both stand, the door names both and guesses neither), then a card at `spirit-card/<pet>` or `mask-card/<pet>`. Beneath the pet name a stable `spirit-id` keys
@@ -16,51 +16,51 @@
  *
  *   om        (wake, Chaos ✶)       the card: the skinny, #/open, the titles #/attention names, and the latest carry read as
  *                                   testimony (a record moved since it read, a deep chain, a fork), under the wake cap. By
- *                                   `--source`: a resume reads one line, a fork wakes framed as a fork, a compaction names
+ *                                   `source=`: a resume reads one line, a fork wakes framed as a fork, a compaction names
  *                                   the carry it inherits by hash and first words, a precompact marks the crossing and
- *                                   hands back the record's #/carry-shape. `--instance <id>` names the waking instance: it joins the
+ *                                   hands back the record's #/carry-shape. `instance=<id>` names the waking instance: it joins the
  *                                   presence on the card's sibling record, stamps a wake epoch (an ordering stamp, never a
  *                                   fence), and hands back each slot's digest.
- *   ah        (true, Discord ⏿)     replace one slot (`--file <path|->` · `--text <words>`) or add one line (`--add <line>`),
+ *   ah        (true, Discord ⏿)     replace one slot (`file=<path|->` · `text=<words>`) or add one line (`add=<line>`),
  *                                   base-checked; only the waking slots (#/open, #/attention) hold a cap
- *   hum       (what remains after the fold, Confusion ◇)   measure each slot; `--fold <slot> --line <n>` moves one line to
- *                                   the ash ledger, and what stays reads as the card; `--streams [--slot '#/x']` folds the
+ *   hum       (what remains after the fold, Confusion ◇)   measure each slot; `fold=<slot> line=<n>` moves one line to
+ *                                   the ash ledger, and what stays reads as the card; `streams=true [slot='#/x']` folds the
  *                                   pet's settled stream entries into one line per stream (default `#/open`) and marks each
  *                                   `ash-ready` for o-takiage, deleting none (comms-ux-enacts landing 17)
  *   hooili    (the carry, hoʻoili)  land a compaction summary as `hooili/<spirit-id>-<hash12>` with its lineage (`parent`,
  *                                   `record-base`, `depth`, `instance`); it writes nothing to the card and hands back the #/instances
  *                                   line (`<pet>#<instance8>`) the next instance files through `ah`
- *   residue   (residue)             land a spirit's handback, keyed idempotently (`--key <session:agent>`); `--witness`
- *                                   reads every landed handback (and `--transcripts <dir|file>`) for the frame and the
+ *   residue   (residue)             land a spirit's handback, keyed idempotently (`key=<session:agent>`); `witness=true`
+ *                                   reads every landed handback (and `transcripts=<dir|file>`) for the frame and the
  *                                   Personas (`@lararium/mesh/spirit-witness`): one receipt line each, one tally, exit 0
- *   handback  (the return door)     THE ONE RETURN EVERY FIRE RUNS (`handback <pet>[#<n>] --file <path|-> | --text <words> |
- *                                   --record <uri>[@<hash>]`): a report lands as residue under the pet's own name, once per
- *                                   key (`--key`, else the instance's tag, else the words alone); `--record` names a record
+ *   handback  (the return door)     THE ONE RETURN EVERY FIRE RUNS (`handback <pet>[#<n>] file=<path|-> | text=<words> |
+ *                                   record=<uri>[@<hash>]`): a report lands as residue under the pet's own name, once per
+ *                                   key (`key=`, else the instance's tag, else the words alone); `record=` names a record
  *                                   already landed, read through the door before anything else moves. The record stands
  *                                   first; then, where the house holds a summons edge for the instance, the edge names it
- *                                   (`--mandate <uri>@<hash>` names which). A harness hook and a hand type the same line
- *   ah --offer (ʻālana, the offering)  a summon sets the mandate (`--file <path|->` · `--text <words>`, else the card's own
- *                                   `lane`), its lane's memory pointer (`--lane`), the grant's slice (`--grant`) and its
- *                                   offerer (`hand`, or `seat#<instance>`: a seat names `--instance`) on the spirit's shelf,
+ *                                   (`mandate=<uri>@<hash>` names which). A harness hook and a hand type the same line
+ *   ah offer=true (ʻālana, the offering)  a summon sets the mandate (`file=<path|->` · `text=<words>`, else the card's own
+ *                                   `lane`), its lane's memory pointer (`lane=`), the grant's slice (`grant=`) and its
+ *                                   offerer (`hand`, or `seat#<instance>`: a seat names `instance=`) on the spirit's shelf,
  *                                   `alana/<pet>`, BEFORE any instance wakes; each offering mints the next seq. A nudge, no
  *                                   authority: a re-offer over a standing mandate lands only from its offerer or a hand
- *   ah --echo (hoʻāla, the waking)  an instance echoes the mandate's hash om handed it (`--echo <hash> --instance <id>`): the echo lands
+ *   ah echo= (hoʻāla, the waking)  an instance echoes the mandate's hash om handed it (`echo=<hash> instance=<id>`): the echo lands
  *                                   as `<pet>#<instance> <hash> <seq> h<N>` on the sibling record, as lineage, `h<N>` the face
  *                                   that answered; under an offering, a slot write from an instance that has not echoed lands
  *                                   and carries an `unechoed:` notice, and one whose echo names another face than the one
- *                                   answering refuses `spirit-face-turned`, naming its cure (`--face N`)
+ *                                   answering refuses `spirit-face-turned`, naming its cure (`face=N`)
  *   otakiage  (Aftermath ↺)         by a person's hand: write the ash lines ahead, then burn the residue the last distill mark
  *                                   covers and no link still reaches; the card stays
  *
  * BUNREI: THE KAMI DIVIDES UNDIMINISHED. Many instances may wear one pet at once, and none locks another out. What orders instances
  * rides the card's sibling record (`sideOf`, outside the carrier's render, so no wake moves the card's base): each waking instance
  * names itself in `instances-awake` (`<pet>#<instance> <iso>`, refreshed at every write the instance names, ordered by a door-minted seq and capped by count,
- * at most `PRESENCE_CAP`), and om names the siblings awake and each live instance's last carry. Concurrent writes merge: `ah --add`
+ * at most `PRESENCE_CAP`), and om names the siblings awake and each live instance's last carry. Concurrent writes merge: `ah add=`
  * appends and re-reads past a conflict, so a sibling's line survives; a whole-slot replace names the slot digest it read
- * (`--base`, required of an AI seat; om hands each slot's back) and, where the slot moved since, lands both versions in a
+ * (`base=`, required of an AI seat; om hands each slot's back) and, where the slot moved since, lands both versions in a
  * marked conflict stanza naming this writer and the slot's last writer, for hum to settle; hum's fold finds its line by content
  * and burns it only once the patch lands. Each instance's hoʻoili chain runs its own lineage. The crossing runs per instance and stays
- * advisory: between an instance's PreCompact mark and its own next wake, that instance's ah and hum (`--instance`) refuse `spirit-crossing`.
+ * advisory: between an instance's PreCompact mark and its own next wake, that instance's ah and hum (`instance=`) refuse `spirit-crossing`.
  *
  * THE WAKING CAPS REFUSE GROWTH, THE INSTANCE CHOOSES WHAT FOLDS; THE REST ADVISES. Budgets and the true-up cadence read from the record's own fields
  * (`slot-budget`, `record-budget`, `true-up-every`), the constants below their defaults. Residue and carries pass the strict
@@ -168,7 +168,7 @@ async function door(args: ParsedArgs, label: string, verb: string, verbArgs: Rec
  */
 let owedCarry: string[] | null = null;
 /**
- * THE FACE THAT ANSWERED: the island names the face each door call answered from (the mount's, or the face `--face N` named), and
+ * THE FACE THAT ANSWERED: the island names the face each door call answered from (the mount's, or the face `face=N` named), and
  * the door keeps the latest word for this command. An echo records it; a slot write from an instance whose echo names another
  * face refuses `spirit-face-turned` (plan/companion-context #/4). Null where no answer named a face.
  */
@@ -224,14 +224,14 @@ const FOLD_MODULE = "lar:///ha.ka.ba/lararium/tw5/filters/meme-fold";
 /** The most a fold's render answers in one call (the tiddler door's own ceiling). */
 const FOLD_RENDER_BYTES = 262_144;
 
-/** What a fold asks: the rank `--aperture` names (a rank, a level 0..20, or the gauge's pair), else the verb's own, and the face its commands carry. */
+/** What a fold asks: the rank `aperture=` names (a rank, a level 0..20, or the gauge's pair), else the verb's own, and the face its commands carry. */
 interface FoldAsk { readonly rank: UnfoldRank; readonly named: boolean; readonly face: string | null }
 function foldAsk(args: ParsedArgs, fallback: UnfoldRank): FoldAsk {
   const word = wordOf(args.options["aperture"]);
   const rank = word === null ? fallback : unfoldRank(word);
-  if (rank === null) throw new DoorUsage(`--aperture names one of ${UNFOLD_RANKS.join(" · ")}, a level 0..20, or the pair (10/measure); got "${word}"`);
+  if (rank === null) throw new DoorUsage(`aperture= names one of ${UNFOLD_RANKS.join(" · ")}, a level 0..20, or the pair (10/measure); got "${word}"`);
   const face = wordOf(args.options["face"]);
-  if (unfoldCall("pet", rank, face) === null) throw new DoorUsage(`--face names a face number or handle; got "${face}"`);
+  if (unfoldCall("pet", rank, face) === null) throw new DoorUsage(`face= names a face number or handle; got "${face}"`);
   return { rank, named: word !== null, face };
 }
 
@@ -282,8 +282,8 @@ function unfoldedLine(f: Fold, uri: string): string {
 
 /** A wake around a folded carrier: the lead above the declaration, the carrier whole, the testimony and the doors past its release. */
 function foldedWake(pet: string, fold: Fold & { carrier: string }, parts: { lead: string | null; testimony: readonly string[]; attention: string | null }, cap: number | null): string {
-  const doors = `True a slot: lares spirit ah ${pet} --slot '#/<name>' --file <path> (or --add <line>) · fold a line to ash: lares spirit hum ${pet} · widen or narrow this read: lares spirit om ${pet} --aperture <${UNFOLD_RANKS.join("|")}>`;
-  const narrowed = fold.rank === fold.asked ? [] : [`This wake folds to ${fold.rank} to ride whole under the wake cap; the wider read: lares spirit om ${pet} --aperture ${fold.asked}`];
+  const doors = `True a slot: lares spirit ah ${pet} slot='#/<name>' file=<path> (or add=<line>) · fold a line to ash: lares spirit hum ${pet} · widen or narrow this read: lares spirit om ${pet} aperture=<${UNFOLD_RANKS.join("|")}>`;
+  const narrowed = fold.rank === fold.asked ? [] : [`This wake folds to ${fold.rank} to ride whole under the wake cap; the wider read: lares spirit om ${pet} aperture=${fold.asked}`];
   const head = `${parts.lead === null ? "" : `${parts.lead}\n\n`}${fold.carrier}\n\n${[...narrowed, ...parts.testimony].join("\n")}`;
   const tail = `\n${doors}`;
   const left = cap === null ? Infinity : cap - head.length - tail.length - 1;
@@ -366,7 +366,7 @@ async function patchSlot(args: ParsedArgs, label: string, rec: Record_, slot: st
     const { fields, hash } = await recordOf(args, label, rec.uri);
     const write = stackWrite(fields, rec.uri, body);
     if (write === null) return { decision: "noop", canonicalHash: hash ?? "" };
-    if ("code" in write) throw new SpiritRefusal(write.code, `${write.code}: ${write.why}; nothing landed. The stack as it stands: \`lares spirit hum ${rec.pet} --fold '${STACK_SLOT}'\``, 4);
+    if ("code" in write) throw new SpiritRefusal(write.code, `${write.code}: ${write.why}; nothing landed. The stack as it stands: \`lares spirit hum ${rec.pet} fold='${STACK_SLOT}'\``, 4);
     const receipt = await door(args, label, "tiddler-put", {
       recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}),
       ...(Object.keys(write.patch).length > 0 ? { fields: write.patch } : {}), ...(write.unset.length > 0 ? { unset: write.unset } : {}),
@@ -401,7 +401,7 @@ function handHolds(ctx: Ctx): boolean {
  * own act, so the hash on the stack always names an offering the shelf holds.
  */
 function capHolds(pet: string, cap: string): void {
-  if (capHolder(cap) === "door") throw new SpiritRefusal("spirit-cap-held", `spirit-cap-held: ${cap} lands by the door's own act and never by a slot verb; nothing landed. A summon offers the mandate: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
+  if (capHolder(cap) === "door") throw new SpiritRefusal("spirit-cap-held", `spirit-cap-held: ${cap} lands by the door's own act and never by a slot verb; nothing landed. A summon offers the mandate: \`lares spirit ah ${pet} offer=true file=<mandate>\``, 4);
 }
 
 /** The echo receipt a slot write carries (see `echoReceipt`): a damaged shelf throws its refusal; an unechoed write answers its notice. */
@@ -416,32 +416,32 @@ async function echoHolds(args: ParsedArgs, label: string, rec: Record_, instance
 
 /**
  * ʻĀLANA: A SUMMON OFFERS FIRST. The mandate (the words given, else the card's own `lane`), its sha256, the lane's memory pointer
- * (`--lane`, else the record itself) and the grant's slice (`--grant`) land on the shelf under its live hash, each offering
+ * (`lane=`, else the record itself) and the grant's slice (`grant=`) land on the shelf under its live hash, each offering
  * minting the next seq; no instance wakes here, and no presence moves. The words pass the strict secret-shape guard first.
  */
 async function summon(args: ParsedArgs, ctx: Ctx, pet: string): Promise<number> {
   const strayOffer = ([["slot", args.options["slot"]], ["add", args.options["add"]], ["base", args.options["base"]], ["echo", args.options["echo"]]] as const).find(([, v]) => v !== undefined);
-  if (strayOffer !== undefined) throw new DoorUsage(`--offer lands an ${ALANA_DISPLAY} alone: the mandate (--file <path|-> or --text <words>; neither offers the card's own lane), --lane <memory uri>, --grant <slice>; no --${strayOffer[0]}`);
+  if (strayOffer !== undefined) throw new DoorUsage(`offer=true lands an ${ALANA_DISPLAY} alone: the mandate (file=<path|-> or text=<words>; neither offers the card's own lane), lane=<memory uri>, grant=<slice>; no --${strayOffer[0]}`);
   const file = wordOf(args.options["file"]);
   const text = typeof args.options["text"] === "string" ? args.options["text"] : null;
-  if (file !== null && text !== null) throw new DoorUsage("--offer names one mandate: --file <path|-> or --text <words>");
+  if (file !== null && text !== null) throw new DoorUsage("offer=true names one mandate: file=<path|-> or text=<words>");
   // WHO OFFERS: a hand, or a seat by the instance it names; an offering carries no authority beyond a nudge, so its offerer rides it.
   const instance = wordOf(args.options["instance"]);
-  if (instance !== null && !INSTANCE.test(instance)) throw new DoorUsage("--instance names a session id (letters, digits, '-' and '_')");
+  if (instance !== null && !INSTANCE.test(instance)) throw new DoorUsage("instance= names a session id (letters, digits, '-' and '_')");
   const offeredBy = offererOf(handHolds(ctx), instance);
-  if (offeredBy === null) throw new DoorUsage(`a seat's --offer names its own instance, so the shelf records who offered: \`lares spirit ah ${pet} --offer --file <mandate> --instance <id>\``);
+  if (offeredBy === null) throw new DoorUsage(`a seat's offer=true names its own instance, so the shelf records who offered: \`lares spirit ah ${pet} offer=true file=<mandate> instance=<id>\``);
   const rec = (await resolveRecord(args, "ah", pet))!;
   // A SEALED LANE STAYS HOME: the bare offer's fallback copies the card's lane onto the shelf, and om hands the shelf's words
   // to every instance it wakes, so a lane the card seals never rides that fallback; the summoner names the words.
   if (file === null && text === null && sealedOf(rec.fields).has("lane")) {
-    throw new SpiritRefusal("spirit-lane-sealed", `spirit-lane-sealed: ${rec.uri} seals its lane, so a bare --offer never copies it onto the shelf; nothing landed. Name the mandate: \`lares spirit ah ${pet} --offer --file <mandate>\` (or --text <words>)`, 4);
+    throw new SpiritRefusal("spirit-lane-sealed", `spirit-lane-sealed: ${rec.uri} seals its lane, so a bare offer=true never copies it onto the shelf; nothing landed. Name the mandate: \`lares spirit ah ${pet} offer=true file=<mandate>\` (or text=<words>)`, 4);
   }
   const words = file !== null ? await sourceText("file", file) : text ?? rec.fields["lane"] ?? "";
-  if (words.trim() === "") throw new DoorUsage(`--offer names the mandate: --file <path|-> or --text <words> (${rec.uri} holds no lane field to offer)`);
+  if (words.trim() === "") throw new DoorUsage(`offer=true names the mandate: file=<path|-> or text=<words> (${rec.uri} holds no lane field to offer)`);
   const lane = wordOf(args.options["lane"]) ?? rec.uri;
   const grant = typeof args.options["grant"] === "string" ? args.options["grant"].trim() : "";
   const shapes = secretCount(`${words}\n${lane}\n${grant}`);
-  if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the ${ALANA_DISPLAY} holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then offer again: \`lares spirit ah ${pet} --offer --file <scrubbed path>\``, 4);
+  if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the ${ALANA_DISPLAY} holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then offer again: \`lares spirit ah ${pet} offer=true file=<scrubbed path>\``, 4);
   const uri = offeringOf(pet);
   for (let round = 0; round < CAS_ROUNDS; round++) {
     const { fields, hash } = await recordOf(args, "ah", uri);
@@ -452,10 +452,10 @@ async function summon(args: ParsedArgs, ctx: Ctx, pet: string): Promise<number> 
     const decision = String(receipt["decision"] ?? "");
     if (decision === "conflict") continue;
     if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; read the shelf: \`lares get title=${shq(uri)}\``, 4);
-    const wake = `lares spirit om ${pet} --instance <id>`;
+    const wake = `lares spirit om ${pet} instance=<id>`;
     emit(args, {
       ok: true, data: { pet, uri, record: rec.uri, mandate: w.hash, seq: w.seq, lane, grant, offeredBy, decision, wake },
-      human: () => console.log(`${ALANA_DISPLAY} offered: ${uri} (seq ${w.seq})\n  mandate: ${w.hash}\n  an instance wakes by: ${wake}, then echoes the hash: lares spirit ah ${pet} --echo ${w.hash} --instance <id>`),
+      human: () => console.log(`${ALANA_DISPLAY} offered: ${uri} (seq ${w.seq})\n  mandate: ${w.hash}\n  an instance wakes by: ${wake}, then echoes the hash: lares spirit ah ${pet} echo=${w.hash} instance=<id>`),
     });
     return 0;
   }
@@ -468,19 +468,19 @@ async function summon(args: ParsedArgs, ctx: Ctx, pet: string): Promise<number> 
  */
 async function echo(args: ParsedArgs, ctx: Ctx, pet: string, hash: string): Promise<number> {
   const instance = wordOf(args.options["instance"]);
-  if (instance === null || !INSTANCE.test(instance)) throw new DoorUsage(`--echo rides beside --instance <id>: the instance that echoes names itself (\`lares spirit ah ${pet} --echo <hash> --instance <id>\`)`);
-  if (!MANDATE_HASH.test(hash)) throw new DoorUsage(`--echo names the mandate's hash as om handed it (64 hex): \`lares spirit om ${pet} --instance ${instance}\``);
+  if (instance === null || !INSTANCE.test(instance)) throw new DoorUsage(`echo= rides beside instance=<id>: the instance that echoes names itself (\`lares spirit ah ${pet} echo=<hash> instance=<id>\`)`);
+  if (!MANDATE_HASH.test(hash)) throw new DoorUsage(`echo= names the mandate's hash as om handed it (64 hex): \`lares spirit om ${pet} instance=${instance}\``);
   const strayEcho = ([["slot", args.options["slot"]], ["add", args.options["add"]], ["text", args.options["text"]], ["file", args.options["file"]], ["base", args.options["base"]]] as const).find(([, v]) => v !== undefined);
-  if (strayEcho !== undefined) throw new DoorUsage(`--echo lands alone; no --${strayEcho[0]}`);
+  if (strayEcho !== undefined) throw new DoorUsage(`echo= lands alone; no --${strayEcho[0]}`);
   const rec = (await resolveRecord(args, "ah", pet))!;
   // An instance re-echoes under the face it woke under alone: an echo under a turned mount would re-home it.
   const turned = echoTurned(pet, rec.sideFields, instance, answeredFace, "ah");
   if (turned !== null) throw turned;
   const offering = await offeringFor(args, "ah", pet);
-  if (offering === null) throw new SpiritRefusal("spirit-unoffered", `spirit-unoffered: no ${ALANA_DISPLAY} stands on ${offeringOf(pet)}, so the echo answers no mandate; nothing landed. A summon offers first: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
+  if (offering === null) throw new SpiritRefusal("spirit-unoffered", `spirit-unoffered: no ${ALANA_DISPLAY} stands on ${offeringOf(pet)}, so the echo answers no mandate; nothing landed. A summon offers first: \`lares spirit ah ${pet} offer=true file=<mandate>\``, 4);
   if (offering.damaged) throw offeringDamaged(pet, offering);
   if (hash !== offering.hash) {
-    throw new SpiritRefusal("spirit-echo-mismatch", `spirit-echo-mismatch: the echo ${hash.slice(0, 12)} names no mandate standing on ${offering.uri} (seq ${offering.seq} reads ${offering.hash.slice(0, 12)}); nothing landed. Read the mandate again: \`lares spirit om ${pet} --instance ${instance}\``, 4);
+    throw new SpiritRefusal("spirit-echo-mismatch", `spirit-echo-mismatch: the echo ${hash.slice(0, 12)} names no mandate standing on ${offering.uri} (seq ${offering.seq} reads ${offering.hash.slice(0, 12)}); nothing landed. Read the mandate again: \`lares spirit om ${pet} instance=${instance}\``, 4);
   }
   let seq = 0;
   await casFields(args, "ah", rec.side, (fields) => { const joined = echoJoin(fields, pet, instance, hash, answeredFace); seq = joined.seq; return joined.write; });
@@ -515,13 +515,13 @@ export interface EdgeClosed { readonly edge: string; readonly offerer: string; r
 export type EdgeClose = (ask: EdgeAsk) => Promise<EdgeClosed | null>;
 
 /**
- * THE CROSSING RUNS PER INSTANCE, AND STAYS ADVISORY. Only the PreCompact hook marks it (`om --source precompact --instance <id>`), and
- * between that mark and the same instance's next wake (the one event that lifts it) a write naming that instance (`--instance`) refuses; a sibling,
+ * THE CROSSING RUNS PER INSTANCE, AND STAYS ADVISORY. Only the PreCompact hook marks it (`om source=precompact instance=<id>`), and
+ * between that mark and the same instance's next wake (the one event that lifts it) a write naming that instance (`instance=`) refuses; a sibling,
  * or a write naming no instance, writes freely. It guards an instance from writing over its own folding, never a card from its siblings.
  */
 function crossingHolds(rec: Record_, instance: string | null): void {
   if (instance === null) return;
-  if (!INSTANCE.test(instance)) throw new DoorUsage("--instance names a session id (letters, digits, '-' and '_')");
+  if (!INSTANCE.test(instance)) throw new DoorUsage("instance= names a session id (letters, digits, '-' and '_')");
   const refused = crossingRefusal(rec, instance);
   if (refused !== null) throw refused;
 }
@@ -544,11 +544,11 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
   const file = wordOf(args.options["file"]);
   const text = typeof args.options["text"] === "string" ? args.options["text"] : null;
   if (Number(file !== null) + Number(text !== null) !== 1 || args.options["slot"] !== undefined || args.options["add"] !== undefined) {
-    throw new DoorUsage(`--new lands a whole shrine from one source: --file <path|-> or --text <words> (no --slot, no --add); \`lares spirit om ${pet}\` prints the skeleton`);
+    throw new DoorUsage(`new=true lands a whole shrine from one source: file=<path|-> or text=<words> (no slot=, no add=); \`lares spirit om ${pet}\` prints the skeleton`);
   }
   const standing = await resolveRecord(args, "ah", pet, true);
   if (standing !== null && (standing.kind !== "card" || standing.uri === spiritOf(pet))) {
-    throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already answers "${pet}" at ${standing.uri}, so --new lands nothing; true its slots instead: \`lares spirit ah ${pet} --slot '#/<name>' --file <path>\``, 4);
+    throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already answers "${pet}" at ${standing.uri}, so new=true lands nothing; true its slots instead: \`lares spirit ah ${pet} slot='#/<name>' file=<path>\``, 4);
   }
   // NO SHRINE LANDS OVER ANOTHER RECORD: a plain record at the one address that names another pet (or none) answers no spirit,
   // and a meme put there would bury it.
@@ -556,12 +556,12 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
   if (standing === null || standing.uri !== one) {
     const at = (await recordOf(args, "ah", one)).fields;
     if (Object.keys(at).length > 0) {
-      throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already stands at ${one}${at["pet"] ? `, naming the pet "${at["pet"]}"` : ", naming no pet"}, so --new lands nothing over it. Read it: \`lares get title=${shq(one)}\`, then rename it away (\`lares rename title=${shq(one)} to=<new title>\`) or choose another pet name`, 4);
+      throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already stands at ${one}${at["pet"] ? `, naming the pet "${at["pet"]}"` : ", naming no pet"}, so new=true lands nothing over it. Read it: \`lares get title=${shq(one)}\`, then rename it away (\`lares rename title=${shq(one)} to=<new title>\`) or choose another pet name`, 4);
     }
   }
   const words = file !== null ? await sourceText("file", file) : text!;
   const shapes = secretCount(words);
-  if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the shrine holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit ah ${pet} --new --file <scrubbed path>\``, 4);
+  if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the shrine holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit ah ${pet} new=true file=<scrubbed path>\``, 4);
   const carrier = shrineCarrier(pet, words);
   const uri = spiritOf(pet);
   // A WHOLE SHRINE RIDES AS THE ROOT'S TEXT: the put lands the family through the Confluence gate, only where none stands.
@@ -634,9 +634,9 @@ async function namesTitle(args: ParsedArgs, rec: Record_, title: string): Promis
 }
 
 /**
- * A TITLE ONLY PROPOSES, AND EACH FAMILIAR WAKES ITS OWN. A HELD session (`--held`: its own counter names this pet, from an
+ * A TITLE ONLY PROPOSES, AND EACH FAMILIAR WAKES ITS OWN. A HELD session (`held=true`: its own counter names this pet, from an
  * earlier wake of this session) never switches: a title naming another familiar reads as an offer (that familiar's own act
- * records the alias), and a title no record answers reads as this familiar's rename. A FRESH instance (`--instance`, not held) reads
+ * records the alias), and a title no record answers reads as this familiar's rename. A FRESH instance (`instance=`, not held) reads
  * the title's slug as its own familiar: a record standing there wakes, another instance joining any already awake; where none
  * stands, a startup or clear prints that familiar's starter as an offer, never the seated card, and a fork's (or any other
  * source's) inherited title names nothing new. A wake naming no instance reads the title as a proposal: it turns only where the
@@ -662,26 +662,26 @@ async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, tit
     return { to: other, starter: null, line: `This session's title "${named}" names ${other.uri} as its own; this wake turns to ${slug}.` };
   }
   if (other !== null) {
-    return { to: null, starter: null, line: `This session's title "${named}" names ${other.uri}, whose record stands; a title only proposes, so this wake stays ${pet}. To wear ${slug} under this title, ${slug}'s own act records the alias: lares spirit ah ${slug} --slot '#/entry' --add ${shq(`''renames:'' -> ${named}`)}` };
+    return { to: null, starter: null, line: `This session's title "${named}" names ${other.uri}, whose record stands; a title only proposes, so this wake stays ${pet}. To wear ${slug} under this title, ${slug}'s own act records the alias: lares spirit ah ${slug} slot='#/entry' add=${shq(`''renames:'' -> ${named}`)}` };
   }
-  return { to: null, starter: null, line: rec === null ? null : `This session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this instance stays ${pet}. To keep the title as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add ${shq(`''renames:'' ${pet} -> ${named}`)}` };
+  return { to: null, starter: null, line: rec === null ? null : `This session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this instance stays ${pet}. To keep the title as an alias, record it: lares spirit ah ${pet} slot='#/entry' add=${shq(`''renames:'' ${pet} -> ${named}`)}` };
 }
 
 async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const given = petOf(args, "om");
   const ask = foldAsk(args, "measure");
   const sourceWord = wordOf(args.options["source"]) ?? "startup";
-  if (!(SOURCES as readonly string[]).includes(sourceWord)) throw new DoorUsage(`--source names one of ${SOURCES.join(", ")}; got "${sourceWord}"`);
+  if (!(SOURCES as readonly string[]).includes(sourceWord)) throw new DoorUsage(`source= names one of ${SOURCES.join(", ")}; got "${sourceWord}"`);
   const source = sourceWord as Source;
   const named = wordOf(args.options["instance"]);
-  if (named !== null && !INSTANCE.test(named)) throw new DoorUsage("--instance names a session id (letters, digits, '-' and '_')");
-  // A SUMMONED INSTANCE WAKES UNDER ITS MANDATE (`--mandate <uri>@<hash>`): the mandate reads and verifies first (`mandate-moved`
+  if (named !== null && !INSTANCE.test(named)) throw new DoorUsage("instance= names a session id (letters, digits, '-' and '_')");
+  // A SUMMONED INSTANCE WAKES UNDER ITS MANDATE (`mandate=<uri>@<hash>`): the mandate reads and verifies first (`mandate-moved`
   // stops the wake), names the instance where the line names none, and its unfold leads the wake.
   const summoned = await mandateWake(args, summonCtx(args, ctx), given);
   const instance = named ?? summoned?.mandate.instance ?? null;
   const title = typeof args.options["title"] === "string" ? args.options["title"] : null;
   const seated = await resolveRecord(args, "om", given, true);
-  // THE WAKE BINDS TO THE FACE THAT ANSWERED IT: the fold and every command om hands back name it (`--face N`), so after the
+  // THE WAKE BINDS TO THE FACE THAT ANSWERED IT: the fold and every command om hands back name it (`face=N`), so after the
   // operator turns the mount this instance's next call still lands under the face it woke under (plan/companion-context #/4).
   const bind = (text: string): string => faceBound(text, answeredFace);
   const bound: FoldAsk = { ...ask, face: ask.face ?? (answeredFace === null ? null : String(answeredFace)) };
@@ -696,7 +696,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
       return 0;
     }
   }
-  // The session's own counter decides held (`--held`); the card's lease orders instances and decides nothing here.
+  // The session's own counter decides held (`held=true`); the card's lease orders instances and decides nothing here.
   const held = args.flags["held"] === true ? "held" : instance === null ? null : "fresh";
   const turn = source === "precompact" ? { to: null, starter: null, line: null } : await readTitle(args, seated, given, title, held, source);
   const found = turn.starter !== null ? null : turn.to ?? seated;
@@ -764,7 +764,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const echoed = offering !== null && !offering.damaged && instance !== null && echoStands(rec.sideFields, instance, offering.hash);
   const unechoedLine = offering === null || offering.damaged || echoed || instance === null ? null : `unechoed: ${pet}#${instance} has not read mandate ${offering.hash}`;
   const mandate = offering === null ? null : [mandateLines(pet, offering, instance, echoed), unechoedLine].filter((l): l is string => l !== null).join("\n");
-  const worn = answeredFace === null ? null : `worn: h${answeredFace} · every command below names --face ${answeredFace}, so a turn of the mount leaves this instance under the face it woke under`;
+  const worn = answeredFace === null ? null : `worn: h${answeredFace} · every command below names face=${answeredFace}, so a turn of the mount leaves this instance under the face it woke under`;
   // THE HOUSE LANDS THE SUMMONED INSTANCE'S ECHO AT ITS WAKE: the mandate's hash and the face that answered, on the sibling record.
   if (summoned !== null && instance !== null && !echoStands(rec.sideFields, instance, summoned.mandate.hash)) {
     await casFields(args, "om", rec.side, (fields) => echoJoin(fields, pet, instance, summoned.mandate.hash, answeredFace).write);
@@ -772,7 +772,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const leadText = [worn, summoned?.lead ?? null, mandate, lead].filter((l): l is string => l !== null).join("\n\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
   const attention = await attentionUnfold(args, rec);
-  // Each slot's digest, the view this instance woke on: a whole-slot write names its slot's as --base, so a sibling's write since reads.
+  // Each slot's digest, the view this instance woke on: a whole-slot write names its slot's as base=, so a sibling's write since reads.
   const digests: Record<string, string> = {};
   for (const s of rec.slots) {
     const field = rec.kind === "card" ? cardField(s.slot) : null;
@@ -781,8 +781,8 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   digests[STACK_SLOT] = slotDigest(stackBody(stack));
   // The whole stack rides one has line in the seed's own shape, past the carrier's release (the wake still parses as one carrier).
-  testimony.push(`The stack (${STACK_SLOT}: \`lares spirit hum ${pet} --fold '${STACK_SLOT}'\` lists it cap by cap): ${stackLine(pet, rec.fields, rec.uri)}`);
-  testimony.push(`Slot digests (a whole-slot ah names its slot's as --base; --add needs none): ${Object.entries(digests).map(([k, v]) => `${k}=${v}`).join(" ")}`);
+  testimony.push(`The stack (${STACK_SLOT}: \`lares spirit hum ${pet} fold='${STACK_SLOT}'\` lists it cap by cap): ${stackLine(pet, rec.fields, rec.uri)}`);
+  testimony.push(`Slot digests (a whole-slot ah names its slot's as base=; add= needs none): ${Object.entries(digests).map(([k, v]) => `${k}=${v}`).join(" ")}`);
   const advisory = advisoryLine(rec);
   if (advisory !== null) testimony.push(advisory);
   // THE WAKE READS THE SHRINE AS A FOLDED CARRIER, whole under the cap: the testimony and the doors ride past its release, so the
@@ -812,8 +812,8 @@ async function sourceText(flag: "file", source: string): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 /**
- * A SIBLING'S WORDS SURVIVE. `--add` appends one line over the slot as it stands, re-reading past a conflict, so additions from
- * many instances commute. A whole-slot replace compares at SLOT grain: it names the digest of the slot it read (`--base`, as om or
+ * A SIBLING'S WORDS SURVIVE. `add=` appends one line over the slot as it stands, re-reading past a conflict, so additions from
+ * many instances commute. A whole-slot replace compares at SLOT grain: it names the digest of the slot it read (`base=`, as om or
  * the last ah handed it back); where the slot still reads that digest it writes, re-reading past a conflict elsewhere on the
  * card; where the slot moved since, both versions land in a conflict stanza naming this writer and the slot's last writer. A
  * stanza holds at most twice the slot's budget and the record's own. Only a record that keeps moving past the rounds refuses.
@@ -848,7 +848,7 @@ async function foldLine(args: ParsedArgs, rec: Record_, slot: string, line: stri
     const read = await readSlot(args, "hum", rec, slot);
     if (read === null) throw slotMissing(rec, slot);
     const body = foldOut(read.body, line);
-    if (body === null) throw new SpiritRefusal("spirit-fold-gone", `spirit-fold-gone: the line "${redactedText(line.trim()).slice(0, 120)}" no longer stands in ${rec.uri}${slot} (a sibling instance folded or rewrote it); nothing landed. Number the lines again: \`lares spirit hum ${rec.pet} --fold '${slot}'\``, 4);
+    if (body === null) throw new SpiritRefusal("spirit-fold-gone", `spirit-fold-gone: the line "${redactedText(line.trim()).slice(0, 120)}" no longer stands in ${rec.uri}${slot} (a sibling instance folded or rewrote it); nothing landed. Number the lines again: \`lares spirit hum ${rec.pet} fold='${slot}'\``, 4);
     const receipt = await patchSlot(args, "hum", rec, slot, body, read.base);
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(read.body), digest: slotDigest(body) };
@@ -864,18 +864,18 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const echoWord = wordOf(args.options["echo"]);
   if (echoWord !== null) return await echo(args, ctx, pet, echoWord);
   const slot = wordOf(args.options["slot"]);
-  if (!slot || !/^#\/[^\s$]+$/.test(slot)) throw new DoorUsage(`--slot '#/<name>' names the slot to true (\`lares spirit hum ${pet}\` lists them)`);
+  if (!slot || !/^#\/[^\s$]+$/.test(slot)) throw new DoorUsage(`slot='#/<name>' names the slot to true (\`lares spirit hum ${pet}\` lists them)`);
   const file = wordOf(args.options["file"]);
   const text = typeof args.options["text"] === "string" ? args.options["text"] : null;
   const add = typeof args.options["add"] === "string" ? args.options["add"] : null;
   if (Number(file !== null) + Number(text !== null) + Number(add !== null) !== 1) {
-    throw new DoorUsage("name exactly one source: --file <path|-> or --text <words> (the slot's whole body), or --add <line> (one line at its end)");
+    throw new DoorUsage("name exactly one source: file=<path|-> or text=<words> (the slot's whole body), or add=<line> (one line at its end)");
   }
   if (slot === STACK_SLOT) {
-    // THE STACK TAKES ONE CAP PER --add (hum's fold unstrings one), so no whole-slot write ever drops a cap it never read.
-    if (add === null) throw new DoorUsage(`the stack takes one cap per line: \`lares spirit ah ${pet} --slot '${STACK_SLOT}' --add '<a.b.c> <value>'\` strings one, and \`lares spirit hum ${pet} --fold '${STACK_SLOT}'\` lists them to unstring one`);
+    // THE STACK TAKES ONE CAP PER add= (hum's fold unstrings one), so no whole-slot write ever drops a cap it never read.
+    if (add === null) throw new DoorUsage(`the stack takes one cap per line: \`lares spirit ah ${pet} slot='${STACK_SLOT}' add='<a.b.c> <value>'\` strings one, and \`lares spirit hum ${pet} fold='${STACK_SLOT}'\` lists them to unstring one`);
     const named = capLine(add);
-    if (named === null) throw new SpiritRefusal("spirit-cap-malformed", `spirit-cap-malformed: "${redactedText(add.replace(/\s+/g, " ").trim()).slice(0, 80)}" names no cap; nothing landed. A line reads a three-term address then its value: \`lares spirit ah ${pet} --slot '${STACK_SLOT}' --add 'spirit.lane.holds <the lane>'\``, 2);
+    if (named === null) throw new SpiritRefusal("spirit-cap-malformed", `spirit-cap-malformed: "${redactedText(add.replace(/\s+/g, " ").trim()).slice(0, 80)}" names no cap; nothing landed. A line reads a three-term address then its value: \`lares spirit ah ${pet} slot='${STACK_SLOT}' add='spirit.lane.holds <the lane>'\``, 2);
     capHolds(pet, named.cap);
   }
   const rec = (await resolveRecord(args, "ah", pet))!;
@@ -884,13 +884,13 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const unechoed = await echoHolds(args, "ah", rec, wordOf(args.options["instance"]), ctx);
   const words = file !== null ? await sourceText("file", file) : text;
   const line = add?.replace(/\s+/g, " ").trim() ?? null;
-  if (line === "") throw new DoorUsage("--add names one non-empty line");
+  if (line === "") throw new DoorUsage("add= names one non-empty line");
   const self = wordOf(args.options["instance"]);
   const base = line !== null ? null : wordOf(args.options["base"]);
-  if (base !== null && !SLOT_DIGEST.test(base)) throw new DoorUsage(`--base names the slot digest this instance read (16 hex; \`lares spirit om ${pet}\` or the last ah hands it back)`);
+  if (base !== null && !SLOT_DIGEST.test(base)) throw new DoorUsage(`base= names the slot digest this instance read (16 hex; \`lares spirit om ${pet}\` or the last ah hands it back)`);
   // THE GATE READS THE CHAIN: an AI seat and a branch nothing attests alike name the digest they read; a mark alone decides nothing.
   if (line === null && base === null && "refusal" in ctx.hand()) {
-    throw new SpiritRefusal("spirit-base-needed", `spirit-base-needed: a whole-slot write from an AI seat names the slot digest it read, so a sibling's write since never drops: --base <slot digest> (om's wake lists each slot's; the last ah hands back its own). Nothing landed. To add one line, --add needs none`, 2);
+    throw new SpiritRefusal("spirit-base-needed", `spirit-base-needed: a whole-slot write from an AI seat names the slot digest it read, so a sibling's write since never drops: base=<slot digest> (om's wake lists each slot's; the last ah hands back its own). Nothing landed. To add one line, add= needs none`, 2);
   }
   const who = self !== null ? `${pet}#${self}` : "a hand at the terminal";
   const receipt = await mergeSlot(args, rec, slot, line !== null ? { add: line } : { words: words!, base, who });
@@ -934,7 +934,7 @@ async function burnToAshes(args: ParsedArgs, label: string, lines: readonly stri
 const STREAM_FIELDS = ["title", "stream", "prev", "re", "to", "note", "tags"] as const;
 /** The most pages a stream listing walks; a graph past it reads partial, and a partial graph folds nothing. */
 const STREAM_PAGES = 256;
-/** The slot settled entries fold into where `--slot` names none: the shrine's open loops, which they close. */
+/** The slot settled entries fold into where `slot=` names none: the shrine's open loops, which they close. */
 const STREAM_FOLD_SLOT = "#/open";
 
 /** Every stream entry the view holds, page by page; a listing that never ends refuses, since a partial graph misreads heads and seen. */
@@ -951,10 +951,10 @@ async function streamRows(args: ParsedArgs): Promise<Row[]> {
 }
 
 /**
- * `hum <pet> --streams` — HUM FOLDS SETTLED ENTRIES INTO THE SHRINE (comms-ux-enacts landing 17). The pet's streams' entries
+ * `hum <pet> streams=true` — HUM FOLDS SETTLED ENTRIES INTO THE SHRINE (comms-ux-enacts landing 17). The pet's streams' entries
  * that stand settled (`settledOf`: no stream's head, seen by their addressee, answered by no unseen entry), and not already
- * marked, fold as one line per stream into `--slot` (default `#/open`) through the slot's own merge, so the waking caps and a
- * sibling's write stand as for any `ah --add`. Only once the line lands does each entry take the `ash-ready` tag and a
+ * marked, fold as one line per stream into `slot=` (default `#/open`) through the slot's own merge, so the waking caps and a
+ * sibling's write stand as for any `ah add=`. Only once the line lands does each entry take the `ash-ready` tag and a
  * `folded` field naming the slot: marked for o-takiage, never deleted, and a second hum folds none of them again.
  */
 async function humStreams(args: ParsedArgs, pet: string): Promise<number> {
@@ -968,7 +968,7 @@ async function humStreams(args: ParsedArgs, pet: string): Promise<number> {
   if (settled.length === 0) {
     emit(args, {
       ok: true, data: { pet, uri: rec.uri, slot, settled: [], folded: [], lines: [] },
-      human: () => console.log(`lares spirit hum ${pet} --streams: no settled entry waits to fold (${entries.length} entries read); a stream's head, an unseen msg and an entry an unseen msg answers all stay`),
+      human: () => console.log(`lares spirit hum ${pet} streams=true: no settled entry waits to fold (${entries.length} entries read); a stream's head, an unseen msg and an entry an unseen msg answers all stay`),
     });
     return 0;
   }
@@ -1008,7 +1008,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const ask = foldAsk(args, "pulse");
   const fold = wordOf(args.options["fold"]);
   const lineWord = wordOf(args.options["line"]);
-  if (lineWord !== null && fold === null) throw new DoorUsage(`--line <n> rides beside --fold '#/<slot>' (\`lares spirit hum ${pet} --fold '#/instances' --line 3\`)`);
+  if (lineWord !== null && fold === null) throw new DoorUsage(`line=<n> rides beside fold='#/<slot>' (\`lares spirit hum ${pet} fold='#/instances' line=3\`)`);
   // A fold of a line needs the shrine it folds; a bare hum reads the carrier the wiki folds, a shrine's or a lone card's.
   const found = await resolveRecord(args, "hum", pet, fold === null);
   const folded = fold === null ? await foldSpirit(args, pet, ask, null) : null;
@@ -1029,10 +1029,10 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
         if (folded !== null) console.log(`${folded.carrier ?? unfoldedLine(folded, rec.uri)}\n`);
         console.log(`lares spirit hum ${pet} · ${rec.uri}`);
         console.log(`  ${stackLine(pet, rec.fields, rec.uri)}`);
-        console.log(`  ${STACK_SLOT.padEnd(14)} ${String(stack.length).padStart(5)} cap(s): lares spirit hum ${pet} --fold '${STACK_SLOT}' lists them`);
+        console.log(`  ${STACK_SLOT.padEnd(14)} ${String(stack.length).padStart(5)} cap(s): lares spirit hum ${pet} fold='${STACK_SLOT}' lists them`);
         for (const s of m.slots) console.log(`  ${s.over ? "⚠" : " "} ${s.slot.padEnd(14)} ${String(s.bytes).padStart(5)}${s.budget === null ? "" : ` / ${s.budget}`}`);
         console.log(`  ${advisoryLine(rec, true)}`);
-        if (over.length > 0) console.log(`  fold a line from each: lares spirit hum ${pet} --fold '${over[0]!.slot}' (lists its lines), then --line <n>`);
+        if (over.length > 0) console.log(`  fold a line from each: lares spirit hum ${pet} fold='${over[0]!.slot}' (lists its lines), then line=<n>`);
       },
     });
     return 0;
@@ -1044,7 +1044,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     emit(args, {
       ok: true, data: { pet, uri: rec.uri, slot: fold, lines: lines.map((text, i) => ({ n: i + 1, text, digest: slotDigest(text) })) },
       human: () => {
-        console.log(`${rec.uri}${fold}: pick the line to fold with --line <n> --expect <its digest>`);
+        console.log(`${rec.uri}${fold}: pick the line to fold with line=<n> expect=<its digest>`);
         lines.forEach((text, i) => console.log(`  ${String(i + 1).padStart(3)}  ${slotDigest(text)}  ${text}`));
       },
     });
@@ -1052,18 +1052,18 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   crossingHolds(rec, wordOf(args.options["instance"]));
   const unechoed = await echoHolds(args, "hum", rec, wordOf(args.options["instance"]), ctx);
-  // THE LISTED LINE, BY ITS DIGEST. The number reads the listing this instance saw; `--expect` names that line's digest, so a sibling's
+  // THE LISTED LINE, BY ITS DIGEST. The number reads the listing this instance saw; `expect=` names that line's digest, so a sibling's
   // write between the listing and the fold folds the line this instance chose (wherever it moved), or nothing.
   const expect = wordOf(args.options["expect"]);
-  if (expect === null || !SLOT_DIGEST.test(expect)) throw new DoorUsage(`--line <n> rides beside --expect <the line's digest> (16 hex), as \`lares spirit hum ${pet} --fold '${fold}'\` lists each line's`);
+  if (expect === null || !SLOT_DIGEST.test(expect)) throw new DoorUsage(`line=<n> rides beside expect=<the line's digest> (16 hex), as \`lares spirit hum ${pet} fold='${fold}'\` lists each line's`);
   const n = /^[1-9][0-9]*$/.test(lineWord) ? Number(lineWord) : NaN;
   const at = pickLine(lines, lineWord, expect);
   if (at < 0) {
-    throw new SpiritRefusal("spirit-fold-gone", `spirit-fold-gone: no line in ${rec.uri}${fold} reads the digest ${expect} (a sibling instance folded or rewrote it since the listing); nothing landed. List the lines again: \`lares spirit hum ${pet} --fold '${fold}'\``, 4);
+    throw new SpiritRefusal("spirit-fold-gone", `spirit-fold-gone: no line in ${rec.uri}${fold} reads the digest ${expect} (a sibling instance folded or rewrote it since the listing); nothing landed. List the lines again: \`lares spirit hum ${pet} fold='${fold}'\``, 4);
   }
   const picked = lines[at]!;
   if (picked.trim() === "") {
-    throw new DoorUsage(`--line ${lineWord} names no line holding words in ${fold} (it holds ${lines.length}); \`lares spirit hum ${pet} --fold '${fold}'\` numbers them`);
+    throw new DoorUsage(`line=${lineWord} names no line holding words in ${fold} (it holds ${lines.length}); \`lares spirit hum ${pet} fold='${fold}'\` numbers them`);
   }
   // The mandate's cap leaves as it lands, by the door's own act; every other cap unstrings by any instance.
   if (fold === STACK_SLOT) {
@@ -1084,7 +1084,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (ledger === null) {
     await mergeSlot(args, rec, fold, { add: picked });
     const why = last instanceof SpiritRefusal ? last.message : last instanceof Printed ? `the ledger's door refused (exit ${last.exit})` : String(last);
-    throw new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger refused the folded line ${ASH_ROUNDS} times (${why.slice(0, 300)}), so the line returned to the slot's end: ${redactedText(picked.trim()).slice(0, 300)}. Fold it again once the ledger answers: \`lares spirit hum ${pet} --fold '${fold}'\``, 4);
+    throw new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger refused the folded line ${ASH_ROUNDS} times (${why.slice(0, 300)}), so the line returned to the slot's end: ${redactedText(picked.trim()).slice(0, 300)}. Fold it again once the ledger answers: \`lares spirit hum ${pet} fold='${fold}'\``, 4);
   }
   await writeSide(args, "hum", rec, { distilled: stamp.toISOString() });
   const foldSelf = wordOf(args.options["instance"]);
@@ -1102,12 +1102,12 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
 async function residueWords(args: ParsedArgs, label: string): Promise<{ text: string; cut: boolean }> {
   const file = wordOf(args.options["file"]);
   const inline = typeof args.options["text"] === "string" ? args.options["text"] : null;
-  if (Number(file !== null) + Number(inline !== null) !== 1) throw new DoorUsage("name exactly one source: --file <path|-> (stdin carries a long text) or --text <words>");
+  if (Number(file !== null) + Number(inline !== null) !== 1) throw new DoorUsage("name exactly one source: file=<path|-> (stdin carries a long text) or text=<words>");
   const raw = file !== null ? await sourceText("file", file) : inline!;
   if (raw.trim() === "") throw new DoorUsage("the residue holds no words; nothing lands");
   const shapes = secretCount(raw);
   if (shapes > 0) {
-    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the ${label} holds ${shapes} secret-shaped string(s), so nothing landed; clear them at the source, then land it by hand: \`lares spirit ${label} <pet> --file <scrubbed path>\``, 4);
+    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the ${label} holds ${shapes} secret-shaped string(s), so nothing landed; clear them at the source, then land it by hand: \`lares spirit ${label} <pet> file=<scrubbed path>\``, 4);
   }
   return residueCut(raw);
 }
@@ -1129,7 +1129,7 @@ async function landResidue(args: ParsedArgs, label: string, title: string, text:
 async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, COMPACTION_WORD);
   const instance = wordOf(args.options["instance"]) ?? "";
-  if (instance !== "" && !INSTANCE.test(instance)) throw new DoorUsage("--instance names a session id (letters, digits, '-' and '_')");
+  if (instance !== "" && !INSTANCE.test(instance)) throw new DoorUsage("instance= names a session id (letters, digits, '-' and '_')");
   // The carry writes nothing to the card; its lineage runs per instance, so each instance keeps its own chain.
   const rec = (await resolveRecord(args, COMPACTION_WORD, pet))!;
   const { text, cut } = await residueWords(args, COMPACTION_WORD);
@@ -1144,7 +1144,7 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const depth = carryDepth(parent);
   const landed = await landResidue(args, COMPACTION_WORD, title, text, carryFields({ pet, key, instance, base: rec.base, parent, now: stamp }));
   const line = instancesLine(day, hash, pet, instance, title);
-  const fileIt = `lares spirit ah ${pet} --slot '#/instances' --add ${shq(line)}${instance !== "" ? ` --instance ${instance}` : ""}`;
+  const fileIt = `lares spirit ah ${pet} slot='#/instances' add=${shq(line)}${instance !== "" ? ` instance=${instance}` : ""}`;
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, spiritId: key, title, hash, depth, parent: parent?.title ?? null, landed, cut, filed: false, instancesLine: line, unfiled: `file the ${COMPACTION_DISPLAY}'s #/instances line: ${fileIt}` },
     human: () => {
@@ -1156,7 +1156,7 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
 }
 
 /**
- * The transcripts `--transcripts` names, read from disk: a file reads alone, a directory reads its `*.jsonl` files sorted by
+ * The transcripts `transcripts=` names, read from disk: a file reads alone, a directory reads its `*.jsonl` files sorted by
  * name (never by mtime). Each agent's hand-back witnesses as one reading; whatever reads no hand-back answers a named unread
  * line with the read that cures it.
  */
@@ -1185,7 +1185,7 @@ function transcriptWitness(path: string, pet: string): Witnessed[] {
 }
 
 /**
- * THE RESIDUE WITNESS (`residue <pet> --witness [--transcripts <dir|file>]`): every hand-back landed under the pet (its residue
+ * THE RESIDUE WITNESS (`residue <pet> witness=true [transcripts=<dir|file>]`): every hand-back landed under the pet (its residue
  * records, in title order) and every hand-back the named transcripts carry, read for the frame and the Personas. One receipt
  * line per reading, one tally; it exits 0 on every reading, a dropped frame reading as a named tell with its seed slot.
  */
@@ -1215,7 +1215,7 @@ async function witnessResidue(args: ParsedArgs, pet: string): Promise<number> {
 /**
  * One hand-back landed as residue. It lands under its own pet name alone: a mask tag never reaches a familiar's record, nor
  * mints its spirit-id. THE KEY MAKES IT IDEMPOTENT: the same words under the same key land once, however often a hook fires or
- * a fire retries. A key the line names (`--key <session:agent>`) leads; an instance with none keys by its own tag, so two
+ * a fire retries. A key the line names (`key=<session:agent>`) leads; an instance with none keys by its own tag, so two
  * instances handing back the same words land apart; a pet alone keys by its words.
  */
 async function landReport(args: ParsedArgs, ctx: Ctx, label: string, pet: string, instance: string | null): Promise<{ title: string; hash: string; landed: "put" | "exists"; cut: boolean }> {
@@ -1246,8 +1246,8 @@ function returnerOf(args: ParsedArgs): { pet: string; instance: string | null; t
   const at = word.indexOf("#");
   const pet = at < 0 ? word : word.slice(0, at);
   const instance = at < 0 ? null : word.slice(at + 1);
-  if (pet === "") throw new DoorUsage("a hand-back names who returns: `lares spirit handback <pet> --file -` (the report on stdin), or `<pet>#<n>` for one instance");
-  if (!PET.test(pet)) throw new SpiritRefusal("spirit-pet-malformed", `spirit-pet-malformed: "${pet}" reads as no pet name (lower-case letters, digits and hyphens); name the one who returns as its filing line does: \`lares spirit handback <pet> --file -\``, 2);
+  if (pet === "") throw new DoorUsage("a hand-back names who returns: `lares spirit handback <pet> file=-` (the report on stdin), or `<pet>#<n>` for one instance");
+  if (!PET.test(pet)) throw new SpiritRefusal("spirit-pet-malformed", `spirit-pet-malformed: "${pet}" reads as no pet name (lower-case letters, digits and hyphens); name the one who returns as its filing line does: \`lares spirit handback <pet> file=-\``, 2);
   if (instance !== null && !INSTANCE.test(instance)) throw new DoorUsage(`an instance reads \`<pet>#<n>\` (letters, digits, '-' and '_' after the '#'; got "${word}")`);
   return { pet, instance, tag: instance === null ? pet : `${pet}#${instance}` };
 }
@@ -1263,17 +1263,17 @@ function recordRef(word: string): { uri: string; hash: string | null } | null {
 
 /**
  * THE ONE RETURN DOOR. Every fire that wakes into the house hands back by this line, whatever harness carries it: a Claude
- * sub-agent's hook, a Codex or Copilot session, a summoned instance, a hand. THE RECORD STANDS FIRST: a report (`--file`,
- * `--text`) lands as residue under the pet's own name, keyed idempotently; `--record` names one already landed, and the door
+ * sub-agent's hook, a Codex or Copilot session, a summoned instance, a hand. THE RECORD STANDS FIRST: a report (`file=`,
+ * `text=`) lands as residue under the pet's own name, keyed idempotently; `record=` names one already landed, and the door
  * reads it (and the hash the line names) before anything else moves. THEN THE EDGE, where one stands: an instance's summons edge
  * names the record and its lane frees. A hand-back no edge answers lands all the same; only a line that names its mandate
- * (`--mandate`) refuses where no edge answers it, and the record it landed stays.
+ * (`mandate=`) refuses where no edge answers it, and the record it landed stays.
  */
 async function handback(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const who = returnerOf(args);
   const named = wordOf(args.options["record"]);
   const sources = Number(named !== null) + Number(wordOf(args.options["file"]) !== null) + Number(typeof args.options["text"] === "string");
-  if (sources !== 1) throw new DoorUsage(`a hand-back names exactly one return: --file <path|-> (stdin carries the report), --text <words>, or --record <uri>[@<hash>] (a record already landed); e.g. \`lares spirit handback ${shq(who.tag)} --file -\``);
+  if (sources !== 1) throw new DoorUsage(`a hand-back names exactly one return: file=<path|-> (stdin carries the report), text=<words>, or record=<uri>[@<hash>] (a record already landed); e.g. \`lares spirit handback ${shq(who.tag)} file=-\``);
   const mandate = wordOf(args.options["mandate"]);
   let record: string;
   let landed: "put" | "exists" | "standing";
@@ -1281,9 +1281,9 @@ async function handback(args: ParsedArgs, ctx: Ctx): Promise<number> {
   let hash: string | null;
   if (named !== null) {
     const ref = recordRef(named);
-    if (ref === null) throw new DoorUsage(`--record names a landed record as <lar uri>[@<hash>] (got "${named}")`);
+    if (ref === null) throw new DoorUsage(`record= names a landed record as <lar uri>[@<hash>] (got "${named}")`);
     const back = await recordOf(args, "handback", ref.uri);
-    if (back.hash === null) throw new SpiritRefusal("handback-unknown", `handback-unknown: no record stands at ${ref.uri} under the face that answered; nothing landed. Hand the report itself back: \`lares spirit handback ${shq(who.tag)} --file <path|->\``, 4);
+    if (back.hash === null) throw new SpiritRefusal("handback-unknown", `handback-unknown: no record stands at ${ref.uri} under the face that answered; nothing landed. Hand the report itself back: \`lares spirit handback ${shq(who.tag)} file=<path|->\``, 4);
     if (ref.hash !== null && ref.hash !== back.hash && ref.hash !== back.hash.replace(/^[a-z0-9]+[:-]/, "")) {
       throw new SpiritRefusal("handback-moved", `handback-moved: ${ref.uri} reads ${back.hash} now, another hash than the line names (${ref.hash}); nothing landed. Read it, then name the hash it holds: \`lares get title=${shq(ref.uri)}\``, 4);
     }
@@ -1292,11 +1292,11 @@ async function handback(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const report = await landReport(args, ctx, "handback", who.pet, who.instance);
     record = report.title; landed = report.landed; cut = report.cut; hash = report.hash;
   }
-  const again = `lares spirit handback ${shq(who.tag)} --record ${shq(record)}`;
+  const again = `lares spirit handback ${shq(who.tag)} record=${shq(record)}`;
   // THE EDGE RIDES AFTER THE RECORD, and only an instance holds one: a pet handing back as itself names no summons.
   const closed = who.instance === null ? null : await ctx.edge({ pet: who.pet, instance: who.instance, tag: who.tag, record, mandate });
   if (closed === null && mandate !== null) {
-    throw new SpiritRefusal("summons-unknown", `summons-unknown: no summons edge answers ${who.tag} under the mandate ${mandate}; the hand-back itself stands at ${record}. Once the edge stands, name the record on it: \`${again} --mandate ${shq(mandate)}\``, 4);
+    throw new SpiritRefusal("summons-unknown", `summons-unknown: no summons edge answers ${who.tag} under the mandate ${mandate}; the hand-back itself stands at ${record}. Once the edge stands, name the record on it: \`${again} mandate=${shq(mandate)}\``, 4);
   }
   emit(args, {
     ok: true,
@@ -1359,7 +1359,7 @@ async function otakiage(args: ParsedArgs, ctx: Ctx): Promise<number> {
       for (const title of burned) console.log(`  burned ${title}`);
       for (const h of held) console.log(`  held ${h.title}: ${h.why}`);
       if (ledger) console.log(`  ashes: ${ledger}`);
-      console.log(`  distill what the residue taught into #/kulana (it sets the distill mark): lares spirit ah ${pet} --slot '#/kulana' --add '<tell>'`);
+      console.log(`  distill what the residue taught into #/kulana (it sets the distill mark): lares spirit ah ${pet} slot='#/kulana' add='<tell>'`);
     },
   });
   return 0;

@@ -74,7 +74,7 @@ describe("RED persona new on a standing face asks for no route", () => {
 
   it("a face that stands shut refuses naming its unlock, and asks nothing", async () => {
     census = { open: [0], shut: [1] };
-    await expect(routeForPersonaNew(1, vessel)).rejects.toThrow(/vault unlock --face 1/);
+    await expect(routeForPersonaNew(1, vessel)).rejects.toThrow(/vault unlock face=1/);
     expect(prompts).toEqual([]);
     expect(frames).toEqual([]);
   });

@@ -137,8 +137,8 @@ describe("lares nexus seal cofound", () => {
       const release = join(courier, "release.json"), offerPath = join(courier, "offer.json"), joinPath = join(courier, "join.json");
       writeFileSync(release, JSON.stringify(RELEASE));
       at(A);
-      expect((await run(nexus(["open"], { out: offerPath }))).out["error"]["message"]).toMatch(/--release/);
-      expect((await run(nexus(["open"], { release }))).out["error"]["message"]).toMatch(/--out/);
+      expect((await run(nexus(["open"], { out: offerPath }))).out["error"]["message"]).toMatch(/release=/);
+      expect((await run(nexus(["open"], { release }))).out["error"]["message"]).toMatch(/out=/);
       writeFileSync(join(courier, "bad-release.json"), JSON.stringify({ ...RELEASE, format: "another" }));
       expect((await run(nexus(["open"], { release: join(courier, "bad-release.json"), out: offerPath }))).out["error"]["message"]).toMatch(/no release manifest/);
       // A counter-suffixed format names no release manifest: the refusal names the shape it lacks, never a version.
@@ -151,7 +151,7 @@ describe("lares nexus seal cofound", () => {
 
       at(B);
       const before = listSeatKeys().length;
-      expect((await run(nexus(["join", offerPath], { out: joinPath }))).out["error"]["message"]).toMatch(/--heard/);
+      expect((await run(nexus(["join", offerPath], { out: joinPath }))).out["error"]["message"]).toMatch(/heard=/);
       expect((await run(nexus(["join", offerPath], { out: joinPath, heard: "0000-1111" }))).out["error"]["message"]).toMatch(/as heard/);
       expect((await run(nexus(["join", release], { out: joinPath, heard: seatFingerprint(aSeat) }))).out["error"]["message"]).toMatch(/no cofound offer/);
       expect(listSeatKeys().length).toBe(before);

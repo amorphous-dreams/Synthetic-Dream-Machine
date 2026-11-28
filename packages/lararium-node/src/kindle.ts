@@ -26,7 +26,7 @@
  * SCOPE. `kindleFromBulb` runs the LIGHT cold-boot ceremony — oracle island + the device's own key + the identity/
  * circle tiddlers. It does not run `runFoundingCeremony` (the daemon doc + keyhive + sentinel seeding), write a
  * social bootstrap, or guard a device whose identity already stands; a hearth kindled here is not yet
- * `lares vessel stand --foreground`-able.
+ * `lares vessel stand foreground=true`-able.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/kindle
  */

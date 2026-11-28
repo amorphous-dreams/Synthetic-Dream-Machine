@@ -1,10 +1,10 @@
 /**
  * `lares sense` — THE SENSORIUM'S DOOR: four universal verbs, the plane as a parameter.
  *
- *   lares sense search <query>   --lens content       # hybrid recall over a plane
- *   lares sense relate <entity>  --lens structure     # the plane's bitemporal KG
- *   lares sense structure <wing> --lens form          # the plane's entity-pair hallways
- *   lares sense status           --lens persistence   # wings · rooms · entities · total
+ *   lares sense search <query>   lens=content       # hybrid recall over a plane
+ *   lares sense relate <entity>  lens=structure     # the plane's bitemporal KG
+ *   lares sense structure <wing> lens=form          # the plane's entity-pair hallways
+ *   lares sense status           lens=persistence   # wings · rooms · entities · total
  *
  * WHY FOUR VERBS AND NOT TWENTY. A verb multiplied per plane (`recall_content`, `recall_structure`,
  * `recall_form`, …) grows as 4 caps x N planes, and every new plane re-opens the whole surface. The lens
@@ -20,7 +20,7 @@
 
 import { openMemorySensorium, makeLaresQuery, runTrialServing, trialContentDir, verifyTrialModel, sensoriumLenses, sensoriumNames, sensoriumDir, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
-import type { ParsedArgs } from "../parse-args.js";
+import { GLOBAL_FLAGS, type ParsedArgs } from "../parse-args.js";
 import { cmdPour, cmdCapture } from "./capture/harvest.js";
 import { cmdWorldline } from "./worldline.js";
 import { cmdTelemetry } from "./telemetry.js";
@@ -72,10 +72,10 @@ type Verb = (typeof VERBS)[number];
  * The SOVEREIGN sensorium's LIFECYCLE + verbatim verbs — the tend/write/read-verbatim half of the one
  * door, beside the four plane-READ verbs above. Each OWNS its handler outright — no top-level twin.
  * `sense` tends the sovereign lar_* planes; `mempalace` tends the guest comparator: one island per
- * namespace. `pour --all` walks the whole tending movement (quiesce · baseline · drawers · bearing ·
- * projection · verify · resume); `pour --bulk` runs its drawers leg alone. Never the guest miner.
+ * namespace. `pour all=true` walks the whole tending movement (quiesce · baseline · drawers · bearing ·
+ * projection · verify · resume); `pour bulk=true` runs its drawers leg alone. Never the guest miner.
  * `recall` reads the verbatim drawers over the SOVEREIGN content plane —
- * the SAME dir `sense search --lens content` opens (both derive memorySensoriumContentDir() through
+ * the SAME dir `sense search lens=content` opens (both derive memorySensoriumContentDir() through
  * mempalace-pool; the daemon recall verb NAMES it, never the guest). Guest-shaped recall output means a
  * stale daemon dist or a dirty sovereign store, never a wrong-store read.
  */
@@ -83,19 +83,19 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   "trial-run": cmdTrialRun,
   // `setup` STANDS the sovereign organs, and founding never reaches it (operator ruling).
   // A vessel founds and serves without a single sensorium, so standing one rides its own act — on the
-  // door that already owns every other thing done to a sensorium. Folding it into `vessel stand --init`
+  // door that already owns every other thing done to a sensorium. Folding it into `vessel stand init=true`
   // would make the memory tooling read as part of the base install.
   setup:     cmdSenseSetup,
   recall:    cmdRecall,
   refresh:   cmdRefresh,
   capture:   cmdCapture,
-  pour:      cmdPour,        // `--all` the whole tending movement · `--bulk` the drawers leg (the sweep spine) · `--writeback`
+  pour:      cmdPour,        // `all=true` the whole tending movement · `bulk=true` the drawers leg (the sweep spine) · `writeback=true`
   teardown:  cmdPalaceTeardown,
   worldline: cmdWorldline,
   telemetry: cmdTelemetry,
   meta:      cmdMeta,
-  // EVERY READ INSTRUMENT answers through ONE verb: `analyze --lens <lens>` (five read the poured planes,
-  // three a `--signal` matrix the caller hands in)
+  // EVERY READ INSTRUMENT answers through ONE verb: `analyze lens=<lens>` (five read the poured planes,
+  // three a `signal=` matrix the caller hands in)
   // (sense-analyze.ts holds the lens table — changes · rhythm · couple · cohere · square · lead · forecast ·
   // mismatch). The lens chooses the instrument; each keeps its own read path and daemon verb.
   analyze:   cmdSenseAnalyze,
@@ -123,19 +123,19 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
 /** Every verb the sense door answers: the four plane reads and the lifecycle verbs. */
 export const SENSE_VERBS: readonly string[] = [...VERBS, ...Object.keys(LIFECYCLE)];
 
-/**
- * A FOLD READS ONLY ITS OWN FLAGS — the door's `pathAccepts`. The `sense` row is the union over every verb, so a path
- * folded beneath it names the narrower list it reads and the dispatcher refuses any other flag by name before the
- * handler runs: each `analyze --lens <lens>` its lens's reads, `pour --bulk` the sweep's (and the other legs, which
- * the handler refuses as a second leg), `roster` none. A leading sensorium name shifts the verb one word right. Every
- * other path, and an analyze line whose lens names nothing (its handler refuses that), reads the whole row (null).
- */
 export function retiredSensePromote(args: ParsedArgs): boolean {
   const [first, second] = args.positional;
   return first === "promote" || (second === "promote" && first !== undefined && LIFECYCLE[first] === undefined && !VERBS.includes(first as Verb));
 }
 
-export function sensePathAccepts(args: ParsedArgs): readonly string[] | null {
+/**
+ * A FOLD READS ONLY ITS OWN PARAMS. The verb's carrier takes the union over its folds, so a fold beneath it names the narrower
+ * list it reads and the door refuses any other param by name before the fold runs: each `analyze lens=<lens>` its lens's
+ * reads, `pour bulk=true` the sweep's (and the other legs, which the handler refuses as a second leg), `roster` none. A leading
+ * sensorium name shifts the verb one word right. Every other path, and an analyze line whose lens names nothing (its handler
+ * refuses that), reads its carrier's takes (null).
+ */
+export function senseFoldTakes(args: ParsedArgs): readonly string[] | null {
   const [first, second] = args.positional;
   const verb = first !== undefined && (LIFECYCLE[first] !== undefined || VERBS.includes(first as Verb)) ? first : second;
   if (retiredSensePromote(args)) return null;
@@ -152,9 +152,16 @@ export function sensePathAccepts(args: ParsedArgs): readonly string[] | null {
 }
 
 export async function cmdSense(args: ParsedArgs): Promise<number> {
+  const fold = senseFoldTakes(args);
+  const stray = fold === null ? [] : [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !fold.includes(n) && !GLOBAL_FLAGS.includes(n));
+  if (stray.length > 0) {
+    const message = `unknown param ${stray.map((n) => `${n}=`).join(" ")} for \`lares sense\`: this fold takes ${fold!.length === 0 ? "no param" : fold!.map((n) => `${n}=`).join(" ")}; run: lares sense ${args.positional.join(" ")} --help`;
+    emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(`lares: ${message}`) });
+    return exitFor("usage");
+  }
   // SENSORIUM ADDRESSING — `lares sense <sensorium> <verb>`: a leading KNOWN sensorium name (resolved
   // against the on-disk registry/manifest) selects the TARGET; the rest is the verb. `lares sense <verb>`
-  // keeps the `memory` default. So `lares sense memory pour --all` addresses memory by manifest, and the
+  // keeps the `memory` default. So `lares sense memory pour all=true` addresses memory by manifest, and the
   // SAME door opens any stream sensorium (the root threads to the capture/refresh holder). Verb names and
   // sensorium names never collide, so a leading token resolves unambiguously.
   let positional = args.positional;
@@ -177,13 +184,13 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
     return await lifecycle(withRoot({ ...args, positional: positional.slice(1) }));
   }
 
-  // `--key value` lands in `options`; `--key` alone lands in `flags`. The lens carries a VALUE.
+  // `key=value` lands in `options`; `key=true` in `flags`. The lens carries a VALUE.
   const [verb, ...rest] = positional;
   // THE ADDRESS REACHES THE READ. A bare plane name keys the `memory` sensorium in the lens map, so a named
-  // sensorium's read turns `--lens <plane>` into its own `<name>/<plane>` key; read bare, `lares sense other
+  // sensorium's read turns `lens=<plane>` into its own `<name>/<plane>` key; read bare, `lares sense other
   // search` would answer from memory and never say so. A child plane (`who/content`) reads under the name too,
   // and only a lens already spelled `<name>/…` rides as written. `memory` keeps its bare keys, and a frozen
-  // trial (`--trial-root`) keeps its own path whatever the name.
+  // trial (`trial-root=`) keeps its own path whatever the name.
   const trialRoot = args.options["trial-root"];
   const asked = args.options["lens"] ?? "content";
   const addressed = sensoriumName !== undefined && sensoriumName !== "memory" && !trialRoot;
@@ -200,7 +207,7 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: false,
       error: { code: "usage", message: `name a verb: read (${VERBS.join(" · ")}) or lifecycle (${Object.keys(LIFECYCLE).join(" · ")})`,
-               hint: `lares sense search "<query>" --lens <${known.join("|")}>` },
+               hint: `lares sense search "<query>" lens=<${known.join("|")}>` },
       human: () => {
         if (verb) console.error(`lares sense: unknown verb "${verb}"`);
         console.error(`  planes: ${known.join(" · ")}\n`);
@@ -240,8 +247,8 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
   let q: ReturnType<typeof openMemorySensorium> | undefined;
   try {
     if (!trialRoot && (args.options["source-key"] || args.options["revision"]))
-      throw new Error("--source-key and --revision require --trial-root");
-    if (trialRoot && !args.options["model-home"]) throw new Error("trial search needs --model-home for the pinned query model");
+      throw new Error("source-key= and revision= require trial-root=");
+    if (trialRoot && !args.options["model-home"]) throw new Error("trial search needs model-home= for the pinned query model");
     const trialStatus = trialRoot ? await runTrialServing("status", { operationRoot: trialRoot }) : undefined;
     let allowedCids: ReadonlySet<string> | undefined;
     let trialSourceKey: string | undefined;
@@ -296,14 +303,14 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
     switch (verb as Verb) {
       case "search": {
         if (!arg) throw new Error("search wants a query");
-        // --not-root <handle> DROPS the caller's OWN session from recall (env LARES_SESSION_ROOT sets it
+        // not-root=<handle> DROPS the caller's OWN session from recall (env LARES_SESSION_ROOT sets it
         // once, for a hook). Recall exists to fetch what the caller does NOT already hold, and a live
         // session's turns ARE its context: the capture engine files them as they happen, so on any question
         // about what was just discussed they outrank every older memory and crowd out the thing actually
         // reached for. Measured on this store, one session held 34% of the corpus and answered every query
         // in its own voice — which comes back FAST and CONFIDENT, and reads as health.
         const notRoot = args.options["not-root"] ?? process.env["LARES_SESSION_ROOT"];
-        // --self-weight <0..1> DISCOUNTS the caller's own stream rather than cutting it. Default 0.25: a
+        // self-weight=<0..1> DISCOUNTS the caller's own stream rather than cutting it. Default 0.25: a
         // same-session memory must be four times as relevant as a foreign one to outrank it — enough to
         // stop the live stream crowding recall out, and not so much that a COMPACTED early turn, which has
         // genuinely left the caller's window, gets thrown away with it.
@@ -371,8 +378,8 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
     const message = e instanceof Error ? e.message : String(e);
     emit(args, {
       ok: false,
-      error: { code: "verb-error", message, hint: `is the plane populated? \`lares sense status --lens ${lens}\`` },
-      human: () => console.error(`lares sense ${verb} --lens ${lens} — ${message}`),
+      error: { code: "verb-error", message, hint: `is the plane populated? \`lares sense status lens=${lens}\`` },
+      human: () => console.error(`lares sense ${verb} lens=${lens} — ${message}`),
     });
     return exitFor("verb-error");
   } finally {
@@ -387,7 +394,7 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
 async function cmdTrialRun(args: ParsedArgs): Promise<number> {
   try {
     const root = args.options["trial-root"];
-    if (!root) throw new Error("trial-run needs --trial-root <absolute disposable operation root>");
+    if (!root) throw new Error("trial-run needs trial-root=<absolute disposable operation root>");
     const result = await runTrialServing("run", {
       operationRoot: root,
       ...(args.options["freeze-receipt"] ? { freezeReceipt: args.options["freeze-receipt"] } : {}),

@@ -85,7 +85,7 @@ export const oneId = (seat: RealmSeat): string | null => (seat.realms.length ===
  */
 export async function placeWikiInRealm(doors: RealmDoors, slug: string, petName: string): Promise<RealmLabel> {
   const projections = doors.projections();
-  if (findRealmLabel(projections, petName) === null) throw new RealmRefused("realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: \`lares realm list\` names them, and \`lares realm move <slug> --to ${petName}\` gathers a wiki into a new one`);
+  if (findRealmLabel(projections, petName) === null) throw new RealmRefused("realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: \`lares realm list\` names them, and \`lares realm move <slug> to=${petName}\` gathers a wiki into a new one`);
   placeInRealm(projections, petName, { slug, id: null });
   const id = oneId(await doors.seat(slug));
   return id === null ? findRealmLabel(projections, petName)! : placeInRealm(projections, petName, { slug, id });
@@ -110,7 +110,7 @@ export function setAsideWikiFolder(doors: RealmDoors, slug: string): { readonly 
   return setAsideRetiredWiki(doors.projections(), slug);
 }
 
-/** THE DEFAULT AT MINT: a wiki minted with no `--realm` takes its own realm label under its slug (or the collision rule's name), with
+/** THE DEFAULT AT MINT: a wiki minted with no `realm=` takes its own realm label under its slug (or the collision rule's name), with
  *  the canon realm id the vessel's ledger binds where one answers; a wiki some label already holds keeps it. */
 export async function ensureWikiRealm(doors: RealmDoors, slug: string): Promise<RealmEnsured> {
   const seat = await doors.seat(slug);

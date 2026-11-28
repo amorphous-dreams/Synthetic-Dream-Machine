@@ -35,7 +35,7 @@ async function read(root: string, json: boolean): Promise<{ code: number; out: s
   const stdoutWrite = process.stdout.write;
   process.stdout.write = ((chunk: unknown) => { output += String(chunk); return true; }) as typeof process.stdout.write;
   try {
-    const code = await dispatch(["vessel", "read", "--root", root, ...(json ? ["--json"] : ["--no-json"]), "--skip-build"]);
+    const code = await dispatch(["vessel", "read", `root=${root}`, ...(json ? ["--json"] : ["--no-json"]), "--skip-build"]);
     return { code, out: json ? output : `${lines.join("\n")}\n${output}` };
   } finally {
     process.stdout.write = stdoutWrite;

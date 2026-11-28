@@ -164,7 +164,7 @@ describe("lares meme promote — the crossing moves residency, and the address h
       writeNexusDoc(larSealHome(), charter.doc());
       const approvalFile = join(root, "approval.json");
       expect(COMMANDS.find((row) => row.name === "nexus")).toBeDefined();
-      expect(await dispatch(["nexus", "approve", "open", join(root, SUBJECT_REL), "--purpose", "canon promotion", "--surface", "crossroads", "--class", "high-impact", "--out", approvalFile])).toBe(0);
+      expect(await dispatch(["nexus", "approve", "open", join(root, SUBJECT_REL), "purpose=canon promotion", "surface=crossroads", "class=high-impact", `out=${approvalFile}`])).toBe(0);
       const approval = JSON.parse(readFileSync(approvalFile, "utf8"));
       const crossroads = "lar:///ha.ka.ba/bags/crossroads";
       const verifyApproval: NonNullable<PromotionSeat["verifyApproval"]> = (candidate, bytes) =>

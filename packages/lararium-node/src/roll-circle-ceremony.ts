@@ -73,7 +73,7 @@ function pure<T>(run: () => T): T {
 function jointCharterOrRefuse(aid: string): { readonly home: string; readonly doc: NexusDoc; readonly lineage: readonly SealEpoch[]; readonly head: SealEpoch } {
   const sealHome = larSealHome();
   const home = typeof aid === "string" ? charterHomeFor(sealHome, aid) : null;
-  if (home === null) throw refuse("no-charter", "this vessel holds no charter for that Nexus — import it (`lares nexus seal import --carry`) first");
+  if (home === null) throw refuse("no-charter", "this vessel holds no charter for that Nexus — import it (`lares nexus seal import carry=true`) first");
   if (home === sealHome) throw refuse("seed-rolls-by-rotate", "this vessel's own household seed rolls by `lares nexus seal rotate`; a circle rolls a charter whose seats rest in several vaults");
   const doc = readNexusDoc(home);
   if (!doc || foundingRoster(doc).sealEpochCid.length === 0 || !doc.sealLineage?.length) {
@@ -137,7 +137,7 @@ async function clearForHead(aid: string, head: SealEpoch): Promise<void> {
   const standing = recordOf(aid);
   if (!standing) return;
   if (standing.predecessor === head.epochCid) {
-    throw refuse("circle-open-here", "this vault already contributed to a circle from this head; carry that circle on, file it, or abandon it (`lares nexus seal roll abandon --nexus <aid>`)");
+    throw refuse("circle-open-here", "this vault already contributed to a circle from this head; carry that circle on, file it, or abandon it (`lares nexus seal roll abandon nexus=<aid>`)");
   }
   dropRollCircleRecord(aid);
   await retireSeats(standing.chairs.map((c) => c.seat));

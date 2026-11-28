@@ -7,7 +7,7 @@
  * replacing the bundle an earlier keep left there, so the repo's history diffs file by file.
  *
  * THE LEI CARRIES THE GRANT. The operator strings a keep lei for the workspace by hand, under the ward
- * (`lares lei kui --rite keep --branch <workspace> --returns <n>`); each keep spends one return, and no seat keeps without one.
+ * (`lares lei kui rite=keep branch=<workspace> returns=<n>`); each keep spends one return, and no seat keeps without one.
  * The rite runs behind two ports, in one order:
  *
  *   1. the dest     the workspace's name, its binding and the place inside it, each judged before anything reads
@@ -26,7 +26,7 @@
  * that dies after its return leaves the begun half alone, and conferre reads it red until the host half lands it.
  *
  * THE HOST HALF lands the tessera: git runs on the host, so the commit and the push into the operator's repo belong there, and
- * the landing names the bundle id the pushed tree holds (`lares rite land --tessera <id> --head <bundle id>`).
+ * the landing names the bundle id the pushed tree holds (`lares rite land tessera=<id> head=<bundle id>`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
@@ -118,11 +118,11 @@ export async function keepFaceOf(show: (face: number) => Promise<RiteVerbAnswer>
 
 /** The refusal a keep line that stands no lei throws: its own code, and the hand's cure (the same returns, the same face, no cid). */
 export function keepLeiRefused(name: string, lei: { readonly refusal?: string; readonly returns?: unknown } | undefined, face: number): KeepRefused {
-  return new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns ${typeof lei?.returns === "number" ? lei.returns : "<n>"} --face ${face}\``);
+  return new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui rite=keep branch=${name} returns=${typeof lei?.returns === "number" ? lei.returns : "<n>"} face=${face}\``);
 }
 
 /**
- * THE HOST'S EARLY READ of the keep line (`lares lei show --rite keep --branch <name> [--face N]`, one face's `{ lei }` or
+ * THE HOST'S EARLY READ of the keep line (`lares lei show rite=keep branch=<name> [face=N]`, one face's `{ lei }` or
  * every open face's `{ faces: [{ face, lei }] }`): the refusal a spent or absent lei earns, or null where a lei stands or the
  * vessel half must decide (no line held anywhere and no face named: a lei may stand on a face the read never saw).
  */
@@ -168,7 +168,7 @@ export function keepWorkspaceDir(name: string): string {
   if (typeof name !== "string" || !WORKSPACE_NAME_RE.test(name) || name === "." || name === "..") throw new KeepRefused("keep-workspace-malformed", `${JSON.stringify(name)} names no workspace (lower-case letters, digits, '.', '_' and '-')`);
   const bound = join(larWorkspacesHome(), name);
   const dir = real(bound);
-  if (dir === null || !lstatSync(dir).isDirectory()) throw new KeepRefused("keep-workspace-unbound", `the workspace "${name}" stands unbound (no directory at ${bound}); bind it at \`up\` (\`--workspace ${name}=<dir>\`, or LARES_WORKSPACES)`);
+  if (dir === null || !lstatSync(dir).isDirectory()) throw new KeepRefused("keep-workspace-unbound", `the workspace "${name}" stands unbound (no directory at ${bound}); bind it at \`up\` (\`workspace=${name}=<dir>\`, or LARES_WORKSPACES)`);
   const hearth = real(larHearthHome()) ?? larHearthHome(), checkout = real(repoRoot) ?? repoRoot;
   if (within(dir, hearth)) throw new KeepRefused("keep-workspace-refused", `the workspace "${name}" resolves inside the hearth (${dir})`);
   if (within(dir, checkout)) throw new KeepRefused("keep-workspace-refused", `the workspace "${name}" resolves inside the checkout (${dir}); a bundle holds private memory and never rests in a tracked tree`);
@@ -208,13 +208,13 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
   const wsDir = keepWorkspaceDir(name);
   const unsafe = unsafeRelPath(into);
   // No dotted segment: the workspace's own `.git` and every hidden place beside it stay the operator's.
-  if (unsafe !== null || into.split("/").some((s) => s.startsWith("."))) throw new KeepRefused("keep-into-unsafe", `--into ${JSON.stringify(into)} names ${unsafe ?? "a dotted segment"}; it names a plain relative place inside the workspace`);
+  if (unsafe !== null || into.split("/").some((s) => s.startsWith("."))) throw new KeepRefused("keep-into-unsafe", `into=${JSON.stringify(into)} names ${unsafe ?? "a dotted segment"}; it names a plain relative place inside the workspace`);
   const target = join(wsDir, ...into.split("/"));
   if (existsSync(target)) {
     // A KEEP REPLACES A KEEP ALONE: a directory that holds no bundle manifest belongs to the operator, and so does a file.
     let schema: unknown = null;
     try { schema = lstatSync(target).isDirectory() ? (JSON.parse(readFileSync(join(target, MANIFEST_FILE), "utf8")) as { schema?: unknown }).schema : null; } catch { schema = null; }
-    if (schema !== BUNDLE_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${BUNDLE_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with --into`);
+    if (schema !== BUNDLE_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${BUNDLE_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with into=`);
   }
   // THE FACE THE KEEP ACTS AS: the one the line names, else the keep's face, one per house (the face whose keep lei stands,
   // else h0), whoever wears. THE LINE FIRST: with no lei standing, no byte of memory leaves its mirror.
@@ -240,7 +240,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
       ...(unseen.shut.length > 0 ? [`a face not open (${unseen.shut.map((f) => `h${f}`).join(", ")})`] : []),
       ...(unseen.unread.length > 0 ? [`a face not read (${unseen.unread.map((f) => `h${f}`).join(", ")})`] : []),
     ].join(" or ");
-    throw new KeepRefused("keep-lei-unseen", `no keep lei read standing for the workspace "${name}", and a keep lei may stand on ${where}: open that face and wear it, then run \`lares rite keep --face N\`; string a new lei only once every face reads none`);
+    throw new KeepRefused("keep-lei-unseen", `no keep lei read standing for the workspace "${name}", and a keep lei may stand on ${where}: open that face and wear it, then run \`lares rite keep face=N\`; string a new lei only once every face reads none`);
   }
   if (!line.ok) throw keepRowRefused(line, acting.face!);
   const lei = line.output["lei"] as { standing?: boolean; refusal?: string } | undefined;
@@ -251,7 +251,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
 
   const parent = dirname(target);
   mkdirSync(parent, { recursive: true });
-  if (!within(real(parent) ?? parent, wsDir)) throw new KeepRefused("keep-into-unsafe", `--into ${JSON.stringify(into)} resolves outside the workspace (${real(parent) ?? parent})`);
+  if (!within(real(parent) ?? parent, wsDir)) throw new KeepRefused("keep-into-unsafe", `into=${JSON.stringify(into)} resolves outside the workspace (${real(parent) ?? parent})`);
   const tag = randomBytes(6).toString("hex");
   const staging = join(parent, `.${basename(target)}.keep-${tag}`);
   try {

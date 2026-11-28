@@ -92,7 +92,7 @@ describe("the pūlama's hand door rehives a shut face", () => {
     expect(lines).toContain("tools/lares-container.sh pulama light");
     expect(lines).toContain("tools/lares-container.sh vault unlock");
     expect(lines).toContain("tools/lares-container.sh wear 0");
-    expect(lines).not.toContain("lares vault unlock --all --face");
+    expect(lines).not.toContain("lares vault unlock all=true face=true");
     expect(JSON.stringify([a, p.lines])).not.toContain(FIXTURE_PASSPHRASE);
   });
 

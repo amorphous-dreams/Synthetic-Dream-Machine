@@ -164,7 +164,7 @@ function rowLine(r: CustodyStatusRow): string {
 
 /**
  * The "custody (S key)" section: the slot tree, each face as one counted line, the carrier counts, every fault by name, then
- * every private file the carrier table does not name. `--verbose` adds ONE reading of every standing file the table names
+ * every private file the carrier table does not name. `verbose=true` adds ONE reading of every standing file the table names
  * (a row outside the vessel key prints the law it rests bare under); the summary never lists a sound row by name, so a
  * store of many sealed rows still reads in a dozen lines. A hot or cold row that reads anything but `sealed` prints as a
  * fault, in the summary too.
@@ -228,7 +228,7 @@ async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes,
 }
 
 /**
- * THE UNLOCK ANSWERS HONESTLY, PER FACE. `--all` names which faces the route opened and which stayed shut under it, each shut
+ * THE UNLOCK ANSWERS HONESTLY, PER FACE. `all=true` names which faces the route opened and which stayed shut under it, each shut
  * face with the act that opens it; a switch whose composition refused names the face it named and the face worn again.
  */
 export function unlockFaceLines(a: CustodyDoorAnswer): string {
@@ -238,7 +238,7 @@ export function unlockFaceLines(a: CustodyDoorAnswer): string {
     const opened = readings.filter((r) => r.reading === "opened").map((r) => `h${String(r.face)}`);
     const shut = readings.filter((r) => r.reading !== "opened").map((r) => `h${String(r.face)}`);
     parts.push(opened.length > 0 ? `opened ${opened.join(", ")}` : "opened no face");
-    if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock --face N\` for each`);
+    if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock face=N\` for each`);
     if (typeof a["wears"] === "number") parts.push(`the vessel wears h${String(a["wears"])}${opened.length > 1 ? " (`lares wear N` wears another face standing open)" : ""}`);
   }
   if (typeof a["switchRefused"] === "string") {
@@ -266,7 +266,7 @@ export function unlockLine(a: CustodyDoorAnswer): string {
     case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.${faces}`;
     case "face-refused":     if (a["faceReading"] === "not-standing") return `no face h${String(a["face"])} stands on this vessel — nothing stays open; name a face it holds (\`lares persona list\`).`;
                              return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.${typeof a["attemptsLeft"] === "number" ? ` ${triesWords(a, "face")}` : ""}${faces}`;
-    case "face-not-named":   return `this vessel holds several faces (${(Array.isArray(a["faces"]) ? a["faces"] : []).map((i) => `h${String(i)}`).join(", ")}) and none was named — nothing stays open: name one (\`lares vault unlock --face N\`) or try the credential on every face (\`--all\`).`;
+    case "face-not-named":   return `this vessel holds several faces (${(Array.isArray(a["faces"]) ? a["faces"] : []).map((i) => `h${String(i)}`).join(", ")}) and none was named — nothing stays open: name one (\`lares vault unlock face=N\`) or try the credential on every face (\`all=true\`).`;
     case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed. ${triesWords(a, "vessel")}`;
     case "attempts-spent":   return `nothing was changed. ${triesWords(a, "vessel", true)}`;
     case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
@@ -382,13 +382,13 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
     }
     if (typeof door?.["pulama"] === "object" && door["pulama"] !== null) return await vaultUnlockByPulama(args);
     // A ROUTE ONLY WHILE CUSTODY STAYS CLOSED: a held key takes no second route to choose a face (that act is `lares wear N`).
-    // `--all` and `--face N` still open faces under their own routes, so they still ask.
+    // `all=true` and `face=N` still open faces under their own routes, so they still ask.
     if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] === undefined) {
       const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
       emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. This verb asked for no route; to wear another face standing open, run \`lares wear N\`.`) });
       return 0;
     }
-    // `--face N` ON A HELD KEY READS THE CENSUS BEFORE ANY PROMPT: N standing open takes the wear (no route), a face standing
+    // `face=N` ON A HELD KEY READS THE CENSUS BEFORE ANY PROMPT: N standing open takes the wear (no route), a face standing
     // nowhere refuses by name, and only a face shut under its own route still asks for that route.
     if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] !== undefined) {
       const face = faceOption(args)!;
@@ -412,7 +412,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
   const creds = await gatherCredentials("lares vault unlock", { kind: "vessel" }, routeFlag(args));
   if (daemonUp) {
     const face = typeof args.options["face"] === "string" ? Number(args.options["face"]) : undefined;
-    if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("--face names a handle index (a whole number from 0)");
+    if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("face= names a handle index (a whole number from 0)");
     const a = await sendCustodyFrame({ op: "unlock", credentials: creds, ...(face !== undefined ? { face } : {}), ...(args.flags["all"] === true ? { all: true } : {}) });
     if (a === null) {
       emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before the unlock landed" }, human: () => console.error("lares vault unlock: the vessel stopped answering before the unlock landed — check `lares vessel read`, then unlock again") });
@@ -433,7 +433,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
         if (unhanded !== null) console.error(unhanded);
         if (landed !== null && Number(landed["granted"] ?? 0) > 0) console.log(`shares: ${Number(landed["granted"])} grant(s) landed for the faces now open`);
         if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
-      } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
+      } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share list=true\` reads it`); }
       // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route,
       // and the keep pair seats under this passphrase where none rests (`../keep-seat.ts`).
       await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds });
@@ -477,16 +477,16 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   return 0;
 }
 
-/** `--face N` as a handle index, or undefined when the flag stands absent. */
+/** `face=N` as a handle index, or undefined when the flag stands absent. */
 function faceOption(args: ParsedArgs): number | undefined {
   const raw = args.options["face"];
   if (typeof raw !== "string") return undefined;
   const n = Number(raw);
-  if (!Number.isSafeInteger(n) || n < 0) throw new UsageError("--face names a handle index (a whole number from 0)");
+  if (!Number.isSafeInteger(n) || n < 0) throw new UsageError("face= names a handle index (a whole number from 0)");
   return n;
 }
 
-/** `vault lock --face N`: that face drops its key; the vessel stands at the floor only when N was the face it wore. */
+/** `vault lock face=N`: that face drops its key; the vessel stands at the floor only when N was the face it wore. */
 async function vaultLockFace(args: ParsedArgs, daemonUp: boolean, face: number): Promise<number> {
   if (!daemonUp) {
     emit(args, { ok: true, data: { locked: true, was: "no-vessel", face }, human: () => console.log(`no vessel stands on this store: nothing holds face h${face}'s key, so nothing to lock.`) });
@@ -529,7 +529,7 @@ async function openFaceOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHo
 }
 
 /**
- * `vault backup --face <N> --out <file>`: cut one face's backup bundle. The standing vessel, unlocked and wearing
+ * `vault backup face=<N> out=<file>`: cut one face's backup bundle. The standing vessel, unlocked and wearing
  * that face, builds the body behind its custody door; this command reads the vessel's own route and then the
  * bundle's new route on a terminal, binds the bundle's slot tree in its own process and writes the file.
  */
@@ -537,9 +537,9 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
   const faceRaw = args.options["face"];
   const out = args.options["out"];
   if (typeof faceRaw !== "string" || !/^(0|[1-9]\d*)$/.test(faceRaw) || !Number.isSafeInteger(Number(faceRaw))) {
-    throw new UsageError("backup needs the face's handle-index: `lares vault backup --face <N> --out <file>` (indices print under `lares persona list`)");
+    throw new UsageError("backup needs the face's handle-index: `lares vault backup face=<N> out=<file>` (indices print under `lares persona list`)");
   }
-  if (typeof out !== "string" || out.length === 0) throw new UsageError("backup needs a file to write: `lares vault backup --face <N> --out <file>`");
+  if (typeof out !== "string" || out.length === 0) throw new UsageError("backup needs a file to write: `lares vault backup face=<N> out=<file>`");
   if (!daemonUp) {
     const why = "a cut needs the standing vessel, unlocked, its daemon mount running under that face: its island holds the content keys. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then cut.";
     emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault backup: ${why}`) });
@@ -558,19 +558,19 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
 }
 
 /**
- * `vault restore <file> [--as <N>] [--memory]`: bring one face back from its backup bundle. The command reads the
+ * `vault restore <file> [as=<N>] [memory=true]`: bring one face back from its backup bundle. The command reads the
  * bundle's route on a terminal and opens the slot tree; the vessel opens the body behind its custody door and lands
- * the face as a recovery act, at a NEW seat. `--memory` lands the bundle's content keys on that seat instead: it
+ * the face as a recovery act, at a NEW seat. `memory=true` lands the bundle's content keys on that seat instead: it
  * needs the vessel standing unlocked and wearing the face.
  */
 async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   if (args.flags["cards"] === true) return vaultRestoreCards(args);
   const file = args.positional[1];
-  if (!file) throw new UsageError("restore needs the bundle's file: `lares vault restore <file> [--as <N>] [--memory]`");
+  if (!file) throw new UsageError("restore needs the bundle's file: `lares vault restore <file> [as=<N>] [memory=true]`");
   const asRaw = args.options["as"];
-  if (asRaw !== undefined && (!/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw)))) throw new UsageError("--as takes a handle-index: `lares vault restore <file> --as <N>`");
+  if (asRaw !== undefined && (!/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw)))) throw new UsageError("as= takes a handle-index: `lares vault restore <file> as=<N>`");
   const memory = args.flags["memory"] === true;
-  if (memory && asRaw !== undefined) throw new UsageError("--memory lands keys on the seat of the face the daemon mount runs under, and takes no --as");
+  if (memory && asRaw !== undefined) throw new UsageError("memory=true lands keys on the seat of the face the daemon mount runs under, and takes no as=");
   if (memory && !daemonUp) {
     const why = "an import needs the vessel standing unlocked, its daemon mount running under the restored face: its island wraps each key for this vessel's own seat. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then import.";
     emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault restore: ${why}`) });
@@ -597,19 +597,19 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
 }
 
 /**
- * `vault restore --cards --face <key|prefix> --as <N>`: rebuild a face's root from its split cards. The command reads
+ * `vault restore cards=true face=<key|prefix> as=<N>`: rebuild a face's root from its split cards. The command reads
  * each card on a terminal, builds the face's body in its own process and hands it, sealed under a fresh key, to the
- * same act a bundle rides. Paper restores a root, never memory: a bundle carries the memory (`--memory`).
+ * same act a bundle rides. Paper restores a root, never memory: a bundle carries the memory (`memory=true`).
  */
 async function vaultRestoreCards(args: ParsedArgs): Promise<number> {
-  if (args.positional[1] !== undefined || args.flags["memory"] === true) throw new UsageError("--cards reads the cards on a terminal and takes no bundle file and no --memory: paper restores a root, never memory");
+  if (args.positional[1] !== undefined || args.flags["memory"] === true) throw new UsageError("cards=true reads the cards on a terminal and takes no bundle file and no memory=true: paper restores a root, never memory");
   const asRaw = args.options["as"];
-  if (asRaw === undefined || !/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw))) throw new UsageError("--cards needs the free handle-index the face lands at: `lares vault restore --cards --face <key|prefix> --as <N>`");
+  if (asRaw === undefined || !/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw))) throw new UsageError("cards=true needs the free handle-index the face lands at: `lares vault restore cards=true face=<key|prefix> as=<N>`");
   const named = typeof args.options["face"] === "string" ? args.options["face"].trim() : "";
-  if (named.length === 0) throw new UsageError("--cards needs the face the cards should rebuild, by its root's public key or its prefix: `--face <key|persona-…>`");
+  if (named.length === 0) throw new UsageError("cards=true needs the face the cards should rebuild, by its root's public key or its prefix: `face=<key|persona-…>`");
   const face = named.startsWith("persona-") ? { prefix: named } : { verifyingKey: named };
   if (!wantsJson(args)) console.log("The split's cards: for each, the custodian it came from, then its code (hidden).");
-  const cards = await gatherCards("lares vault restore --cards");
+  const cards = await gatherCards("lares vault restore cards=true");
   seatNewFaceRoute();
   const daemonUp = (await sendCustodyFrame({ op: "custody" })) !== null;
   const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: async (act, actArgs) => {
@@ -617,7 +617,7 @@ async function vaultRestoreCards(args: ParsedArgs): Promise<number> {
     return sealedActVia(act, { ...actArgs, ...(faceRouteRef ? { faceRouteRef } : {}) });
   } });
   if (!result.ok) {
-    emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore --cards: ${result.reason}: ${result.message}`) });
+    emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore cards=true: ${result.reason}: ${result.message}`) });
     return 1;
   }
   emit(args, { ok: true, data: { ...result }, human: () => { for (const line of restoreLines(result)) console.log(line); } });
@@ -631,15 +631,15 @@ function routeFlag(args: ParsedArgs): { route?: "paper" | "passphrase" } {
 }
 
 async function vaultBind(args: ParsedArgs): Promise<number> {
-  if (args.flags["paper"] && args.flags["passphrase"]) throw new UsageError("bind takes --passphrase or --paper, not both");
+  if (args.flags["paper"] && args.flags["passphrase"]) throw new UsageError("bind takes passphrase=true or paper=true, not both");
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
   const face = faceOption(args);
   if (face !== undefined) {
-    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`, { kind: "face", ordinal: face });
+    const faceCreds = await gatherCredentials(`lares vault bind face=${face}`, { kind: "face", ordinal: face });
     const f = await openFaceOrRefuse(args, "bind", homes, io, face, faceCreds);
     if (!f) return 1;
-    const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
+    const spec = await gatherNewSlot(`lares vault bind face=${face}`, args.flags["paper"] ? "paper" : "passphrase");
     const out = await bindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, spec });
     emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree stands untouched.`) });
     // A PAPER SHEET JUST READ BACK joins the keep pair too, opened by the route this bind took (`../keep-seat.ts`).
@@ -659,9 +659,9 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** `vault unbind <slot-id> --face N [--rotate]`: one route leaves the face's own tree; the node tree is untouched. */
+/** `vault unbind <slot-id> face=N [rotate=true]`: one route leaves the face's own tree; the node tree is untouched. */
 async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCustodyIo, face: number, slotId: string, rotate: boolean): Promise<number> {
-  const creds = await gatherCredentials(`lares vault unbind --face ${face}`, { kind: "face", ordinal: face });
+  const creds = await gatherCredentials(`lares vault unbind face=${face}`, { kind: "face", ordinal: face });
   const f = await openFaceOrRefuse(args, "unbind", homes, io, face, creds);
   if (!f) return 1;
   const entry = readFaceIndexSync(homes.identity).faces[face];
@@ -683,14 +683,16 @@ async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCust
   void entry;
   const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
   say(`unbound: slot ${slotId} no longer opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree stands untouched.`);
-  say(out.rotated ? "rotated: a new face key seals this face's rows; the removed route opens nothing." : "not rotated: a copy of the face tree taken before this unbind still opens the face key through the removed slot. `--rotate` ends that route.");
+  say(out.rotated ? "rotated: a new face key seals this face's rows; the removed route opens nothing." : "not rotated: a copy of the face tree taken before this unbind still opens the face key through the removed slot. `rotate=true` ends that route.");
   emit(args, { ok: true, data: { face, slotId, rotated: out.rotated, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
 }
 
 async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const slotId = args.positional[1];
-  if (!slotId) throw new UsageError("unbind needs a slot id: `lares vault unbind <slot-id> [--rotate]` (ids print under `lares vault status`; --rotate takes no value and stands before or after the id)");
+  if (!slotId) throw new UsageError("unbind needs a slot id: `lares vault unbind <slot-id> [rotate=true]` (ids print under `lares vault status`; rotate=true takes no value and stands before or after the id)");
+  // ROTATE NAMES A SWITCH: a word in its value never reads as the switch, so it refuses here instead of unbinding unrotated.
+  if (args.options["rotate"] !== undefined) throw new UsageError(`rotate= names a switch: run \`lares vault unbind ${slotId} rotate=true\` (or leave it out to keep the key); "${args.options["rotate"]}" names neither true nor false`);
   const rotate = args.flags["rotate"] === true;
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
@@ -719,7 +721,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     }
   }
 
-  // ONE ACT. With --rotate the removal and the rotation land together: the rotation's census and its opening of
+  // ONE ACT. With rotate=true the removal and the rotation land together: the rotation's census and its opening of
   // every carrier run before any byte moves, so a carrier that refuses the rotation leaves the slot bound.
   const out = await unbindCustodySlot({ io, homes, treeKey: u.treeKey, slotId, ...(staying ? { rotate: staying } : {}) });
   const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
@@ -732,7 +734,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     say("  ROTATION OFFER — " + out.rotationOffer);
     say("  " + RELATION_LINE);
     say("  not rotated. A copy of the tree taken before this unbind still opens the key through the removed slot.");
-    say("  to end that route now:  lares vault unbind <slot-id> --rotate   (re-reads each staying slot's route)");
+    say("  to end that route now:  lares vault unbind <slot-id> rotate=true   (re-reads each staying slot's route)");
   }
   // THE ROUTE MOVED: the keep re-seats under a route that opens the tree the unbind LEFT, proved again against `out.tree`, never
   // under the opener of the open before it: a steward who typed the removed passphrase to authorise the unbind proves nothing now.

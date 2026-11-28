@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.unstrings"
 
 ! face.lei.unstrings ~ unstring ~ swarm-lei-unstring
 
-`lares lei unstring --rite <rite> --branch <name> --lei <cid>` revokes a lei that still holds returns: a signed record, nothing deleted.
+`lares lei unstring rite=<rite> branch=<name> lei=<cid>` revokes a lei that still holds returns: a signed record, nothing deleted.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TxnfbMj4OCLg-mVLhr7UatR9jt8_cdvqlCcL5OwW2t4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xb-gC8UV8lTeaMV0Mwc_CN_hlv0qlGWEWz2T3kxevZs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

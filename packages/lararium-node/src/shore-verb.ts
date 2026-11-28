@@ -11,7 +11,7 @@
  *                  pending removal, a page at a time (`after` names the page behind, `next` answers its
  *                  cursor); `uris` narrows the answer to named carriers
  *   sense          look at the disk for the named carriers (the watcher sends what vanished or returned)
- *   settle         answer once the projection that landed records cause has run (`lares ingest --apply`
+ *   settle         answer once the projection that landed records cause has run (`lares ingest apply=true`
  *                  names each carrier it landed, the hash its records render and the causal heads it landed;
  *                  the word ends when the wiki holds them, or by name when the far side closes first)
  *   take-records   take the records' side of one standoff, named by its key
@@ -455,11 +455,11 @@ export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<
   const noShore = { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" };
   if (args["face"] !== undefined) {
     const face = args["face"];
-    if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) return { ok: false, op, refusal: "face-malformed", why: "`face` names a handle index (a whole number from 0): `lares shore --face 2`" };
+    if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) return { ok: false, op, refusal: "face-malformed", why: "`face` names a handle index (a whole number from 0): `lares shore face=2`" };
     const { face: _face, ...rest } = args;
     const projector = face === seats.worn ? seats.own : seats.lit(face);
     if (projector === null) {
-      return { ok: false, op, face, refusal: "face-unprojected", why: `face h${face} stands no projection on this vessel: it stands shut or unlit, or carries no folder (a lit face projects under its own root once it lights with one). \`lares vessel census\` names the faces lit and shut; \`lares vault unlock --face ${face}\` lights a shut one` };
+      return { ok: false, op, face, refusal: "face-unprojected", why: `face h${face} stands no projection on this vessel: it stands shut or unlit, or carries no folder (a lit face projects under its own root once it lights with one). \`lares vessel census\` names the faces lit and shut; \`lares vault unlock face=${face}\` lights a shut one` };
     }
     return { ...(await answerShore(projector, rest, asker)), face };
   }
@@ -507,7 +507,7 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
   // THE ASKER THE DOOR BOOKED reads as the hand gate's verdict (`askerRefusal`): the socket's cached reading of the peer.
   const unhanded = HAND_OPS.has(op) ? askerRefusal(asker) : null;
   if (unhanded !== null) {
-    const line = `lares shore ${op} ${text(args["uri"]) ?? "<uri>"} --key ${text(args["key"]) ?? "<key>"}${bag !== null ? ` --bag ${bag}` : ""}`;
+    const line = `lares shore ${op} ${text(args["uri"]) ?? "<uri>"} key=${text(args["key"]) ?? "<key>"}${bag !== null ? ` bag=${bag}` : ""}`;
     return { ok: false, op, refusal: unhanded, why: handRefusalOf(unhanded, { act: "settling a stand-off", reads: "peer", line }).message };
   }
   if (op === "list") {
@@ -587,7 +587,7 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     // A REMOVE INTO HOUSE CANON NAMES ITS BAG: the record leaves that bag's own layer, and the routed gate reads the Kahu
     // hand only for a bag the envelope names (`gateRoutedVerb`). The CLI names it from the rows it read.
     if (op === "remove" && bag === null && isHouseCanonBag(target)) {
-      return { ok: false, op, refusal: "remove-names-its-bag", why: `${target} holds house canon, and a removal from it names that bag so the Kahu gate reads it: \`lares shore remove ${all ? "--all --count <n>" : uris.join(" ")} --bag ${target}\`` };
+      return { ok: false, op, refusal: "remove-names-its-bag", why: `${target} holds house canon, and a removal from it names that bag so the Kahu gate reads it: \`lares shore remove ${all ? "all=true count=<n>" : uris.join(" ")} bag=${target}\`` };
     }
     const answer = await projector.answerRemovals(op, target, { ...(all ? { all: true } : { uris }), ...(count !== undefined ? { count } : {}), ...(args["kapae"] === true ? { kapae: true } : {}) });
     // The counts ride beside the rows: past the outcome's row cap the rows stay behind, and the counts still
@@ -662,7 +662,7 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     if (!keeper.draftsOf(uri).some((d) => d.standoff === key)) {
       return {
         ok: false, op, refusal: "no-drafts-to-keep",
-        why: `the standoff ${key} of ${uri} loaded no draft of the file's words, so keep-both would keep nothing and write the records over the file; \`lares shore keep-disk ${uri} --key ${key}\` lands the file's words, \`lares shore keep-records ${uri} --key ${key}\` writes the records' render`,
+        why: `the standoff ${key} of ${uri} loaded no draft of the file's words, so keep-both would keep nothing and write the records over the file; \`lares shore keep-disk ${uri} key=${key}\` lands the file's words, \`lares shore keep-records ${uri} key=${key}\` writes the records' render`,
       };
     }
     const kept = await keeper.keep(uri, key);

@@ -1,5 +1,5 @@
 /**
- * `lares vessel floor status|accept [<release-cid>]|seed [--genesis <dir>]|adopt [--apply|--commit|--revert] [--genesis <dir>] [--nexus <aid>] [--porch <origin>]` — the vessel's pin on its Nexus's floor.
+ * `lares vessel floor status|accept [<release-cid>]|seed [genesis=<dir>]|adopt [apply=true|commit=true|revert=true] [genesis=<dir>] [nexus=<aid>] [porch=<origin>]` — the vessel's pin on its Nexus's floor.
  * It rides the VESSEL door (the pin belongs to the vessel), never a top-level verb (the help's one-screen law).
  *
  * The VESSEL pins the floor (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus), in the vessel's control home.
@@ -13,11 +13,11 @@
  *
  * Both rows ride the store door (`floor-status`, `floor-accept`), so a standing vessel's own Repo answers.
  *
- * `seed [--genesis <dir>]` reads the seed a genesis dir offers (its CID and digests) beside the founding record's digests where
- * a house answers (`floor-status`), ratchet by ratchet; it moves nothing (`../seed-offered.ts`). The dir: `--genesis`, else the
+ * `seed [genesis=<dir>]` reads the seed a genesis dir offers (its CID and digests) beside the founding record's digests where
+ * a house answers (`floor-status`), ratchet by ratchet; it moves nothing (`../seed-offered.ts`). The dir: `genesis=`, else the
  * one resolver's (`LAR_GENESIS`, the configured one, the root's, the shipped one), else the checkout's shipped genesis where
  * no house root stands. An image carries its genesis at `/app/genesis` (LAR_GENESIS), so inside a vessel this names the seed
- * the image offers; `--json` carries `seed`, and `--image <digest>` prints the whole pūlama frame (`{"digest":…,"seed":…}`) as
+ * the image offers; `--json` carries `seed`, and `image=<digest>` prints the whole pūlama frame (`{"digest":…,"seed":…}`) as
  * the one stdout line, which the shim hands to `pulama-main image '<frame>'` unparsed (it wins over `--json`). Where no house
  * answers (the one-shot image run at `up`), the founding record reads at boot.
  *
@@ -27,7 +27,7 @@
  *
  * `adopt` (3d, follow-lei S2) reads the seed the genesis dir offers (its CID, the receipt, and its floor manifest, the genesis
  * witness) and asks the vessel to adopt that seed's plugins over the pin's base as a LOCAL FLOOR: bare it previews and moves nothing
- * (`floor-adopt`, open to a seat); `--apply` lands it, and `--commit` / `--revert` settle a staged one, each the hand's act
+ * (`floor-adopt`, open to a seat); `apply=true` lands it, and `commit=true` / `revert=true` settle a staged one, each the hand's act
  * (`floor-adopt-apply`, `floor-needs-hand`). The engine never adopts here, and the founding record never moves.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
@@ -193,11 +193,11 @@ async function houseAnswers(): Promise<boolean> {
 
 /** `floor seed`: the read and its answer; the founding record reads through the store door, and its failure only names why. */
 async function cmdFloorSeed(args: ParsedArgs): Promise<number> {
-  // `--image <digest>`: the one stdout line becomes the whole pūlama frame, so a shim passes it straight on with no JSON in
+  // `image=<digest>`: the one stdout line becomes the whole pūlama frame, so a shim passes it straight on with no JSON in
   // shell. It wins over `--json`: the frame IS the machine line, and the envelope would only wrap what the shim hands on.
   const image = args.options["image"];
   if (image !== undefined && image.trim() === "") {
-    emit(args, { ok: false, error: { code: "usage", message: "floor seed --image names the image digest the frame carries" }, human: () => console.error("lares vessel floor seed: --image takes the image digest (`--image <digest>`)") });
+    emit(args, { ok: false, error: { code: "usage", message: "floor seed image= names the image digest the frame carries" }, human: () => console.error("lares vessel floor seed: image= takes the image digest (`image=<digest>`)") });
     return 2;
   }
   const read = await floorSeedRead({
@@ -291,26 +291,26 @@ export function floorAdoptLines(r: FloorAdoptOutcome & { readonly alerted?: read
     `  base:     ${l.base} (engine and canon snapshots stay the base's; the founding record never moves)`,
     `  moves:    ${r.moves.join(", ")} (grammar, lararium and plugins ride the seed's offering ${r.manifest.plugins})`,
     `  receipt:  seed ${l.receipt}`,
-    `  prior:    ${l.prior?.manifest ?? "(none)"} kept; \`lares vessel floor adopt --revert\` lands it back`,
+    `  prior:    ${l.prior?.manifest ?? "(none)"} kept; \`lares vessel floor adopt revert=true\` lands it back`,
     r.applied
-      ? `  next:     the next boot mounts it; once that boot reads par, \`lares vessel floor adopt --commit\`${r.remount?.act === "alert" ? `; ${r.remount.why}` : ""}${r.alerted?.length ? ` (alerted: ${r.alerted.join(", ")})` : ""}`
-      : "  apply:    `lares vessel floor adopt --apply` (the hand's act)",
+      ? `  next:     the next boot mounts it; once that boot reads par, \`lares vessel floor adopt commit=true\`${r.remount?.act === "alert" ? `; ${r.remount.why}` : ""}${r.alerted?.length ? ` (alerted: ${r.alerted.join(", ")})` : ""}`
+      : "  apply:    `lares vessel floor adopt apply=true` (the hand's act)",
   ];
 }
 
-/** The human lines of `floor adopt --commit | --revert`. */
+/** The human lines of `floor adopt commit=true | revert=true`. */
 export function floorSettleLines(act: "commit" | "revert", r: FloorLocalAct & { readonly prior?: FloorPin }): string[] {
   if (!r.ok) return [`floor adopt --${act} → REFUSED ${r.refusal}: ${r.detail}`];
   if (!r.moved) return [`floor adopt --${act} → HELD: the local floor ${r.pin.manifest} already stands committed; nothing lands`];
   return act === "commit"
-    ? [`floor adopt --commit → COMMITTED local floor ${r.pin.manifest}`]
-    : [`floor adopt --revert → PINNED ${r.pin.manifest} back (a forward row; the reverted floor ${r.prior?.manifest ?? "?"} stays in the CAS)`, "  next:     the next boot mounts it"];
+    ? [`floor adopt commit=true → COMMITTED local floor ${r.pin.manifest}`]
+    : [`floor adopt revert=true → PINNED ${r.pin.manifest} back (a forward row; the reverted floor ${r.prior?.manifest ?? "?"} stays in the CAS)`, "  next:     the next boot mounts it"];
 }
 
 async function cmdFloorAdopt(args: ParsedArgs, common: Record<string, unknown>): Promise<number> {
   const flags = (["apply", "commit", "revert"] as const).filter((f) => args.flags[f] === true);
   if (flags.length > 1) {
-    emit(args, { ok: false, error: { code: "usage", message: "floor adopt takes one of --apply, --commit or --revert" }, human: () => console.error("lares vessel floor adopt: name one of --apply, --commit or --revert") });
+    emit(args, { ok: false, error: { code: "usage", message: "floor adopt takes one of apply=true, commit=true or revert=true" }, human: () => console.error("lares vessel floor adopt: name one of apply=true, commit=true or revert=true") });
     return 2;
   }
   const act = flags[0] as "apply" | "commit" | "revert" | undefined;
@@ -322,7 +322,7 @@ async function cmdFloorAdopt(args: ParsedArgs, common: Record<string, unknown>):
     return r.ok ? 0 : 1;
   }
   const seed = seedFloorOf(floorSeedDir(args));
-  if ("why" in seed) throw new FloorRefused("floor-seed-unread", `${seed.why}; name the genesis dir with --genesis <dir>`);
+  if ("why" in seed) throw new FloorRefused("floor-seed-unread", `${seed.why}; name the genesis dir with genesis=<dir>`);
   const { output } = await storeVerb(act === "apply" ? "floor-adopt-apply" : "floor-adopt", { ...common, ...seed, ...(act === "apply" ? { act: "apply" } : {}) });
   if (typeof output["refused"] === "string") throw new FloorRefused(String(output["refusal"] ?? "floor-adopt-refused"), output["refused"]);
   const r = output as unknown as FloorAdoptOutcome & { alerted?: readonly string[] };
@@ -334,7 +334,7 @@ export async function cmdFloor(args: ParsedArgs, doors: FloorDoors = LIVE_FLOOR_
   const act = args.positional[0];
   if (act === "seed") return cmdFloorSeed(args);
   if (act !== "status" && act !== "accept" && act !== "adopt") {
-    emit(args, { ok: false, error: { code: "usage", message: "vessel floor takes status, accept, seed or adopt" }, human: () => console.error("lares vessel floor: name `status`, `accept [<release-cid>]`, `seed [--genesis <dir>]` or `adopt [--apply|--commit|--revert]`") });
+    emit(args, { ok: false, error: { code: "usage", message: "vessel floor takes status, accept, seed or adopt" }, human: () => console.error("lares vessel floor: name `status`, `accept [<release-cid>]`, `seed [genesis=<dir>]` or `adopt [apply=true|commit=true|revert=true]`") });
     return 2;
   }
   const common = {
@@ -346,7 +346,7 @@ export async function cmdFloor(args: ParsedArgs, doors: FloorDoors = LIVE_FLOOR_
     if (act === "status") {
       const grain = (args.options["grain"] ?? "all") as FloorGrain;
       if (!(FLOOR_GRAINS as readonly string[]).includes(grain)) {
-        emit(args, { ok: false, error: { code: "usage", message: `--grain names one of ${FLOOR_GRAINS.join(" | ")}` }, human: () => console.error(`lares vessel floor status: --grain names one of ${FLOOR_GRAINS.join(" | ")} (got "${grain}")`) });
+        emit(args, { ok: false, error: { code: "usage", message: `grain= names one of ${FLOOR_GRAINS.join(" | ")}` }, human: () => console.error(`lares vessel floor status: grain= names one of ${FLOOR_GRAINS.join(" | ")} (got "${grain}")`) });
         return 2;
       }
       const s = await readFloorStatus(common, doors);

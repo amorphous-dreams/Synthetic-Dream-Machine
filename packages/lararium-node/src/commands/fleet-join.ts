@@ -92,7 +92,7 @@ async function faceIndex(face: number | undefined): Promise<number> {
   if (face === undefined) {
     try { return await resolveFace(); } catch (e) { if (e instanceof FaceNotNamed) throw new FleetJoinRefused("face-malformed", e.message); throw e; }
   }
-  if (!Number.isSafeInteger(face) || face < 0) throw new FleetJoinRefused("face-malformed", `--face names a persona index: a whole number from 0, never ${String(face)}.`);
+  if (!Number.isSafeInteger(face) || face < 0) throw new FleetJoinRefused("face-malformed", `face= names a persona index: a whole number from 0, never ${String(face)}.`);
   return face;
 }
 
@@ -124,7 +124,7 @@ async function facePersonaGroup(face: number): Promise<string> {
 /** The PersonaGroup this vessel's bootstrap names, or a refusal: a place with no face joins no vessel to one. */
 function bootstrapPersonaGroup(): string {
   const path = larBootstrapPath();
-  if (!existsSync(path)) throw new FleetJoinRefused("face-absent", `${path} not found — found the hearth first (\`lares vessel found --hearth\`).`);
+  if (!existsSync(path)) throw new FleetJoinRefused("face-absent", `${path} not found — found the hearth first (\`lares vessel found hearth=true\`).`);
   const plugin = JSON.parse(readFileSync(path, "utf8")) as { text?: string };
   const tiddlers = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
   const group = ownEntry(tiddlers, PERSONA_GROUP_ID_TIDDLER)?.text;
@@ -185,7 +185,7 @@ async function householdNamed<T>(work: () => Promise<T>): Promise<T> {
 
 /**
  * The root holder's offer: the face, its root key, a fresh nonce, and the scopes the face stands at. `face` names
- * the persona index the join serves (`--face`; unnamed, the one face standing open); the index stays local to this vessel and
+ * the persona index the join serves (`face=`; unnamed, the one face standing open); the index stays local to this vessel and
  * never rides the offer, which names the face by its PersonaGroup and root key.
  */
 export async function runFleetJoinOffer(opts: { readonly sealHome: string; readonly face?: number }): Promise<FleetJoinOffer> {
@@ -210,12 +210,12 @@ export interface FleetJoinAnswerOptions {
   readonly sealHome: string;
   /** The request file as the joinee wrote it. */
   readonly request:  unknown;
-  /** The url the joinee dials this hearth at (`--sync-url`). */
+  /** The url the joinee dials this hearth at (`sync-url=`). */
   readonly syncUrl?: string;
-  /** The document the joinee's dial asks this hearth for, at open and on each return (`--doc-url`). It rides the signed
+  /** The document the joinee's dial asks this hearth for, at open and on each return (`doc-url=`). It rides the signed
    *  answer's device edge beside the gate pin, and the joinee's landing keeps it with the pin. */
   readonly docUrl?: string;
-  /** The persona index the join serves (`--face`); the founding face where absent. It must name the face its offer named. */
+  /** The persona index the join serves (`face=`); the founding face where absent. It must name the face its offer named. */
   readonly face?:    number;
 }
 

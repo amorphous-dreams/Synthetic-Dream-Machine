@@ -20,6 +20,11 @@
 // row that says neither). The other side reads the source: an argument door whose module compares its first positional to a
 // word, or switches on it, answers a sub-verb its row hides from every law, and reads red here.
 //
+// THE DASH SPELLINGS BURNED. A door line takes its params as name=value (packages/lares-cli/src/parse-args.ts), and the parser
+// refuses every `--name` outside its global flags, so a named line spelling one (`lares rite kukulu --dry-run`) teaches a line
+// that refuses, and reads red here with its param spelling. The host shim's own verbs keep their own grammar, and a token past a
+// bare `--` rides to another program whole.
+//
 // Exit 0 = every named command answers and every argument door branches on no word. The pure readers below carry their own
 // self-test (tools/door-names.test.mjs), planted reds and lawful controls on text in memory.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -59,6 +64,19 @@ const isWord = (w) => w !== undefined && /^[a-z][a-z0-9_-]*$/.test(w);
 export const ACT_KEYWORDS = new Set(['get', 'put', 'delete', 'rename', 'filter', 'act']);
 export const BARE_KEYWORDS = new Set(['mu', 'aperture', 'face', 'mandate', 'stance', 'mode', 'mood', 'note']);
 
+/** The dash spellings every line still reads (packages/lares-cli/src/parse-args.ts GLOBAL_FLAGS, and `--no-json`). */
+export const GLOBAL_DASHES = new Set(['help', 'json', 'no-json', 'meme', 'yes', 'skip-build', 'keyhive-trace']);
+
+/** The first burned dash spelling among a line's words (a `--name` outside GLOBAL_DASHES, before any bare `--`), or null. */
+export function burnedDash(words) {
+  for (const word of words) {
+    if (word === '--') return null;
+    const m = /^[[(]*--([a-z][a-z0-9-]*)/.exec(word);
+    if (m && !GLOBAL_DASHES.has(m[1])) return m[1];
+  }
+  return null;
+}
+
 /**
  * A reader of command lines over one registry: `{ rows: [{name, verbs, passes, leads}], shim: [verb…] }`. It answers why a
  * line names no door, or null where it does. Each word past the door reads against the table at its path until a word reads
@@ -74,6 +92,11 @@ export function deadDoorOver({ rows, shim }) {
     const words = line.split(/\s+/).slice(1).map((w) => w.split('${')[0]);
     const door = words[0];
     if (door === '') return null;
+    // A DASH SPELLING BURNED INTO PARAMS: any line but a shim verb's reads red on one, naming its param spelling.
+    if (!shim.includes(door)) {
+      const dash = burnedDash(words.slice(1));
+      if (dash !== null) return `--${dash} burned into params: spell it ${dash}=…`;
+    }
     // A KEYWORD LINE (`lares rite=kukulu mu=_0`, `lares get=<title>`, `lares mu=*0`): each word names a keyword; the line
     // answers where some keyword names a door, an act keyword of the call door, or the bare door's own shaping
     // (packages/lares-cli/src/keywords.ts).
@@ -159,7 +182,8 @@ async function main() {
 
   // THE REGISTRY READS LIVE: a control that flips means the reader, not the house, moved.
   const controls = [
-    ['lares vessel request <id>', true], ['lares meme offer promote <cid>', true], ['lares sense memory pour --all', true],
+    ['lares vessel request <id>', true], ['lares meme offer promote <cid>', true], ['lares sense memory pour all=true', true],
+    ['lares sense memory pour --all', false], ['lares up --capture <dir>', true],
     ['lares vessel zz-no-such-name', false], ['lares zz-no-such-name', false], ['lares meme offer zz-no-such-name', false],
   ];
   const flipped = controls.filter(([line, live]) => (deadDoor(line) === null) !== live);

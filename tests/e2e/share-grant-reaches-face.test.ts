@@ -57,7 +57,7 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
     lar = await openStaged({ root, tag: "grant-reaches", found: async (cli, staged) => {
       await foundStagedHearth(cli, staged, "steward");
       for (const [n, name] of [[1, "engineer"], [2, "referee"]] as const) {
-        const p = await cli(["persona", "new", String(n), "--name", name, "--json"]);
+        const p = await cli(["persona", "new", String(n), `name=${name}`, "--json"]);
         if (p.code !== 0) throw new Error(`persona ${n} failed (${p.code})\n${p.stdout.slice(-400)}\n${p.stderr.slice(-800)}`);
       }
     } });
@@ -76,7 +76,7 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
     say("h0 wiki init", init);
     expect(init.code, said(init)).toBe(0);
     await wear(2);
-    const status = await lar.cli(["wiki", "status", "--recipe", SLUG, "--no-json"]);
+    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "--no-json"]);
     say("h2 wiki status before the share", status);
     expect(status.code).not.toBe(0);
     expect(said(status)).toMatch(/wiki-unreached/);
@@ -84,12 +84,12 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
 
   test("RED: the steward shares the house canon wiki with write to the referee; the referee, worn, reaches it and its write lands in the wiki's working layer", async () => {
     await wear(0);
-    const share = await lar.cli(["wiki", "share", SLUG, "--read", "h0 h2", "--write", "h2", "--no-json"]);
+    const share = await lar.cli(["wiki", "share", SLUG, "read=h0 h2", "write=h2", "--no-json"]);
     say("h0 wiki share", share);
     expect(share.code, said(share)).toBe(0);
     expect(said(share), "the house canon wiki's hand-over counts as a landed grant that carries to the referee's next wear").toMatch(/landed: 1 grant\(s\); 1 of them reach the grantee's catalog/);
     await wear(2);
-    const status = await lar.cli(["wiki", "status", "--recipe", SLUG, "--no-json"]);
+    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "--no-json"]);
     say("h2 wiki status after the share", status);
     expect(status.code, said(status)).toBe(0);
     expect(said(status)).toMatch(new RegExp(`read-only\\s+lar:///ha\\.ka\\.ba/bags/${SLUG}`));
@@ -117,11 +117,11 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
   // touches the shared working layer and lands in its own personal layer instead. The walk reads that the working layer refuses it.
   test("RED: a READ-ONLY grantee reaches the wiki and reads its working layer read-only; its put never lands there (its own personal layer takes it)", async () => {
     await wear(0);
-    const share = await lar.cli(["wiki", "share", SLUG, "--read", "h1", "--no-json"]);
+    const share = await lar.cli(["wiki", "share", SLUG, "read=h1", "--no-json"]);
     say("h0 wiki share --read h1", share);
     expect(share.code, said(share)).toBe(0);
     await wear(1);
-    const status = await lar.cli(["wiki", "status", "--recipe", SLUG, "--no-json"]);
+    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "--no-json"]);
     say("h1 wiki status (a reader)", status);
     expect(status.code, said(status)).toBe(0);
     expect(said(status)).toMatch(new RegExp(`read-only\\s+lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));

@@ -3,7 +3,7 @@
 #
 # The shelf (`bags/lares/ha.ka.ba/lares/api/pono/submissions/`) holds `<name>.md` + `<name>.md.meta`
 # PAIRS, each meta naming its `source: lar:///…` — the memetic-wikitext carrier the pair was projected
-# from. Nothing enforced that a source edit carried its pair forward until `lares meme project --to md
+# from. Nothing enforced that a source edit carried its pair forward until `lares meme project to=md
 # --check` provides one proof door. This script fires that door FROM THE SOURCE SIDE, beside `meme-check-staged` —
 # a commit that edits a pair's source, its `.md`, or its `.md.meta` must carry a pair that still
 # re-projects byte-identical, or it refuses.
@@ -22,7 +22,7 @@
 # blobs for every involved file that IS staged, HEAD's blob for one that is not (the commit leaves that
 # file's committed content unchanged, so HEAD — not a dirty edit sitting unstaged — is what the commit
 # actually produces for it; a file with no HEAD blob yet, e.g. brand new and unstaged, falls back to
-# reading it off disk since there is no committed version to prefer). `lares meme project --to md
+# reading it off disk since there is no committed version to prefer). `lares meme project to=md
 # --check` resolves a source through `repoRoot` (`@lararium/mesh/node`), which anchors on the BUILT
 # MODULE'S OWN on-disk location and never on `cwd` — so a scratch mirror needs `--root <scratch>` to be
 # read from at all; `meme.ts` grew that door for exactly this seat.
@@ -124,7 +124,7 @@ for i in "${!INVOLVED_MD[@]}"; do
   NAME_TO_SRC["$name"]="${INVOLVED_SRC[$i]}"
 done
 
-OUT="$(cd "$SCRATCH" && node "$LARES" meme project "$SCRATCH/$SHELF" --to md --check --root "$SCRATCH" 2>&1)"
+OUT="$(cd "$SCRATCH" && node "$LARES" meme project "$SCRATCH/$SHELF" to=md check=true root="$SCRATCH" 2>&1)"
 CODE=$?
 if [ "$CODE" -eq 0 ]; then
   echo "[submission-currency-staged] ${#INVOLVED_MD[@]} involved submission pair(s) current"
@@ -137,7 +137,7 @@ printf '%s\n' "$OUT" | grep -E '^  [A-Za-z0-9_.-]+: ' | while IFS= read -r line;
   name="$(printf '%s' "$line" | sed -E 's/^  ([A-Za-z0-9_.-]+):.*/\1/')"
   src="${NAME_TO_SRC[$name]:-}"
   [ -z "$src" ] && continue
-  echo "    cure: lares meme project --to md $src --out $SHELF" >&2
+  echo "    cure: lares meme project to=md $src out=$SHELF" >&2
   echo "          then re-stage: git add $SHELF/$name.md $SHELF/$name.md.meta" >&2
 done
 echo "  (or commit with --no-verify to skip the check.)" >&2

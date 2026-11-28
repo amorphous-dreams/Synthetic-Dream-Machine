@@ -33,7 +33,7 @@ const REFUSE = [
   ['docker compose build', 'docker compose -f docker-compose.surface.yml build lares'],
   ['compose up --build', 'docker compose up --build -d'],
   ['the shim build', 'tools/lares-container.sh build'],
-  ['a kukulu', 'lares rite kukulu --branch develop'],
+  ['a kukulu', 'lares rite kukulu branch=develop'],
   ['chained after reads', 'git status; cd packages/lares-cli && pnpm test'],
   ['under env and nice', 'LAR_ROOT=/tmp/x env nice pnpm test'],
   ['under timeout', 'timeout 600 node --test tools/x.test.mjs'],
@@ -66,7 +66,7 @@ const PASS = [
   ['a node one-liner', "node -e 'console.log(1)'"],
   ['a syntax check', 'node --check tools/floor-guard.mjs'],
   ['a docker read', 'docker ps -a'],
-  ['kukulu receipts', 'lares rite receipts --rite kukulu'],
+  ['kukulu receipts', 'lares rite receipts rite=kukulu'],
   ['a heredoc that stays data', 'cat > note.md <<EOF\npnpm -r build\nEOF'],
   ['an unreadable line naming no heavy program', "echo 'unterminated"],
 ];

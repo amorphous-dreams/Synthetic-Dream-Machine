@@ -1,11 +1,11 @@
 /**
- * `lares sense pour` — the sovereign re-pave, its drawers leg (`--bulk`) and its writeback leg;
+ * `lares sense pour` — the sovereign re-pave, its drawers leg (`bulk=true`) and its writeback leg;
  * `lares sense capture` — the one-transcript capture door.
  *
- * `pour --all` walks the whole tending movement: quiesce · baseline · drawers · bearing · projection ·
+ * `pour all=true` walks the whole tending movement: quiesce · baseline · drawers · bearing · projection ·
  * verify · resume, in that order, because each landing step reads what the one before it wrote.
- * `pour --bulk` runs the drawers leg alone: every local transcript in one pass on the sweep spine.
- * `pour --writeback` runs the bearing leg alone — the lar-telemetry projection onto the drawers,
+ * `pour bulk=true` runs the drawers leg alone: every local transcript in one pass on the sweep spine.
+ * `pour writeback=true` runs the bearing leg alone — the lar-telemetry projection onto the drawers,
  * held as a placeholder (operator ruling 2026-10-31, Train Q) until the sensorium arc returns it.
  *
  * One surface, two actors: prose on a TTY, deterministic JSON off-TTY / under
@@ -42,7 +42,7 @@ function runWriteback(args: ParsedArgs, wing: string): number {
     ok: true,
     data: { wing, ...r, mode: "writeback" },
     human: () => {
-      console.log(`lares sense pour --writeback → ${wing}`);
+      console.log(`lares sense pour writeback=true → ${wing}`);
       console.log(`  drawers harvested: ${r.drawers}  (${r.framed} framed)`);
       console.log(`  metadata written:  ${r.applied}`);
       console.log(`  standings:         framed ${r.standings["framed"]} · structured ${r.standings["structured"]} · raw ${r.standings["raw"]}`);
@@ -51,9 +51,9 @@ function runWriteback(args: ParsedArgs, wing: string): number {
   return 0;
 }
 
-// The bulk `--all` backfill + guest-comparator discovery/staging/mine now live in PYTHON
+// The bulk `all=true` backfill + guest-comparator discovery/staging/mine now live in PYTHON
 // (session_discovery.py + guest_harvest.py; the sovereign sweep in capture_session.py). The python
-// guest lane owns discovery/stage/lock; `lares mempalace harvest` shells it, and `lares sense pour --bulk`
+// guest lane owns discovery/stage/lock; `lares mempalace harvest` shells it, and `lares sense pour bulk=true`
 // routes the sovereign lane through the daemon.
 
 /** Recursively collect `.jsonl` files under a root whose basename passes `match`. */
@@ -69,10 +69,10 @@ function walkJsonl(root: string, match: (name: string) => boolean, depth = 0, ou
   return out;
 }
 
-// The default room every harvest/capture drawer lands in (the "convos mine"). `--room` joins the
+// The default room every harvest/capture drawer lands in (the "convos mine"). `room=` joins the
 // arg-surface for isomorphism with the MCP `harvest(..., room)` tool, but a NON-default value would
 // change where a drawer lands — a byte-landing change this shape-pass never makes. So a non-default
-// `--room` refuses honestly; the default lands drawers byte-for-byte in the default room. Absent →
+// `room=` refuses honestly; the default lands drawers byte-for-byte in the default room. Absent →
 // default; equal-to-default → proceed unchanged.
 const DEFAULT_ROOM = "conversations";
 
@@ -105,15 +105,15 @@ export function captureSourceFile(wing: string, file: string): string {
   return `${wing}/${captureSurface(file)}__${basename(file)}`;
 }
 
-/** Guard `--room`: null when the room stays the default (proceed); an exit code when a non-default
+/** Guard `room=`: null when the room stays the default (proceed); an exit code when a non-default
  *  room refuses honestly (the override is not landed). */
 function guardRoom(args: ParsedArgs, verb: string): number | null {
   const room = args.options["room"];
   if (room === undefined || room === DEFAULT_ROOM) return null;
-  const msg = `--room override ("${room}") is not landed; ${verb} lands in the default room "${DEFAULT_ROOM}" only`;
+  const msg = `room= override ("${room}") is not landed; ${verb} lands in the default room "${DEFAULT_ROOM}" only`;
   emit(args, {
     ok: false,
-    error: { code: "verb-error", message: msg, hint: `Drop --room (or pass --room ${DEFAULT_ROOM}) to harvest into the default room.` },
+    error: { code: "verb-error", message: msg, hint: `Drop room= (or pass room=${DEFAULT_ROOM}) to harvest into the default room.` },
     human: () => console.error(`lares ${verb}: ${msg}`),
   });
   return exitFor("verb-error");
@@ -357,23 +357,23 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
   const roomGuard = guardRoom(args, "pour");
   if (roomGuard !== null) return roomGuard;
 
-  // ONE LEG PER LINE. `--all` already walks the drawers and the bearing, `--bulk` is the drawers leg and
-  // `--writeback` the bearing leg: two on one line would run one and drop the other without a word.
+  // ONE LEG PER LINE. `all=true` already walks the drawers and the bearing, `bulk=true` is the drawers leg and
+  // `writeback=true` the bearing leg: two on one line would run one and drop the other without a word.
   const legs = [args.flags["all"] === true && "all", args.flags["bulk"] === true && "bulk", args.flags["writeback"] === true && "writeback"]
     .filter((leg): leg is string => typeof leg === "string");
   if (legs.length > 1) {
     return refuseUsage(args, "sense pour", helpLines("sense"),
-      `${legs.map((l) => `--${l}`).join(" and ")} name two legs; pour walks one (--all the whole movement, --bulk the drawers, --writeback the bearing)`);
+      `${legs.map((l) => `${l}=true`).join(" and ")} name two legs; pour walks one (all=true the whole movement, bulk=true the drawers, writeback=true the bearing)`);
   }
 
-  // `--all` IS THE WHOLE MOTION: the legs a sensorium needs filled — drawers, bearing, projection —
+  // `all=true` IS THE WHOLE MOTION: the legs a sensorium needs filled — drawers, bearing, projection —
   // in the order the second's dependency on the first sets.
   if (args.flags["all"] === true) {
     const r = await runRepave(args);
     emit(args, {
       ok: r.code === 0,
       ...(r.code === 0 ? {} : { error: { code: "repave-halted", message: `the ${r.stages.at(-1)?.name} leg refused`,
-                                         hint: "the legs stand alone: `lares sense pour --bulk`, `lares sense pour --writeback`, `lares sense refresh`" } }),
+                                         hint: "the legs stand alone: `lares sense pour bulk=true`, `lares sense pour writeback=true`, `lares sense refresh`" } }),
       data: { mode: "repave", wing: repaveWing(args), stages: r.stages },
       human: () => {
         for (const s of r.stages) console.log(`  ${s.name.padEnd(11)} ${s.code === 0 ? "landed" : `refused (${s.code})`}`);
@@ -382,11 +382,11 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
     return r.code;
   }
 
-  // --bulk: the drawers leg alone — every transcript in one pass on the sweep spine.
-  // A flag the bulk leg does not read never reaches here: the door's `pathAccepts` (sensePathAccepts) refuses it.
+  // bulk=true: the drawers leg alone — every transcript in one pass on the sweep spine.
+  // A param the bulk leg does not read never reaches here: the door's fold (senseFoldTakes) refuses it.
   if (args.flags["bulk"] === true) return cmdSweep(args);
 
-  // --writeback: the bearing leg alone, over the mempalace DRAWERS.
+  // writeback=true: the bearing leg alone, over the mempalace DRAWERS.
   if (args.flags["writeback"] === true) {
     const wing = args.options["wing"] ?? wingFromDir(larRoot());
     return runWriteback(args, wing);
@@ -394,25 +394,25 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
 
   const error: LaresError = {
     code: "usage",
-    message: "pour walks the re-pave (`--all`), its drawers leg (`--bulk`) or its writeback leg (`--writeback`)",
-    hint: "lares sense pour --all · lares sense pour --bulk [--surface <s>] · lares sense pour --writeback [--wing <wing>] · one transcript: lares sense capture <path> --wing <wing>",
+    message: "pour walks the re-pave (`all=true`), its drawers leg (`bulk=true`) or its writeback leg (`writeback=true`)",
+    hint: "lares sense pour all=true · lares sense pour bulk=true [surface=<s>] · lares sense pour writeback=true [wing=<wing>] · one transcript: lares sense capture <path> wing=<wing>",
   };
   emit(args, { ok: false, error, human: () => console.error(`lares sense pour: ${error.message}\n  ${error.hint}`) });
   return 2;
 }
 
 /**
- * `lares sense capture <transcript|stageDir> --wing <wing>` — request Python source-stream capture.
+ * `lares sense capture <transcript|stageDir> wing=<wing>` — request Python source-stream capture.
  *
  * The CLI and daemon carry source identity only: `{ surface, pointer, wing, room, sessionId? }`.  Python reads
  * the native transcript, derives stable CIDs, and upserts the sovereign content plane.  Re-running
  * the same pointer re-derives its ledger and lands only the new tail; the TypeScript layer neither
  * reads exchanges for capture nor holds a capture WAL.
  */
-/** `lares sense pour --bulk` — the BULK backfill, routed to the ONE daemon `sweep` op: the holder discovers every
+/** `lares sense pour bulk=true` — the BULK backfill, routed to the ONE daemon `sweep` op: the holder discovers every
  *  transcript and captures each on its warm stream (no per-session round-trips, no second writer). The
- *  isomorphic twin of the MCP `pour(bulk=True)` — CLI + MCP land on the SAME spine. `--surface all|claude|codex|
- *  copilot` (default all) · `--wing` (default wing_<user>) · `--project` (narrows claude) · `--limit`.
+ *  isomorphic twin of the MCP `pour(bulk=True)` — CLI + MCP land on the SAME spine. `surface=all|claude|codex|
+ *  copilot` (default all) · `wing=` (default wing_<user>) · `project=` (narrows claude) · `limit=`.
  *  Idempotent — a re-run catches up, a fresh sensorium fills fully. */
 export async function cmdSweep(args: ParsedArgs): Promise<number> {
   const surface = typeof args.options["surface"] === "string" ? (args.options["surface"] as string) : "all";
@@ -441,10 +441,10 @@ export async function cmdSweep(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: outcome.ok,
     ...(outcome.ok ? {} : { error: { code: "verb-error", message: outcome.error ?? "the sweep refused",
-                                     hint: "a long backfill outruns the daemon's adaptive budget — narrow it with `--limit` or `--surface`, and re-run: the sweep is idempotent." } }),
+                                     hint: "a long backfill outruns the daemon's adaptive budget — narrow it with `limit=` or `surface=`, and re-run: the sweep is idempotent." } }),
     data: { surface, wing, landed, skipped, sessions, output: outcome.output },
     human: () => {
-      if (!outcome.ok) { console.error(`lares sense pour --bulk: ${outcome.error}`); return; }
+      if (!outcome.ok) { console.error(`lares sense pour bulk=true: ${outcome.error}`); return; }
       console.log(`[sweep] ${sessions} session(s) → ${landed} landed · ${skipped} re-derived (${surface}, wing ${wing})`);
     },
   });
@@ -462,8 +462,8 @@ export async function cmdCapture(args: ParsedArgs): Promise<number> {
   if (!target || !wing) {
     emit(args, {
       ok: false,
-      error: { code: "usage", message: "usage: lares sense capture <transcript|stageDir> --wing <wing>" },
-      human: () => console.error("usage: lares sense capture <transcript|stageDir> --wing <wing>"),
+      error: { code: "usage", message: "usage: lares sense capture <transcript|stageDir> wing=<wing>" },
+      human: () => console.error("usage: lares sense capture <transcript|stageDir> wing=<wing>"),
     });
     return 2;
   }

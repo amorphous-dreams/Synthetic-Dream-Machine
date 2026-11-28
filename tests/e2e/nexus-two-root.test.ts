@@ -139,16 +139,16 @@ afterAll(async () => {
 
 describe("two hearths found one Nexus with files as the only courier", () => {
   test("T1 — open, join, seal, accept: one joint AID on both hearths", async () => {
-    const opened = await ok(A, ["nexus", "seal", "cofound", "open", "--face", "0", "--release", file("release.json"), "--out", file("offer.json")]);
+    const opened = await ok(A, ["nexus", "seal", "cofound", "open", "face=0", `release=${file("release.json")}`, `out=${file("offer.json")}`]);
     const aSeat = String(data(opened)["seat"]);
     cards.set(A.lar.root, String((data(opened)["cards"] as Array<{ code: string }>)[0]!.code));
-    const joined = await ok(B, ["nexus", "seal", "cofound", "join", file("offer.json"), "--face", "0", "--heard", seatFingerprint(aSeat), "--out", file("join.json")]);
+    const joined = await ok(B, ["nexus", "seal", "cofound", "join", file("offer.json"), "face=0", `heard=${seatFingerprint(aSeat)}`, `out=${file("join.json")}`]);
     const bSeat = String(data(joined)["seat"]);
     cards.set(B.lar.root, String((data(joined)["cards"] as Array<{ code: string }>)[0]!.code));
     aid = String(data(joined)["aid"]);
     expect(aid).toMatch(/^nexus-[0-9a-f]{64}$/);
     expect(bSeat).not.toBe(aSeat);
-    const sealed = await ok(A, ["nexus", "seal", "cofound", "seal", file("join.json"), "--face", "0", "--heard", seatFingerprint(bSeat), "--out", file("inception.json")]);
+    const sealed = await ok(A, ["nexus", "seal", "cofound", "seal", file("join.json"), "face=0", `heard=${seatFingerprint(bSeat)}`, `out=${file("inception.json")}`]);
     expect(data(sealed)["aid"]).toBe(aid);
   }, 300_000);
 
@@ -159,16 +159,16 @@ describe("two hearths found one Nexus with files as the only courier", () => {
     writeFileSync(file("unsigned.mem"), stripped(whole, 0));
     for (const h of [A, B]) {
       for (const bad of ["offer.json", "join.json", "half.mem", "unsigned.mem"]) {
-        await refused(h, ["nexus", "seal", "import", "--carry", file(bad)]);
+        await refused(h, ["nexus", "seal", "import", `carry=${file(bad)}`]);
       }
       for (const bad of ["half.mem", "unsigned.mem"]) await refused(h, ["nexus", "seal", "import", file(bad)]);
     }
     // CONTROL: B files the inception A sealed, and the whole charter stands at the joint AID on both.
-    const accepted = await ok(B, ["nexus", "seal", "cofound", "seal", file("inception.json"), "--face", "0"]);
+    const accepted = await ok(B, ["nexus", "seal", "cofound", "seal", file("inception.json"), "face=0"]);
     expect(data(accepted)["aid"]).toBe(aid);
     expect(carriedBytes(B)).toBe(whole);
     for (const h of [A, B]) {
-      const read = data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]));
+      const read = data(await ok(h, ["nexus", "members", "list=true", `nexus=${aid}`]));
       expect(read["aid"]).toBe(aid);
       expect(read["threshold"]).toBe(2);
       expect(read["seatedKeys"]).toBe(2);
@@ -178,32 +178,32 @@ describe("two hearths found one Nexus with files as the only courier", () => {
   test("T3 — each founder's admit crosses as files: opened by its own vault, cosigned and landed by the other", async () => {
     const nyms: string[] = [];
     for (const [self, other, tag] of [[A, B, "a"], [B, A, "b"]] as const) {
-      const consent = data(await ok(self, ["nexus", "accept-carriage", "--nexus", aid, "--index", "0"]));
+      const consent = data(await ok(self, ["nexus", "accept-carriage", `nexus=${aid}`, "index=0"]));
       const nym = String(consent["nym"]);
       nyms.push(nym);
-      const opened = data(await ok(self, ["nexus", "contract", nym, "--sig", String(consent["contractSig"]), "--nexus", aid, "--out", file(`admit-${tag}-1.json`)]));
+      const opened = data(await ok(self, ["nexus", "contract", nym, `sig=${String(consent["contractSig"])}`, `nexus=${aid}`, `out=${file(`admit-${tag}-1.json`)}`]));
       expect(opened["verdict"]).toBe("ready");
-      const cosigned = data(await ok(other, ["nexus", "contract", "--from", file(`admit-${tag}-1.json`), "--out", file(`admit-${tag}-2.json`)]));
+      const cosigned = data(await ok(other, ["nexus", "contract", `from=${file(`admit-${tag}-1.json`)}`, `out=${file(`admit-${tag}-2.json`)}`]));
       expect(cosigned["verdict"]).toBe("complete");
       expect((cosigned["landed"] as { memberHeld?: boolean } | null)?.memberHeld).toBe(true);
-      const landed = data(await ok(self, ["nexus", "contract", "--from", file(`admit-${tag}-2.json`)]));
+      const landed = data(await ok(self, ["nexus", "contract", `from=${file(`admit-${tag}-2.json`)}`]));
       expect(landed["verdict"]).toBe("complete");
       // A second carry reads replay on the vault that already landed it, and nothing signs.
-      await refused(other, ["nexus", "contract", "--from", file(`admit-${tag}-1.json`)]);
+      await refused(other, ["nexus", "contract", `from=${file(`admit-${tag}-1.json`)}`]);
     }
     expect(new Set(nyms).size).toBe(2);
     for (const h of [A, B]) {
-      expect([...(data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]))["members"] as string[])].sort()).toEqual([...nyms].sort());
+      expect([...(data(await ok(h, ["nexus", "members", "list=true", `nexus=${aid}`]))["members"] as string[])].sort()).toEqual([...nyms].sort());
     }
   }, 300_000);
 
   test("T4 — each hearth restarts on its own and reads the joint AID, its seats and both admits off its own board", async () => {
     const before = new Map<string, string[]>();
-    for (const h of [A, B]) before.set(h.lar.root, data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]))["members"] as string[]);
+    for (const h of [A, B]) before.set(h.lar.root, data(await ok(h, ["nexus", "members", "list=true", `nexus=${aid}`]))["members"] as string[]);
     await restand(A);
     await restand(B);
     for (const h of [A, B]) {
-      const read = data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]));
+      const read = data(await ok(h, ["nexus", "members", "list=true", `nexus=${aid}`]));
       expect(read["aid"]).toBe(aid);
       expect(read["threshold"]).toBe(2);
       expect(read["seatedKeys"]).toBe(2);
@@ -213,10 +213,10 @@ describe("two hearths found one Nexus with files as the only courier", () => {
   }, 600_000);
 
   test("T6 — the roll crosses both roots with fresh successors, its anchor after, and survives a restart", async () => {
-    const before = data(await ok(A, ["nexus", "members", "--list", "--nexus", aid]));
-    const opened = await ok(A, ["nexus", "seal", "roll", "open", "--nexus", aid, "--threshold", "2", "--face", "0", "--cold-key", cards.get(A.lar.root)!, "--out", file("circle-1.json")]);
+    const before = data(await ok(A, ["nexus", "members", "list=true", `nexus=${aid}`]));
+    const opened = await ok(A, ["nexus", "seal", "roll", "open", `nexus=${aid}`, "threshold=2", "face=0", `cold-key=${cards.get(A.lar.root)!}`, `out=${file("circle-1.json")}`]);
     expect(data(opened)["verdict"]).toBe("ready");
-    const joined = await ok(B, ["nexus", "seal", "roll", "join", file("circle-1.json"), "--face", "0", "--cold-key", cards.get(B.lar.root)!, "--out", file("circle-2.json")]);
+    const joined = await ok(B, ["nexus", "seal", "roll", "join", file("circle-1.json"), "face=0", `cold-key=${cards.get(B.lar.root)!}`, `out=${file("circle-2.json")}`]);
     expect(data(joined)["chairs"]).toBe(2);
     // Each founder keeps the fresh successor card its contribution printed: the next roll reveals it (T7).
     cards.set(A.lar.root, firstCard(opened));
@@ -224,21 +224,21 @@ describe("two hearths found one Nexus with files as the only courier", () => {
     const chairs = JSON.parse(readFileSync(file("circle-2.json"), "utf8"))["chairs"] as Array<{ seat: string }>;
     const aChair = (JSON.parse(readFileSync(file("circle-1.json"), "utf8"))["chairs"] as Array<{ seat: string }>)[0]!.seat;
     const bChair = chairs.find((c) => c.seat !== aChair)!.seat;
-    await ok(B, ["nexus", "seal", "roll", "sign", file("circle-2.json"), "--heard-threshold", "2", "--heard", seatFingerprint(aChair), "--out", file("circle-3.json")]);
-    const signed = await ok(A, ["nexus", "seal", "roll", "sign", file("circle-3.json"), "--heard-threshold", "2", "--heard", seatFingerprint(bChair), "--out", file("circle-4.json")]);
+    await ok(B, ["nexus", "seal", "roll", "sign", file("circle-2.json"), "heard-threshold=2", `heard=${seatFingerprint(aChair)}`, `out=${file("circle-3.json")}`]);
+    const signed = await ok(A, ["nexus", "seal", "roll", "sign", file("circle-3.json"), "heard-threshold=2", `heard=${seatFingerprint(bChair)}`, `out=${file("circle-4.json")}`]);
     expect(data(signed)["verdict"]).toBe("complete");
     for (const h of [A, B]) expect(data(await ok(h, ["nexus", "seal", "roll", "file", file("circle-4.json")]))["outcome"]).toBe("extended");
 
     // THE ANCHOR crosses after the filed head, as partial files.
-    expect(data(await ok(A, ["nexus", "seal", "anchor", "--nexus", aid, "--out", file("anchor-1.json")]))["verdict"]).toBe("ready");
-    expect(data(await ok(B, ["nexus", "seal", "anchor", "--from", file("anchor-1.json"), "--out", file("anchor-2.json")]))["verdict"]).toBe("complete");
-    expect(data(await ok(A, ["nexus", "seal", "anchor", "--from", file("anchor-2.json")]))["verdict"]).toBe("complete");
+    expect(data(await ok(A, ["nexus", "seal", "anchor", `nexus=${aid}`, `out=${file("anchor-1.json")}`]))["verdict"]).toBe("ready");
+    expect(data(await ok(B, ["nexus", "seal", "anchor", `from=${file("anchor-1.json")}`, `out=${file("anchor-2.json")}`]))["verdict"]).toBe("complete");
+    expect(data(await ok(A, ["nexus", "seal", "anchor", `from=${file("anchor-2.json")}`]))["verdict"]).toBe("complete");
 
     await restand(A);
     await restand(B);
     const heads = new Set<string>();
     for (const h of [A, B]) {
-      const read = data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]));
+      const read = data(await ok(h, ["nexus", "members", "list=true", `nexus=${aid}`]));
       expect(read["aid"]).toBe(aid);
       expect(read["sealEpochCid"]).not.toBe(before["sealEpochCid"]);
       expect(read["threshold"]).toBe(2);
@@ -250,45 +250,45 @@ describe("two hearths found one Nexus with files as the only courier", () => {
 
   test("T7 — a dormant root catches up: B sits a roll out, then re-imports the newest charter along the one lineage", async () => {
     C = { lar: await openStaged({ tag: "two-root-c" }), daemon: null, log: "" };
-    const head = async (h: Hearth): Promise<string> => String(data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]))["sealEpochCid"]);
+    const head = async (h: Hearth): Promise<string> => String(data(await ok(h, ["nexus", "members", "list=true", `nexus=${aid}`]))["sealEpochCid"]);
     /** The chairs' seats a carried circle file holds, in contribution order. */
     const chairsOf = (name: string): string[] => (JSON.parse(readFileSync(file(name), "utf8"))["chairs"] as Array<{ seat: string }>).map((c) => c.seat);
 
     // C carries the charter in as a file, at the head A and B hold.
     writeFileSync(file("charter-2.mem"), carriedBytes(A));
-    expect(data(await ok(C, ["nexus", "seal", "import", "--carry", file("charter-2.mem")]))["aid"]).toBe(aid);
+    expect(data(await ok(C, ["nexus", "seal", "import", `carry=${file("charter-2.mem")}`]))["aid"]).toBe(aid);
     expect(await head(C)).toBe(await head(A));
 
     // THE ADD ROLL: A and B reveal their cards, C takes a chair the head never committed; the rule reads two of three.
-    const aOpen = await ok(A, ["nexus", "seal", "roll", "open", "--nexus", aid, "--threshold", "2", "--face", "0", "--cold-key", cards.get(A.lar.root)!, "--out", file("circle-5.json")]);
-    const bJoin = await ok(B, ["nexus", "seal", "roll", "join", file("circle-5.json"), "--face", "0", "--cold-key", cards.get(B.lar.root)!, "--out", file("circle-6.json")]);
-    const cJoin = await ok(C, ["nexus", "seal", "roll", "join", file("circle-6.json"), "--face", "0", "--added", "--out", file("circle-7.json")]);
+    const aOpen = await ok(A, ["nexus", "seal", "roll", "open", `nexus=${aid}`, "threshold=2", "face=0", `cold-key=${cards.get(A.lar.root)!}`, `out=${file("circle-5.json")}`]);
+    const bJoin = await ok(B, ["nexus", "seal", "roll", "join", file("circle-5.json"), "face=0", `cold-key=${cards.get(B.lar.root)!}`, `out=${file("circle-6.json")}`]);
+    const cJoin = await ok(C, ["nexus", "seal", "roll", "join", file("circle-6.json"), "face=0", "added=true", `out=${file("circle-7.json")}`]);
     expect(data(bJoin)["chairs"]).toBe(2);
     expect(data(cJoin)["chairs"]).toBe(3);
     const aSeat = chairsOf("circle-5.json")[0]!;
     const bSeat = chairsOf("circle-6.json").find((s) => s !== aSeat)!;
     const cSeat = chairsOf("circle-7.json").find((s) => s !== aSeat && s !== bSeat)!;
     const heard = (own: string): string => [aSeat, bSeat, cSeat].filter((s) => s !== own).map(seatFingerprint).join(",");
-    await ok(A, ["nexus", "seal", "roll", "sign", file("circle-7.json"), "--heard-threshold", "2", "--heard", heard(aSeat), "--out", file("circle-8.json")]);
-    await ok(B, ["nexus", "seal", "roll", "sign", file("circle-8.json"), "--heard-threshold", "2", "--heard", heard(bSeat), "--out", file("circle-9.json")]);
-    expect(data(await ok(C, ["nexus", "seal", "roll", "sign", file("circle-9.json"), "--heard-threshold", "2", "--heard", heard(cSeat), "--out", file("circle-10.json")]))["verdict"]).toBe("complete");
+    await ok(A, ["nexus", "seal", "roll", "sign", file("circle-7.json"), "heard-threshold=2", `heard=${heard(aSeat)}`, `out=${file("circle-8.json")}`]);
+    await ok(B, ["nexus", "seal", "roll", "sign", file("circle-8.json"), "heard-threshold=2", `heard=${heard(bSeat)}`, `out=${file("circle-9.json")}`]);
+    expect(data(await ok(C, ["nexus", "seal", "roll", "sign", file("circle-9.json"), "heard-threshold=2", `heard=${heard(cSeat)}`, `out=${file("circle-10.json")}`]))["verdict"]).toBe("complete");
     for (const h of [A, B, C]) expect(data(await ok(h, ["nexus", "seal", "roll", "file", file("circle-10.json")]))["outcome"]).toBe("extended");
     const added = await head(A);
     for (const h of [B, C]) expect(await head(h)).toBe(added);
     writeFileSync(file("charter-3.mem"), carriedBytes(A));
     // The add roll's anchor crosses A and B, whose boards hold the same acts; the next roll waits on it.
-    expect(data(await ok(A, ["nexus", "seal", "anchor", "--nexus", aid, "--out", file("anchor-3.json")]))["verdict"]).toBe("ready");
-    expect(data(await ok(B, ["nexus", "seal", "anchor", "--from", file("anchor-3.json"), "--out", file("anchor-4.json")]))["verdict"]).toBe("complete");
-    expect(data(await ok(A, ["nexus", "seal", "anchor", "--from", file("anchor-4.json")]))["verdict"]).toBe("complete");
+    expect(data(await ok(A, ["nexus", "seal", "anchor", `nexus=${aid}`, `out=${file("anchor-3.json")}`]))["verdict"]).toBe("ready");
+    expect(data(await ok(B, ["nexus", "seal", "anchor", `from=${file("anchor-3.json")}`, `out=${file("anchor-4.json")}`]))["verdict"]).toBe("complete");
+    expect(data(await ok(A, ["nexus", "seal", "anchor", `from=${file("anchor-4.json")}`]))["verdict"]).toBe("complete");
 
     // B GOES DORMANT: its daemon stops, and A and C roll on without it; B's chair passes.
     if (B.daemon) await stopChild(B.daemon); else await B.lar.stopDaemonOnly();
-    await ok(A, ["nexus", "seal", "roll", "open", "--nexus", aid, "--threshold", "2", "--face", "0", "--cold-key", firstCard(aOpen), "--out", file("circle-11.json")]);
-    await ok(C, ["nexus", "seal", "roll", "join", file("circle-11.json"), "--face", "0", "--cold-key", firstCard(cJoin), "--out", file("circle-12.json")]);
+    await ok(A, ["nexus", "seal", "roll", "open", `nexus=${aid}`, "threshold=2", "face=0", `cold-key=${firstCard(aOpen)}`, `out=${file("circle-11.json")}`]);
+    await ok(C, ["nexus", "seal", "roll", "join", file("circle-11.json"), "face=0", `cold-key=${firstCard(cJoin)}`, `out=${file("circle-12.json")}`]);
     const aPass = chairsOf("circle-11.json")[0]!;
     const cPass = chairsOf("circle-12.json").find((s) => s !== aPass)!;
-    await ok(A, ["nexus", "seal", "roll", "sign", file("circle-12.json"), "--heard-threshold", "2", "--heard", seatFingerprint(cPass), "--out", file("circle-13.json")]);
-    expect(data(await ok(C, ["nexus", "seal", "roll", "sign", file("circle-13.json"), "--heard-threshold", "2", "--heard", seatFingerprint(aPass), "--out", file("circle-14.json")]))["verdict"]).toBe("complete");
+    await ok(A, ["nexus", "seal", "roll", "sign", file("circle-12.json"), "heard-threshold=2", `heard=${seatFingerprint(cPass)}`, `out=${file("circle-13.json")}`]);
+    expect(data(await ok(C, ["nexus", "seal", "roll", "sign", file("circle-13.json"), "heard-threshold=2", `heard=${seatFingerprint(aPass)}`, `out=${file("circle-14.json")}`]))["verdict"]).toBe("complete");
     for (const h of [A, C]) expect(data(await ok(h, ["nexus", "seal", "roll", "file", file("circle-14.json")]))["outcome"]).toBe("extended");
     const passed = await head(A);
     expect(await head(C)).toBe(passed);
@@ -298,14 +298,14 @@ describe("two hearths found one Nexus with files as the only courier", () => {
     await restand(B);
     expect(await head(B)).toBe(added);
     writeFileSync(file("charter-4.mem"), carriedBytes(A));
-    const caught = data(await ok(B, ["nexus", "seal", "import", "--carry", file("charter-4.mem")]));
+    const caught = data(await ok(B, ["nexus", "seal", "import", `carry=${file("charter-4.mem")}`]));
     expect(caught["outcome"]).toBe("extended");
     expect(caught["epoch"]).toBe(passed);
     expect(await head(B)).toBe(passed);
-    await refused(B, ["nexus", "seal", "import", "--carry", file("charter-3.mem")]);
-    expect(data(await ok(B, ["nexus", "seal", "import", "--carry", file("charter-4.mem")]))["outcome"]).toBe("same");
+    await refused(B, ["nexus", "seal", "import", `carry=${file("charter-3.mem")}`]);
+    expect(data(await ok(B, ["nexus", "seal", "import", `carry=${file("charter-4.mem")}`]))["outcome"]).toBe("same");
     // The head B caught up to seats A's and C's chairs alone, at the rule they rolled.
-    const read = data(await ok(B, ["nexus", "members", "--list", "--nexus", aid]));
+    const read = data(await ok(B, ["nexus", "members", "list=true", `nexus=${aid}`]));
     expect(read["threshold"]).toBe(2);
     expect(read["seatedKeys"]).toBe(2);
   }, 1_200_000);

@@ -110,7 +110,7 @@ describe("the custody door's recard frame", () => {
     const shut = door({ faces: { 2: { unlocked: false } }, refused: [] });
     const b = await shut.send(frame(2));
     expect(b).toMatchObject({ refusal: { reason: "face-shut" } });
-    expect(String(b["errorMessage"])).toContain("lares vault unlock --face 2");
+    expect(String(b["errorMessage"])).toContain("lares vault unlock face=2");
     const absent = door({ faces: {} });
     expect(await absent.send(frame(2))).toMatchObject({ refusal: { reason: "face-not-standing" } });
     for (const d of [lit, other, prose, shut, absent]) { expect(d.armed).toEqual([]); expect(d.proved).toEqual([]); }
@@ -140,7 +140,7 @@ describe("the custody door's recard frame", () => {
     const a = await d.send(frame(2));
     expect(a).toMatchObject({ refusal: { reason: "recard-refused" } });
     expect(String(a["errorMessage"])).toContain("archive-unrested");
-    expect(String(a["errorMessage"])).toContain("lares vault recard --face 2");
+    expect(String(a["errorMessage"])).toContain("lares vault recard face=2");
   });
 
   test("C6 the arm never outlives the act: a light that throws, or a stale face whose light refuses unread, leaves nothing armed", async () => {
@@ -177,7 +177,7 @@ describe("the custody door's recard frame", () => {
     const ungranted = await pulama.send(frame(2, { credentials: [] }));
     expect(ungranted).toMatchObject({ refusal: { reason: "recard-ungranted" } });
     expect(String(ungranted["errorMessage"])).toContain("tools/lares-container.sh pulama recard 2");
-    expect(String(ungranted["errorMessage"])).toContain("lares vault recard --face 2");
+    expect(String(ungranted["errorMessage"])).toContain("lares vault recard face=2");
     for (const d of [ai, stray, pulama]) { expect(d.armed).toEqual([]); expect(d.proved).toEqual([]); }
   });
 

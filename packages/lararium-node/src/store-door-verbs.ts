@@ -512,7 +512,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         const title = routingString(args, "title", "kahua-read");
         return { has: hasLine(title, [param("source", "kahua-stage"), param("grain", "item"), param("verified", true)]), ...sight,
           source: "kahua-stage", grain: "item",
-          ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} --history` } : {}) };
+          ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} history=true` } : {}) };
       }
       const items = Array.isArray(read["items"]) ? read["items"] : [];
       const page = pagePlaneRows(items, str(args["after"]), int(args["limit"]));

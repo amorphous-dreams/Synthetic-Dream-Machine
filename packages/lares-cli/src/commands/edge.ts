@@ -1,6 +1,6 @@
 /**
- * `lares edge {kapae | un-kapae} (<edge-id> | --member <key> | --device <key>) [--realm <id>] [--quorum]
- * [--as <root-index>]` — set one RELATIONSHIP aside, or take the marker back down.
+ * `lares edge {kapae | un-kapae} (<edge-id> | member=<key> | device=<key>) [realm=<id>] [quorum=true]
+ * [as=<root-index>]` — set one RELATIONSHIP aside, or take the marker back down.
  *
  * SCOPED UNDER `edge` to mirror `nexus kapae` / `nexus un_kapae`, and to keep them apart. Both acts set
  * something aside and both deserve the word, but they set aside DIFFERENT KINDS of thing: the nexus pair
@@ -53,7 +53,7 @@ const SEAT_LINES: Readonly<Record<string, string>> = {
 };
 
 /**
- * `lares edge settle [--fleet <root>]` — answer, on the key side, the raises this vessel counts on its fleet's
+ * `lares edge settle [fleet=<root>]` — answer, on the key side, the raises this vessel counts on its fleet's
  * edge board (kapae#/keys). Three steps: the vessel reads the facts, the daemon island answers them where the
  * face's group keys live, and the vessel marks what got answered. Running it again changes nothing.
  */
@@ -61,7 +61,7 @@ async function cmdSettle(args: ParsedArgs): Promise<number> {
   const fleet = args.options["fleet"];
   try {
     const facts = ((await storeVerb("edge-seat-facts", { ...(fleet !== undefined ? { fleetRoot: fleet } : {}) }, EdgeSeatError)).output["fleets"] ?? []) as readonly EdgeSeatFacts[];
-    if (facts.length === 0) { console.log("no fleet to settle — this vessel holds no face's root (name one with --fleet <root>)."); return 0; }
+    if (facts.length === 0) { console.log("no fleet to settle — this vessel holds no face's root (name one with fleet=<root>)."); return 0; }
     let owed = 0;
     for (const f of facts) {
       console.log(`fleet ${f.fleetRoot}`);
@@ -103,12 +103,12 @@ const subjectLine = (s: EdgeCosignResult["subject"]): string =>
   s.kind === "member" ? `member ${s.member}` : `the vouch ${s.voucher} gave ${s.joiner}`;
 
 /**
- * `lares edge kapae|un-kapae (--member <key> | --voucher <key> --joiner <key>) --realm <id> --quorum --partial`
+ * `lares edge kapae|un-kapae (member=<key> | voucher=<key> joiner=<key>) realm=<id> quorum=true partial=true`
  * — sign a quorum act with the seats this vessel holds and print it as a PARTIAL for the next seat's vessel.
  */
 async function cmdPartial(args: ParsedArgs, raised: boolean): Promise<number> {
   const { member, voucher, joiner, realm } = args.options;
-  if (realm === undefined) return usage(args, "a partial names its realm: --realm <realm-id>");
+  if (realm === undefined) return usage(args, "a partial names its realm: realm=<realm-id>");
   const nexusRaw = args.options["nexus"];
   const nexusAid = typeof nexusRaw === "string" && nexusRaw.trim().length > 0 ? nexusRaw.trim().toLowerCase() : undefined;
   try {
@@ -132,12 +132,12 @@ async function cmdPartial(args: ParsedArgs, raised: boolean): Promise<number> {
 }
 
 /**
- * `lares edge cosign (<partial-json> | --from <file>) [--act <act-cid>]` — read a partial; with `--act`, add this
+ * `lares edge cosign (<partial-json> | from=<file>) [act=<act-cid>]` — read a partial; with `act=`, add this
  * vessel's seats and land the act once it counts.
  *
  * THE WHOLE INPUT IS ONE PARTIAL. No line beside it gets read as a description: every line this verb prints
- * comes from the partial's own verified bytes. Without `--act` it signs nothing, so a person reads whom the act
- * sets aside before any seat signs; `--act` names the act id that read printed, and any other act refuses.
+ * comes from the partial's own verified bytes. Without `act=` it signs nothing, so a person reads whom the act
+ * sets aside before any seat signs; `act=` names the act id that read printed, and any other act refuses.
  */
 async function cmdCosign(args: ParsedArgs): Promise<number> {
   const from = args.options["from"];
@@ -145,7 +145,7 @@ async function cmdCosign(args: ParsedArgs): Promise<number> {
   if (text === undefined && from !== undefined) {
     try { text = readFileSync(from, "utf8"); } catch { console.error(`refused: cannot read ${from}`); return 1; }
   }
-  if (text === undefined) return usage(args, "hand in the partial: its JSON text, or --from <file>");
+  if (text === undefined) return usage(args, "hand in the partial: its JSON text, or from=<file>");
   let partial: unknown;
   try { partial = JSON.parse(text.trim()); }
   catch { console.error("refused: the input must hold ONE JSON partial and nothing else"); return 1; }
@@ -165,12 +165,12 @@ async function cmdCosign(args: ParsedArgs): Promise<number> {
     if (r.would !== undefined) {
       console.log(`  signed:   ${r.signed.map((k) => `${k.slice(0, 16)}…`).join(", ")}`);
       console.log(r.would === "cosign"
-        ? `  next:     to add this vessel's seats, run the same command with --act ${r.actCid}`
-        : `  next:     the act arrived whole; to land it on this vessel's board, run the same command with --act ${r.actCid}`);
+        ? `  next:     to add this vessel's seats, run the same command with act=${r.actCid}`
+        : `  next:     the act arrived whole; to land it on this vessel's board, run the same command with act=${r.actCid}`);
       return 0;
     }
     console.log(`  added:    ${r.added.length === 0 ? "(none — the act arrived whole)" : r.added.map((k) => `${k.slice(0, 16)}…`).join(", ")}`);
-    if (r.landed) console.log("  next:     hand the line below back, so each seat's vessel lands the same act (`lares edge cosign '<partial>'`, then `--act <act-cid>`)");
+    if (r.landed) console.log("  next:     hand the line below back, so each seat's vessel lands the same act (`lares edge cosign '<partial>'`, then `act=<act-cid>`)");
     else console.log("  next:     hand the line below to another seat's vessel");
     console.log(JSON.stringify(r.partial));
     return 0;
@@ -188,20 +188,20 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
   if (verb === "settle") return cmdSettle(args);
   if (verb === "cosign") return cmdCosign(args);
   if ((verb === "kapae" || verb === "un-kapae") && args.flags["partial"] === true) {
-    if (args.flags["quorum"] !== true) return usage(args, "--partial serves the quorum hand: add --quorum");
+    if (args.flags["quorum"] !== true) return usage(args, "partial= serves the quorum hand: add quorum=true");
     return cmdPartial(args, verb === "kapae");
   }
   if (verb !== "kapae" && verb !== "un-kapae") return usage(args, verb ? `unknown sub-verb "${verb}"` : undefined);
 
   const edgeId = args.positional[1];
   const member = args.options["member"], device = args.options["device"], realm = args.options["realm"];
-  if ([edgeId, member, device].filter((v) => v !== undefined).length !== 1) return usage(args, "name one relationship: an edge id, --member or --device");
+  if ([edgeId, member, device].filter((v) => v !== undefined).length !== 1) return usage(args, "name one relationship: an edge id, member= or device=");
   const quorum = args.flags["quorum"] === true;
 
   const asRaw = args.options["as"];
   const handleIndex = asRaw === undefined ? undefined : Number(asRaw);
   if (handleIndex !== undefined && !Number.isInteger(handleIndex)) {
-    console.error(`--as expects a persona-root index, got "${asRaw}"`);
+    console.error(`as= expects a persona-root index, got "${asRaw}"`);
     return 2;
   }
   const nexusRaw = args.options["nexus"];

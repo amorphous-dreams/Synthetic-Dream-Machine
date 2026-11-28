@@ -25,7 +25,7 @@ describe("lares shore keep-disk | keep-records | keep-both | drafts", () => {
 
   test("a keyed action names its key, or the usage names the command that runs it", () => {
     const shaped = shoreArgs("keep-both", parsed(["keep-both", URI]));
-    expect(shaped).toEqual({ usage: "keep-both names a carrier and the standoff's key: lares shore keep-both <uri> --key <key>" });
+    expect(shaped).toEqual({ usage: "keep-both names a carrier and the standoff's key: lares shore keep-both <uri> key=<key>" });
     expect(shoreArgs("drafts", parsed(["drafts"]))).toEqual({ usage: "drafts names a carrier: lares shore drafts <uri>" });
   });
 });
@@ -37,7 +37,7 @@ describe("settling a stand-off stays a hand act at the command", () => {
     for (const act of SETTLES) {
       const refused = shoreHandRefusal(act, { uri: URI, key: "k1" }, () => ({ refusal: "hand-act-only" }));
       expect(refused?.code, act).toBe("hand-act-only");
-      expect(refused?.message, act).toContain(`lares shore ${act} ${URI} --key k1`);
+      expect(refused?.message, act).toContain(`lares shore ${act} ${URI} key=k1`);
     }
     expect(shoreHandRefusal("keep-both", { uri: URI, key: "k1" }, () => ({ refusal: "hand-unattested" }))?.code).toBe("hand-unattested");
   });
@@ -57,6 +57,6 @@ describe("settling a stand-off stays a hand act at the command", () => {
       expect(code).not.toBe(0);
     } finally { out.mockRestore(); err.mockRestore(); wrote.mockRestore(); }
     expect(said.join("\n")).toContain("hand-act-only");
-    expect(said.join("\n")).toContain(`lares shore keep-both ${URI} --key k1`);
+    expect(said.join("\n")).toContain(`lares shore keep-both ${URI} key=k1`);
   });
 });

@@ -1,5 +1,5 @@
 /**
- * `lares import <dest> [--apply]` — the command face of `houseImport` (`./house-bundle.ts`).
+ * `lares import <dest> [apply=true]` — the command face of `houseImport` (`./house-bundle.ts`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -22,19 +22,19 @@ export async function cmdImport(args: ParsedArgs, doors: BundleDoors = LIVE_BUND
     data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, waiting: result.waiting, warnings: result.warnings, benchWaiting: result.benchWaiting, personalWaiting: result.personalWaiting, kahuaWaiting: result.kahuaWaiting, daemonWaiting: result.daemonWaiting, shares: result.shares },
     ...(refused > 0 ? { error: { code: "verb-error", message: `${refused} row(s) refused` } } : stood > 0 ? { error: { code: "conflict", message: `${stood} row(s) stand off; nothing overwrote them` } } : {}),
     human: () => {
-      console.log(`import: bundle ${result.bundleId.slice(0, 16)} verified whole${result.applied ? "" : " · preview only (pass --apply)"}`);
+      console.log(`import: bundle ${result.bundleId.slice(0, 16)} verified whole${result.applied ? "" : " · preview only (pass apply=true)"}`);
       for (const w of result.warnings) console.error(`  warning: ${w}`);
       for (const [pet, i] of Object.entries(result.faceMap)) console.log(`  face "${pet}" -> h${i}`);
       for (const a of result.redeclare) console.log(`  re-declare ${a}`);
       for (const w of result.waiting) console.log(`  ${unlockItLine(w, "import")}; nothing of its memory laid into any layer`);
       for (const w of result.benchWaiting) console.log(w.why === "owner"
-        ? `  the wiki ${w.slug} re-stands at its owner's wear: wear ${w.owner} (\`lares vault unlock --face N\`) and import again; nothing of it minted or landed under this face`
+        ? `  the wiki ${w.slug} re-stands at its owner's wear: wear ${w.owner} (\`lares vault unlock face=N\`) and import again; nothing of it minted or landed under this face`
         : `  the workbench of ${w.slug} lands once, at the wear of a face that holds a writer's seat there: this face holds none, so its rows wait and nothing of them landed in this face's layers`);
       for (const w of result.personalWaiting) console.log(w.wiki !== undefined
-        ? `  ${w.petname}'s personal layer of ${w.wiki} lands once the wiki stands: wear ${w.owner ?? "its owner"} (\`lares vault unlock --face N\`) and import again, then import at h${w.handleIndex}'s wear; nothing of it landed`
-        : `  ${w.petname} stands unworn, and a face's personal layer of a wiki lands at that face's own wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
-      for (const w of result.daemonWaiting) console.log(`  ${w.petname} stands open, and its own daemon layer lands at its own face's wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
-      for (const w of result.kahuaWaiting) console.log(`  ${w.petname} stands unworn, and its ${w.heads} kahua head(s) lift at its own face's wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
+        ? `  ${w.petname}'s personal layer of ${w.wiki} lands once the wiki stands: wear ${w.owner ?? "its owner"} (\`lares vault unlock face=N\`) and import again, then import at h${w.handleIndex}'s wear; nothing of it landed`
+        : `  ${w.petname} stands unworn, and a face's personal layer of a wiki lands at that face's own wear: \`lares vault unlock face=${w.handleIndex}\`, then import again`);
+      for (const w of result.daemonWaiting) console.log(`  ${w.petname} stands open, and its own daemon layer lands at its own face's wear: \`lares vault unlock face=${w.handleIndex}\`, then import again`);
+      for (const w of result.kahuaWaiting) console.log(`  ${w.petname} stands unworn, and its ${w.heads} kahua head(s) lift at its own face's wear: \`lares vault unlock face=${w.handleIndex}\`, then import again`);
       if (result.shares.written.length > 0) console.log(`  shares: ${result.applied ? "wrote" : "would write"} the row(s) for ${result.shares.written.join(", ")} into config/share.tid${result.shares.landed ? ", and landed the shares again" : ""}`);
       if (result.shares.unhanded !== undefined) console.error(`  ${result.shares.unhanded}`);
       for (const b of result.minted) console.log(`  ${result.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);

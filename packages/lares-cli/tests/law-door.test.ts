@@ -72,7 +72,7 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { cmdLaw, nextPins, withoutRun, withRun, lawLineOf } from "../src/commands/law.js";
-import { COMMANDS } from "../src/bin/lares.js";
+import { COMMANDS, doorTakes } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const argv = (positional: string[], flags: Record<string, boolean> = { json: true }, options: Record<string, string> = {}): ParsedArgs =>
@@ -226,7 +226,7 @@ describe("the pin algebra and the command row", () => {
 
   test("the command table holds `law`, reading the flags its handler reads", () => {
     const row = COMMANDS.find((c) => c.name === "law");
-    expect(row?.accepts).toEqual(["after", "all", "face", "limit"]);
+    expect([...doorTakes(row!.name)].sort()).toEqual(["after", "all", "face", "limit"]);
     expect(row?.signs).toBeUndefined();
   });
 });

@@ -18,7 +18,7 @@
  * (`LAR_HERM_SHORE`). This pair names no shore, and carriage peering ships SHUT by name, so the bytes stay on A: a
  * READ on B that misses `cid/` answers "not held" at the `local-only` door and writes nothing.
  * Fetch-on-read: a byte crosses only when B reads
- * (`lares bag cas --fetch <cid>`), never before — ★ measures the absence FIRST, as the control.
+ * (`lares bag cas fetch=<cid>`), never before — ★ measures the absence FIRST, as the control.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -196,7 +196,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
     const bytesOnB = existsSync(join(casDirOf(B!), cid));
     const pngOnB = existsSync(join(B!.root, "bags/lares", LOCI, "photo.png"));
     const casLines = B!.bootLog().split("\n").filter((l) => /cas|cid|lazy|blob/i.test(l) && !/genesis|mirror/i.test(l)).slice(-8);
-    const cas = await B!.cli(["bag", "cas", "--all", "--json"]);
+    const cas = await B!.cli(["bag", "cas", "all=true", "--json"]);
     console.error([
       `blob-follows-pointer MEASURE B: cid/ = ${casDirOf(B!)}`,
       `  blobs on B: ${casB.length} (genesis + staged); holds ${cid.slice(0, 16)}…: ${bytesOnB}`,
@@ -216,7 +216,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
   test("★ the BYTES stay behind the SHUT carriage: a READ on B answers held:false at the local-only door ★", async () => {
     const beforeRead = existsSync(join(casDirOf(B!), cid));
     console.error(`blob-follows-pointer MEASURE B: bytes on B before the CLI read (the island's own read fired?): ${beforeRead}`);
-    const r = await B!.cli(["bag", "cas", "--fetch", cid, "--json"]);
+    const r = await B!.cli(["bag", "cas", `fetch=${cid}`, "--json"]);
     console.error(`blob-follows-pointer MEASURE B: bag cas --fetch → ${said(r).trim().slice(0, 400)}`);
     const carriageLines = (v: LarInstance): string => v.bootLog().split("\n").filter((l) => /\[carriage\]|fetch door|admit|delegation|cross-operator|same-operator|auth/.test(l)).slice(-14).join("\n    ");
     console.error(`blob-follows-pointer MEASURE A carriage:\n    ${carriageLines(A!)}\nblob-follows-pointer MEASURE B carriage:\n    ${carriageLines(B!)}`);
@@ -234,7 +234,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
 
   test("CONTROL: a cid no fleet holder carries stays PENDING — `held:false`, no fault, nothing written", async () => {
     const ghost = createHash("sha256").update("a likeness nobody ever staged").digest("hex");
-    const r = await B!.cli(["bag", "cas", "--fetch", ghost, "--json"]);
+    const r = await B!.cli(["bag", "cas", `fetch=${ghost}`, "--json"]);
     console.error(`blob-follows-pointer MEASURE B: bag cas --fetch (ghost) → ${said(r).trim().slice(0, 300)}`);
     expect(r.json?.["ok"]).toBe(true);
     expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["held"]).toBe(false);

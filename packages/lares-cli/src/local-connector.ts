@@ -39,7 +39,7 @@ export function udsSocketPath(dataDir?: string | null): string {
     throw new Error("[lares] a substrate root was required and none resolved — refusing to fall back to the ambient vessel");
   }
   // ONE DERIVATION, BOTH SIDES. The daemon binds `rendezvousPath` over its resolved substrate dir; this
-  // reads the same function over the same default. A `--storage`/`LAR_STORAGE` override moves the
+  // reads the same function over the same default. A `storage=`/`LAR_STORAGE` override moves the
   // daemon's dir and not this one; `lares vessel read` prints the resolved path when the two must be compared.
   return rendezvousPath({ root: dataDir ?? larDataDir(), uid: process.getuid?.() ?? 0 });
 }

@@ -5,7 +5,7 @@
  * names — so it needs no trusted channel and no reachable authority: a carrier may WITHHOLD it, never forge it.
  * The bytes ride anything a human can hand over — a paste, a QR code held to a screen, a `#card=…` URL fragment,
  * a file on a stick. It takes the SAME posture as the hosting-invite and fleet-join carriages, applied to recognition:
- * it lets a follow admit an unmet nym without the CLI's `--card <file>`, the card arriving by paste instead.
+ * it lets a follow admit an unmet nym without the CLI's `card=<file>`, the card arriving by paste instead.
  *
  * The fragment earns its place because a browser never transmits one — the card reaches the vessel and no relay
  * or issuer sees it in transit. This module touches no platform: no `location`, no clock, no network. Same string

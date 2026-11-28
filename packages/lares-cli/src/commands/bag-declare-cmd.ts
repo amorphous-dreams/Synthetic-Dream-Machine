@@ -11,8 +11,8 @@
  *
  *   show                          every bag, its declared tier + home, and whether it sits where it says
  *   show <bag>                    one bag's declaration and where it resolves ON THIS VESSEL
- *   declare <bag> --tier <t>      write (or amend) a bag's own declaration
- *   home <bag> --to <home> [--repo <id>] --approve
+ *   declare <bag> tier=<t>      write (or amend) a bag's own declaration
+ *   home <bag> to=<home> [repo=<id>] approve=true
  *                                 MOVE the bytes and re-anchor the declaration, together
  *   repo <list|add|drop>          the operator's repo registry — IDs, never paths
  *
@@ -54,7 +54,7 @@ function surveyDir(args: ParsedArgs): string {
 }
 
 /**
- * One bag's sighting: the survey dir first, then (with no `--dir` named) the house's projected bags, where a bag with no
+ * One bag's sighting: the survey dir first, then (with no `dir=` named) the house's projected bags, where a bag with no
  * canon source rests (`<root>/projections/bags`), and a shared wiki's canon bag under the realm folder it stands in
  * (`<root>/projections/realms/<realm pet name>/bags/<slug>`, read off the disk). Absent from all, it refuses naming each place
  * it read.
@@ -139,7 +139,7 @@ export async function cmdBagShow(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     data: {
-      has, source: "local-survey", grain: "item", nextOperation: `lares bag home ${bag} --to ${found.manifest.home}`,
+      has, source: "local-survey", grain: "item", nextOperation: `lares bag home ${bag} to=${found.manifest.home}`,
       bag, dir: found.dir, manifest: found.manifest, adrift: found.adrift,
       resolves: place.resolution.ok ? place.resolution.dir : null,
       why: place.resolution.ok ? null : place.resolution.why,
@@ -154,7 +154,7 @@ export async function cmdBagShow(args: ParsedArgs): Promise<number> {
       console.log(`  bytes sit:  ${found.dir}`);
       if (place.resolution.ok) {
         console.log(`  declares:   ${place.resolution.dir}`);
-        if (found.adrift) console.log(`  ⚠ ADRIFT — re-anchor with: lares bag home ${bag} --to ${found.manifest.home} --approve`);
+        if (found.adrift) console.log(`  ⚠ ADRIFT — re-anchor with: lares bag home ${bag} to=${found.manifest.home} approve=true`);
       } else {
         console.log(`  declares:   (unresolvable here) ${place.resolution.why}`);
       }
@@ -174,10 +174,10 @@ export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   const homeRaw = args.options["home"];
   const repo    = args.options["repo"];
   if (tierRaw === undefined && homeRaw === undefined && repo === undefined && args.options["role"] === undefined) {
-    throw new BagUsageError("declare wants something to declare: --tier · --home · --repo · --role");
+    throw new BagUsageError("declare wants something to declare: tier= · home= · repo= · role=");
   }
   if (homeRaw !== undefined && !isBagHome(homeRaw.trim().toLowerCase())) {
-    throw new BagUsageError(`--home expects one of ${BAG_HOMES.join(" | ")}, got "${homeRaw}"`);
+    throw new BagUsageError(`home= expects one of ${BAG_HOMES.join(" | ")}, got "${homeRaw}"`);
   }
   const home = (homeRaw !== undefined ? homeRaw.trim().toLowerCase() : found.manifest.home) as BagHome;
   const next: BagManifest = {
@@ -207,7 +207,7 @@ export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
     human: () => {
       console.log(`${bag} declares: cap-tier ${next.tier} · home ${next.home}${next.repository ? ` → "${next.repository}"` : ""}`);
       console.log(`  written: ${path}`);
-      console.log(`  (a declaration moves no bytes — relocate with: lares bag home ${bag} --to ${next.home} --approve)`);
+      console.log(`  (a declaration moves no bytes — relocate with: lares bag home ${bag} to=${next.home} approve=true)`);
       if (adrift) console.log(`  ⚠ this bag now sits ADRIFT of its own declaration until you move it.`);
     },
   });
@@ -218,7 +218,7 @@ export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
 export async function cmdBagHome(args: ParsedArgs): Promise<number> {
   const bag   = bagArg(args, "home");
   const toRaw = (args.options["to"] ?? "").trim().toLowerCase();
-  if (!isBagHome(toRaw)) throw new BagUsageError(`--to expects one of ${BAG_HOMES.join(" | ")}, got "${args.options["to"] ?? ""}"`);
+  if (!isBagHome(toRaw)) throw new BagUsageError(`to= expects one of ${BAG_HOMES.join(" | ")}, got "${args.options["to"] ?? ""}"`);
   const roots = bagHomeRoots();
   const found = findBag(args, bag, roots);
 
@@ -235,7 +235,7 @@ export async function cmdBagHome(args: ParsedArgs): Promise<number> {
         console.log(`PLAN — ${bag} would move to home "${toRaw}"${next.repository ? ` (repo "${next.repository}")` : ""}`);
         console.log(`  from: ${found.dir}`);
         console.log(plan.resolution.ok ? `  to:   ${plan.resolution.dir}/${bag}` : `  REFUSED: ${plan.resolution.why}`);
-        if (plan.resolution.ok) console.log(`  run it: lares bag home ${bag} --to ${toRaw}${next.repository ? ` --repo ${next.repository}` : ""} --approve`);
+        if (plan.resolution.ok) console.log(`  run it: lares bag home ${bag} to=${toRaw}${next.repository ? ` repo=${next.repository}` : ""} approve=true`);
       },
     });
     return plan.resolution.ok ? 0 : exitFor("error");
@@ -273,7 +273,7 @@ export async function cmdBagRepo(args: ParsedArgs): Promise<number> {
       human: () => {
         if (repos.length === 0) {
           console.log("no repos registered — a bag homing at a repository will refuse until one is.");
-          console.log("  register: lares bag repo add <id> --root <path> [--vcs git|other]");
+          console.log("  register: lares bag repo add <id> root=<path> [vcs=git|other]");
           return;
         }
         console.log("registered repos (a bag names the ID; the root never leaves this vessel):");
@@ -285,7 +285,7 @@ export async function cmdBagRepo(args: ParsedArgs): Promise<number> {
   if (op === "add") {
     const id   = (args.positional[1] ?? "").trim();
     const root = args.options["root"];
-    if (!id || !root) throw new BagUsageError("usage: lares bag repo add <id> --root <path> [--vcs git|other]");
+    if (!id || !root) throw new BagUsageError("usage: lares bag repo add <id> root=<path> [vcs=git|other]");
     const vcs  = args.options["vcs"] === "other" ? "other" : "git";
     const all  = registerRepo({ id, root, vcs });
     emit(args, { ok: true, data: { id, root, vcs, count: all.size },

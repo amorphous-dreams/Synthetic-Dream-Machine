@@ -8,7 +8,7 @@
  * verb channel instead of opening the store beside it.
  *
  * Proven, each act begun at the vessel's OWN word and none against the machine's pace:
- *   · CONTROL: with no vessel standing, `lares nexus kapae --list` runs `via: direct`;
+ *   · CONTROL: with no vessel standing, `lares nexus kapae list=true` runs `via: direct`;
  *   · AN ACT THAT BEGAN BEFORE THE BOOT HOLDS THE STORE, and the vessel waits it out: this vector holds the store
  *     as a direct act, the booting vessel says it waits on that act, and it says it holds its store only after the
  *     act let go. A command run while the act holds refuses by name and opens nothing;
@@ -23,7 +23,7 @@
  * vector says which of the boot's words stood when each act began, and claims no narrower instant than that: the
  * window between the claim and the verb channel's open belongs to `owned-store`'s own vectors, which hold it.
  *
- * THE PROBE RIDES THE STORE DOOR. `lares nexus kapae --list` reads the antigen board through the store's door
+ * THE PROBE RIDES THE STORE DOOR. `lares nexus kapae list=true` reads the antigen board through the store's door
  * table and opens no sealed row, so it answers at the floor too. `lares host` and `lares walk` ride the custody
  * door, a second channel that proves nothing about who holds the store.
  */
@@ -49,7 +49,7 @@ afterAll(async () => {
 });
 
 /** The store-door read each act sends. */
-const PROBE = ["nexus", "kapae", "--list", "--json"] as const;
+const PROBE = ["nexus", "kapae", "list=true", "--json"] as const;
 
 /** Where one store-door read ran: `daemon`, `direct`, or the refusal it met. */
 function via(r: { json?: Record<string, unknown> | null; stderr: string }): string {
@@ -64,7 +64,7 @@ describe("a booting vessel holds its store", () => {
     const port = await freePort();
     const env = { LAR_ROOT: root, LAR_PORT: String(port) };
     const cli = cliFor(env);
-    expect((await cli(["vessel", "found", "--hearth", "--name", "staged", "--root", root, "--skip-build"])).code).toBe(0);
+    expect((await cli(["vessel", "found", "hearth=true", "name=staged", `root=${root}`, "--skip-build"])).code).toBe(0);
 
     // CONTROL: no vessel stands, so the command holds the store itself for its act.
     const alone = await cli(PROBE);

@@ -120,16 +120,16 @@ test("F3: a landed retire names the canon document it kept", async () => {
 });
 
 test("--force --count rides as the typed confirmation; --count without --force and --dry-run with --force refuse at the door; --dry-run moves nothing locally", async () => {
-  expect(await run("--force", "--count", "3")).toBe(0);
+  expect(await run("force=true", "count=3")).toBe(0);
   expect(calls[0]!.args).toEqual({ slug: SLUG, force: true, count: 3 });
   calls.length = 0;
-  expect(await run("--count", "3")).toBe(2);
-  expect(await run("--dry-run", "--force")).toBe(2);
+  expect(await run("count=3")).toBe(2);
+  expect(await run("dry-run=true", "force=true")).toBe(2);
   expect(calls).toEqual([]);
   mkdirSync(folder(), { recursive: true }); writeFileSync(join(folder(), "y.tid"), "y");
   answer = { status: "done", output: { slug: SLUG, status: "would-retire", catalogRows: [], realmId: ID, records: { working: 1, draft: 0, personal: 0 }, total: 1 } };
   sent.length = 0;
-  expect(await run("--dry-run")).toBe(0);
+  expect(await run("dry-run=true")).toBe(0);
   expect(calls.at(-1)!.args).toEqual({ slug: SLUG, "dry-run": true });
   expect(sent).toEqual([]);
   expect(existsSync(folder())).toBe(true);
@@ -138,7 +138,7 @@ test("--force --count rides as the typed confirmation; --count without --force a
 test("RED (referee walk #5, the record of leaving stays) --dry-run and the landed retire name the house's effect records apart from the authored ones, and where they go", async () => {
   const where = { title: "lar:///ha.ka.ba/lararium/shell-leavings/elyncia-referee", bag: "lar:///ha.ka.ba/wikis/daemon/working" };
   answer = { status: "done", output: { slug: SLUG, status: "would-retire", catalogRows: ["a"], realmId: ID, records: { working: 0, draft: 0, personal: 0, effects: 1 }, total: 0, carryTo: where } };
-  expect(await run("--dry-run")).toBe(0);
+  expect(await run("dry-run=true")).toBe(0);
   expect(text).toMatch(/authored records: 0 \(working 0, draft 0, personal 0\)/);
   expect(text).toMatch(/effect records:\s+1 \(the house's own residency rows; carried to lar:\/\/\/ha\.ka\.ba\/lararium\/shell-leavings\/elyncia-referee in lar:\/\/\/ha\.ka\.ba\/wikis\/daemon\/working before the shell goes\)/);
   text = "";

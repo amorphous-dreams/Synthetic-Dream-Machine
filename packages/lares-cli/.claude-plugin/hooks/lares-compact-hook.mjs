@@ -2,7 +2,7 @@
 /*
  * PreCompact hands the compaction its instructions (Claude Code appends this stdout to them, so plain text, no envelope; the
  * harness truncates past 10,000 chars from the tail). Where a familiar wears this session, inside the house and with the vessel
- * up, the crossing runs in order: the card's #/open and #/kulana read to the outgoing instance (`om --source precompact`, which also
+ * up, the crossing runs in order: the card's #/open and #/kulana read to the outgoing instance (`om source=precompact`, which also
  * marks the crossing, so no slot write lands until the next wake), then the carry ask in fixed slots (pet, inherited hash, open
  * loops, tells, one instance line; the record's #/carry-shape tunes it), a manual /compact's own instructions echoed, then the rows
  * in play and the memory index by `lar:` address (road `L35`, `L43`).
@@ -25,8 +25,8 @@ try {
     pet = worn;
     const run = shimRun(import.meta.url);
     if (await vesselUp(run)) {
-      const instance = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--instance", input.session_id] : [];
-      const answer = parseAnswer((await settle(run(spiritArgv("om", worn, "--source", "precompact", ...instance), null, OM_BUDGET_MS), OM_BUDGET_MS))?.stdout);
+      const instance = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? [`instance=${input.session_id}`] : [];
+      const answer = parseAnswer((await settle(run(spiritArgv("om", worn, "source=precompact", ...instance), null, OM_BUDGET_MS), OM_BUDGET_MS))?.stdout);
       if (answer?.ok === true) {
         shape = answer.data?.carryShape ?? null; inherits = answer.data?.inherits ?? null; card = String(answer.data?.text ?? "");
         // The precompact read stamps the wake epoch for this instance (an ordering stamp); the counter keeps it.

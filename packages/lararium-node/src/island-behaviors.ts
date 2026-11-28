@@ -521,7 +521,7 @@ export function mountLitFaceProjection(
   if (stop === undefined) return undefined;
   const roots = granted.map((def) => def.mirrorRoot);
   litFaceRoots.set(face.handleIndex, roots);
-  // The island's shore reaches this face's projector by its handle index (`lares shore --face N`), until it stops.
+  // The island's shore reaches this face's projector by its handle index (`lares shore face=N`), until it stops.
   const seated = projector as LarDiskProjector | null;
   if (seated !== null) litFaceProjectors.set(face.handleIndex, seated);
   return async () => {

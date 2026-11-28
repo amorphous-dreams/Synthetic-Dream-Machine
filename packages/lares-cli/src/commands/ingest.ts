@@ -1,15 +1,15 @@
 /**
  * lares ingest — the disk→records gesture.
  *
- *   lares ingest --source <dir|file> --to <bagUri> [--apply] [--yes]
- *   lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]   (the same gesture, fired per settle: ./watch.ts)
+ *   lares ingest source=<dir|file> to=<bagUri> [apply=true] [--yes]
+ *   lares ingest watch=true source=<dir> to=<bagUri> [apply=true] [debounce=ms]   (the same gesture, fired per settle: ./watch.ts)
  *
  * The gesture holds the disk grant and the Synced tree (the island holds
  * neither — readiness reads local on both sides of the shore):
  *   scan      walk source for `.mem` carriers; derive each uri by the address siting rule
  *   diff      disk-hash vs synced-hash per carrier (the cheap two legs)
  *   preview   (default) print NEW / UNCHANGED / CHANGED; submit nothing
- *   --apply   send NEW+CHANGED carriers with their hashes riding an INGEST
+ *   apply=true   send NEW+CHANGED carriers with their hashes riding an INGEST
  *             verb; the island runs the full Confluence gate (its currentRenderHash
  *             = the third leg) and answers per-carrier decisions
  *
@@ -93,7 +93,7 @@ export function ingestRunReading(settled: IngestSettlement, o: { readonly candid
 }
 
 export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<number> {
-  // `--watch` fires this gesture per settle. The watcher reads none of the one-shot flags, so each refuses by name
+  // `watch=true` fires this gesture per settle. The watcher reads none of the one-shot flags, so each refuses by name
   // rather than riding a long-lived loop that ignores it.
   if (args.flags["watch"] === true) {
     const oneShot = [
@@ -103,13 +103,13 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
       ...(args.options["change-id"] !== undefined ? ["change-id"] : []),
     ];
     if (oneShot.length > 0) {
-      console.error(`lares ingest --watch: ${oneShot.map((f) => `--${f}`).join(", ")} ride the one-shot ingest alone`);
+      console.error(`lares ingest watch=true: ${oneShot.map((f) => `${f}=`).join(", ")} ride the one-shot ingest alone`);
       return 2;
     }
     return cmdWatch(args);
   }
   if (args.options["debounce"] !== undefined) {
-    console.error("lares ingest: --debounce sets the watcher's quiet window and rides `--watch` alone");
+    console.error("lares ingest: debounce= sets the watcher's quiet window and rides `watch=true` alone");
     return 2;
   }
   const source = args.options["source"];
@@ -152,7 +152,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   // un-flagged — the readiness law reads off text the scan already holds.
   const wouldFault = rows.filter((r) => carrierNeedsTag(r));
 
-  // ── --tag-blobs (write the CAS opt-in flag; submit nothing) ─────────────
+  // ── tag-blobs=true (write the CAS opt-in flag; submit nothing) ─────────────
   if (args.flags["tag-blobs"]) {
     const outcomes = tagBlobs(rows);
     const wrote = outcomes.filter((o) => o.wrote);
@@ -189,8 +189,8 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
         for (const t of shadows) console.log(`  ${"KAPAE".padEnd(10)} ${t}`);
         for (const r of refusedShadows) console.error(`  ${"REFUSE".padEnd(10)} ${r.file} (${r.refusal})`);
         for (const line of skipLines(skipped)) console.log(`  ${line}`);
-        console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass --apply)`);
-        if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`--tag-blobs\` to flag them.`);
+        console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass apply=true)`);
+        if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`tag-blobs=true\` to flag them.`);
       },
     });
     return 0;
@@ -286,7 +286,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   // vessel to say when that projection has run, so the run ends where a scan that follows reads what the
   // projection left (`askSettle`). A wait that ends with no word says so and changes no exit: the records
   // landed either way. The word keeps waiting while pages keep settling; one that stalls leaves the carriers
-  // still waiting as the bag's record, and `lares shore settle --bag <bag> --pending` resumes it.
+  // still waiting as the bag's record, and `lares shore settle bag=<bag> pending=true` resumes it.
   let settle: SettleReading | { readonly settled: false; readonly refusal: string; readonly why: string } | undefined;
   if (settled.rendered.length > 0) {
     try {
@@ -316,7 +316,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
     : null;
   const reading = ingestRunReading(settled, { candidates: candidates.length, requestId: result.requestId, kapaeFault });
   const refusedMessage = verdict.message ?? kapaeFault;
-  const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
+  const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> key=<key>\` (the file's words) or \`lares shore take-records <uri> key=<key>\` (the records')`;
   const data = {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
     tallies: settled.tallies, refused, conflicts, derived: settled.derived,
@@ -364,12 +364,12 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
           if ("supersededCount" in settle && settle.supersededCount > 0) console.error(`  ⚠ a later settle word took ${settle.supersededCount} carrier(s) over; this run claims no projection for them, and a scan now may read a file the projection still moves`);
         } else if ("stalled" in settle && settle.stalled) {
           console.log(`  projection settled for ${settle.settledCount} carrier(s) · ${settle.pendingCount} pending · ${settle.stalledCount} stalled`);
-          console.error(`  ⚠ no page settled within the stall window; ${settle.pendingCount} carrier(s) still wait: \`lares shore settle --bag ${toBag} --pending\` resumes the word`);
+          console.error(`  ⚠ no page settled within the stall window; ${settle.pendingCount} carrier(s) still wait: \`lares shore settle bag=${toBag} pending=true\` resumes the word`);
         } else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
       }
       // The copy keeps shadowing canon (the recipe stack decides what shows); the word names it, nothing writes.
       if (fresher !== undefined) console.error(`  ⚠ canon is fresher than the working copy above it for ${fresher.count} title(s) in ${fresher.working}: ${fresher.titles.slice(0, 8).join(", ")}${fresher.count > 8 ? ", …" : ""} (remove a copy with the ordinary verbs to take the fresher canon)`);
-      if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
+      if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> key=<key>\` lands the file's words · \`lares shore take-records <uri> key=<key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);
     },
   });

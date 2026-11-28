@@ -151,8 +151,8 @@ One law, four skins. Every row calls the same function in `packages/lararium-tw5
 | `readMeme` (the one read door, on a gradient) | `GET …/memes/<scheme>/<path>` | `tiddler-get {(recipe \| bag), title, meme: true, grain?, after?}` | `lares get title=<uri> (recipe=<slug> \| bag=<slug>) aperture=arc` | `get(title, (recipe \| bag), aperture="arc", after?)` |
 | `listMemes` · `listMemePage` | `GET …/memes.json[?tree=1]` | `meme-list {(recipe \| bag), tree?, after?, limit?}` | `lares get meme=true (recipe=<slug> \| bag=<slug>) [tree=true]` | `get((recipe \| bag), after?, params={meme: true, tree?})` |
 | `removeMeme` | `DELETE /bags/…/memes/<scheme>/<path>` | `tiddler-delete {(recipe \| bag), title, family: true, base?}` | `lares delete title=<uri> family=true (recipe=<slug> \| bag=<slug>) [base=<hash>]` | `delete(title, family=True, (recipe \| bag), base?)` |
-| the projection | `tiddlywiki --render` through the house templates | `meme-project {(recipe \| bag), uri, to}` | `lares meme project <uri\|file> --to <md\|html\|tid\|json> (--recipe <slug> \| --bag <slug>)` for a store-backed projection; `lares meme project <file> --to md` runs local | `meme_project(uri, to, (recipe \| bag))` |
-| `normalizeMemeSource` · the check | — (a file law) | — | `lares meme normalize` · `lares meme check [--gradient\|--edges]` | — (LOCAL seat, by law) |
+| the projection | `tiddlywiki --render` through the house templates | `meme-project {(recipe \| bag), uri, to}` | `lares meme project <uri\|file> to=<md\|html\|tid\|json> (recipe=<slug> \| bag=<slug>)` for a store-backed projection; `lares meme project <file> to=md` runs local | `meme_project(uri, to, (recipe \| bag))` |
+| `normalizeMemeSource` · the check | — (a file law) | — | `lares meme normalize` · `lares meme check [gradient=true\|edges=true]` | — (LOCAL seat, by law) |
 
 ''The listing pages on the daemon verb.'' A verb's outcome carries a bounded number of entries of any array (`AUDIT_ARRAY_CAP`, <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/verb-vm`>>), so `meme-list` answers at most that many roots, in title order, and names the cursor of the page behind them (`next`); a caller hands it back as `after`, and `next: null` ends the listing. The CLI reads every page and prints every root; the MCP tool hands the page and its cursor to its caller. A named bag lists its own records; a named recipe lists the roots its whole stack resolves, each entry naming the bag that answered, and a root the wiki removed (a tombstone in a bag above) lists nowhere, as its read answers `not-found`. The plain server's route answers one whole array, since no outcome bounds it.
 
@@ -224,6 +224,6 @@ The CLI walk names its container on each store verb: `lares put title=lar:///t/x
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iGr6BLVSI1CtzSWUa-T1ZBK5SZp6bRBjUznkjXzmXjs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hYpQ0GEzrpa3HY3TaPpp8lBg7_vncdcNBGw2uLLBLlo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

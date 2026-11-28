@@ -1366,7 +1366,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       const out = await rename({ ...A, title: MEME, to }, ctx(sees));
       expect(out).toMatchObject({ decision: "refused", refusal: "rename-target-stands", withheld: 1 });
       expect(String(out["why"])).not.toContain(`${to}#/a`);
-      expect(String(out["why"])).toMatch(/1 title .*lares wiki status --recipe default/);
+      expect(String(out["why"])).toMatch(/1 title .*lares wiki status recipe=default/);
       expect(out["consequence"] as Consequence).toMatchObject({ refusals: [], versions: { [`${to}#/a`]: null } });
       expect(String((await rename({ ...A, title: MEME, to }, ctx()))["why"])).toContain(`lares delete title="${to}#/a"`);
     }
@@ -2111,7 +2111,7 @@ describe.skipIf(wikiSkip)(`a family's slot moves by the plain put${skipNote}`, (
     expect(r.engine.wiki.getTiddler(MEME)?.fields["type"]).toBe(CARRIER);
   });
 
-  // THE MANDATE'S GROUND (`lares spirit mandate <pet>#<n> --file x.mem`, `@lararium/mesh/spirit-summons`): a carrier mandate
+  // THE MANDATE'S GROUND (`lares spirit mandate <pet>#<n> file=x.mem`, `@lararium/mesh/spirit-summons`): a carrier mandate
   // lands as the carrier alone and reads by the hash the family holds.
   test("a mandate's carrier founds its family by the put alone: its fields read off its own meta, a field beside it refuses `carrier-speaks-whole`, the same carrier put again answers `noop`, and the meme lens hashes the recompose, which a slot's move moves", async () => {
     const r = await rig();

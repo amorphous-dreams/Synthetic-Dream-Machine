@@ -372,10 +372,10 @@ async function main(): Promise<void> {
 
   // Fail-fast on a busy port — the supervised vessel never manages its siblings
   // (12-factor / island sovereignty). A clean message, not an unhandled 'error'
-  // crash; `lares vessel stand --restart` stops the incumbent.
+  // crash; `lares vessel stand restart=true` stops the incumbent.
   httpServer.on("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`[lararium] port ${port} is already in use — a vessel is already running. Use \`lares vessel stand --restart\` to restart it, or free the port.`);
+      console.error(`[lararium] port ${port} is already in use — a vessel is already running. Use \`lares vessel stand restart=true\` to restart it, or free the port.`);
       process.exit(1);
     }
     throw err;
@@ -455,7 +455,7 @@ async function main(): Promise<void> {
   if (askedStanding !== "herm" && !faceLit) {
     console.log("[lararium] the PLACE stands and no face is lit — standing at the WAKING FLOOR.");
     console.log("[lararium]   carrying and serving the public shelf; every sovereign act waits.");
-    console.log("[lararium]   light the hearth fire:  lares persona new 0 --name '<label>'   (then stand again)");
+    console.log("[lararium]   light the hearth fire:  lares persona new 0 name='<label>'   (then stand again)");
   }
 
 
@@ -1109,7 +1109,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     };
     // Report overdue shutdown without interrupting its pending step; the operator's second signal cuts it.
     const pastBudget = setTimeout(() => {
-      console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}; a second SIGINT/SIGTERM (or \`lares vessel stop --cut\`) cuts it now`);
+      console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}; a second SIGINT/SIGTERM (or \`lares vessel stop cut=true\`) cuts it now`);
     }, SHUTDOWN_BUDGET_MS);
     try {
       readinessFace.dispose();

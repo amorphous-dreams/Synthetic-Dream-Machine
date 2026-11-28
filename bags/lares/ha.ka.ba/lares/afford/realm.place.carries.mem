@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.place.carries"
 
 ! realm.place.carries ~ a place, never a member, joins the carriage
 
-`lares nexus carry <place-key> --carrier <hex> [--floor-pin <file>]` counts a place's carrier seal (its own vessel key signs it; `--sig` spells it too) and emits the carry bundle the place's `carry-take` lands. A place never enters the member set. `--out` and `--from` carry a partial between vaults.
+`lares nexus carry <place-key> carrier=<hex> [floor-pin=<file>]` counts a place's carrier seal (its own vessel key signs it; `--sig` spells it too) and emits the carry bundle the place's `carry-take` lands. A place never enters the member set. `--out` and `--from` carry a partial between vaults.
 
 <<~/ahu>>
 
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_wT3Fa7FoVHoaJb4_gRs4hR-fO85vb5sY4mgrm3mvPA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a8zpmuS8HficKGV8dSSUvILAmp4Kg0rMpKRt9UStoY4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

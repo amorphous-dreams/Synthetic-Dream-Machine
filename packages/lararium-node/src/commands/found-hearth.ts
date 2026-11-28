@@ -108,7 +108,7 @@ export class HearthFoundingRefused extends Error {
   /** Under `restore`, the restore's own refusal, by its name (custody#/the-restore). */
   readonly restoreRefusal: RestoreRefusal | null;
   constructor(detail: string, restoreRefusal: RestoreRefusal | null = null) {
-    super(`[lares vessel found --hearth] ${restoreRefusal ? `${restoreRefusal}: ` : ""}${detail}`);
+    super(`[lares vessel found hearth=true] ${restoreRefusal ? `${restoreRefusal}: ` : ""}${detail}`);
     this.restoreRefusal = restoreRefusal;
   }
 }
@@ -208,7 +208,7 @@ export async function foundSeedCharter(opts: {
 export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHearthResult> {
   const label = typeof opts.name === "string" ? opts.name.trim() : "";
   if (label.length === 0 && !opts.restore) {
-    throw new HearthFoundingRefused("persona zero needs a private label (--name '<label>'); nothing was written");
+    throw new HearthFoundingRefused("persona zero needs a private label (name='<label>'); nothing was written");
   }
   const { name: _name, chair, readBack, restore, ...init } = opts;
   await runInit({ ...init, placeFoundingCard: opts.placeFoundingCard ?? {
@@ -238,7 +238,7 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
   if (!restore) {
     // A RESTORE THAT STANDS PENDING owns persona zero's index until it lands: a fresh root never mints over it.
     if (pending !== null) {
-      throw new HearthFoundingRefused("a restore of a face stands pending on this vessel: run the same founding again with that face's bundle (--restore <file>), and it completes. Nothing was written.");
+      throw new HearthFoundingRefused("a restore of a face stands pending on this vessel: run the same founding again with that face's bundle (restore=<file>), and it completes. Nothing was written.");
     }
     const charter = await seed();
     const face = await light();

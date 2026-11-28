@@ -22,7 +22,7 @@ module-type: filteroperator
  * render command in the lead where one stands; a pet holding a card and no shrine answers the
  * card as a carrier, its render command beneath the transclusion.
  *
- * The second operand names the face the commands carry (`--face <n>`); empty, they name none. A title no record answers yields
+ * The second operand names the face the commands carry (`face=<n>`); empty, they name none. A title no record answers yields
  * nothing; a `spirit-fold` operand naming no rank THROWS (an operator answering empty for a typo would read as no record).
  *
  * The laws ride shared: the commands and the rank's open slots from `@lararium/mesh/spirit-unfold`, the fold from

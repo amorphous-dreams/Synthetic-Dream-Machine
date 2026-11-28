@@ -172,7 +172,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 `bags/lares-history/` holds 40-odd files. `git log --diff-filter=A` shows them arriving in ''one rename sweep'' — `90e2a2bde`, 2026-08-22, `retire @{slug} to the entity slots' plain names` — never by deliberate individual deposit; and `817cdebc6` shows a carrier later burned out of it. Its contents sit ''outside the `ha.ka.ba/` address scheme'' (`bags/lares-history/lares_research/…`, no `uri-path` meta), while standing canon still names them at `lar:///ha.ka.ba/lares-history/…` addresses (`lararium-identity.mem:570-571`, `sigil-shape-motion.mem`, `stream-sensorium-ontology.mem:31`).
 
-''Measured 2026-09-12'' — `lares meme check --edges $(git ls-files 'bags/*.mem')`:
+''Measured 2026-09-12'' — `lares meme check edges=$(git ls-files 'bags/*.mem')`:
 
 > `edges: 726 carrier(s) read · 719 address(es) held · 2731 edge(s) · 198 naming nothing · 43 naming a FILE rather than an address`
 
@@ -289,7 +289,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 # ''BURN in groups, each with its own commit and its own gratitude line.'' Three burn commits, never one: a wave shows its shape, and a single commit deleting 51 files records nothing a reader could walk backwards.
 # ''The room's declaration goes last, and its emptiness is the witness.'' `meta.mem` had named its own dissolution as the success condition, so the last act of the rite was the room agreeing to it.
 
-''What the walk cost the graph, measured either side:'' `lares meme check --edges` read ''198 naming nothing'' before and ''175'' after — down 23, which is the room's own outbound danglers plus the five welds. The `carrier-edges` ceiling lowered 201 → 178. ''That number was the sharpest argument in this carrier for naming the rite, and paying it down is the receipt.''
+''What the walk cost the graph, measured either side:'' `lares meme check edges=true` read ''198 naming nothing'' before and ''175'' after — down 23, which is the room's own outbound danglers plus the five welds. The `carrier-edges` ceiling lowered 201 → 178. ''That number was the sharpest argument in this carrier for naming the rite, and paying it down is the receipt.''
 
 ''And the exemptions went with the room.'' Four gates and two sweeps carried a `lares-history` exclusion, every one of them written because of that bag. Removing them ''widens'' three gates rather than loosening them — the coordinates witness now reads every `bags/**/*.mem`, and the section-address law now holds the whole corpus rather than the corpus-minus-one-bag. ''A rite that ends a thing should leave the instruments reading MORE, never less.''
 
@@ -513,6 +513,6 @@ A whole meme or an ahu slot carries its full title. A family put reads `lares pu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2ZA882LZr7pS8Keh1t-PcIMVn3Us_C8tlz81TUq0Jec`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y49cJIY06RB4uIyiQwaZe-Fq-IeEWvPYq6WBuIxud0I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

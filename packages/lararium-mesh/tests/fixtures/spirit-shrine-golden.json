@@ -75,10 +75,10 @@
  ],
  "omText": [
   {
-   "sha256": "c6f94b1da1e795894a8d5612b90c22fee74a0f107cd4a06663623158428f8132",
+   "sha256": "3d279aafba9957045b708a0a02ceda96ec1f71377125f55f07be564e10c1b430",
    "length": 8999
   },
-  "lead\nLares spirit om · p (lar:///ha.ka.ba/kahua/memory/familiar/lares-alpha): the card a waking instance reads first, before any summary.\nhas\nt1\nt2\n\nopen\natt\nRead a slot whole: lares get title=lar:///ha.ka.ba/kahua/memory/familiar/lares-alpha recipe=default slot='#/<name>' aperture=arc · true one: lares spirit ah p --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum p"
+  "lead\nLares spirit om · p (lar:///ha.ka.ba/kahua/memory/familiar/lares-alpha): the card a waking instance reads first, before any summary.\nhas\nt1\nt2\n\nopen\natt\nRead a slot whole: lares get title=lar:///ha.ka.ba/kahua/memory/familiar/lares-alpha recipe=default slot='#/<name>' aperture=arc · true one: lares spirit ah p slot='#/<name>' file=<path> (or add=<line>) · fold: lares spirit hum p"
  ],
  "wakingCap": [
   2048,
@@ -88,7 +88,7 @@
  "budgetRefusal": [
   {
    "code": "spirit-slot-over-budget",
-   "message": "spirit-slot-over-budget: #/open would hold 3000 bytes, past its 2048-byte waking cap (om prints it into the wake; it holds 1); nothing landed. Fold first: `lares spirit hum lares-alpha --fold '#/open'` lists its lines with their digests; `--line <n> --expect <digest>` moves one to the ash ledger, then true it again",
+   "message": "spirit-slot-over-budget: #/open would hold 3000 bytes, past its 2048-byte waking cap (om prints it into the wake; it holds 1); nothing landed. Fold first: `lares spirit hum lares-alpha fold='#/open'` lists its lines with their digests; `line=<n> expect=<digest>` moves one to the ash ledger, then true it again",
    "exit": 4
   },
   null,
@@ -150,8 +150,8 @@
  ],
  "conflictStanza": "!! conflict · #/open: two instances wrote this slot whole at once; settle it with hum (fold the lines that lose)\n\n''c#3 wrote:''\n\nthree\n\n''a#1 wrote:''\n\none\n\n''b wrote:''\n\ntwo\n\n!! end conflict",
  "starterText": {
-  "sha256": "33690e122c2b3dbc0d3c2176ca808d5bf05dac7563ea367515a6b773198d4310",
-  "length": 1428
+  "sha256": "131ea26d308ec7603d087429e11ebe36b6e7a61a071825b5183f5adbcd01e088",
+  "length": 1429
  },
  "shrineSlots": [
   [

@@ -4,27 +4,27 @@
  *   kukulu     (kūkulu) on the HOST: the one verb that raises the house again around its hearth. Fast-forwards the checkout
  *              where it stands clean and behind, has the host shim make the image and read where the house stands, spends
  *              each face's kukulu lei where one stands (no prompt), then the shim's restand (the pūlama's light and admit on
- *              this terminal only where the day owes them), then lands the rite (`../rite-kukulu.ts`). `--rollback [<rev>]`
+ *              this terminal only where the day owes them), then lands the rite (`../rite-kukulu.ts`). `rollback= [<rev>]`
  *              stands the image that ran before, or an older revision's, with no checkout move
  *   keep       on the HOST: keep the house in the operator's repo. Guards the bound workspace, runs `keep-cut` in the vessel,
  *              then commits `<into>`, rebases, pushes, and lands the tessera at the bundle id the pushed tree holds
- *              (`--workspace <name> [--into <path>]`, `../rite-keep-host.ts`); `--if-due` keeps only where the house moved since
+ *              (`workspace=<name> [into=<path>]`, `../rite-keep-host.ts`); `if-due=true` keeps only where the house moved since
  *              the bundle its remote-tracking branch holds (or a keep still waits for its push or landing), and with no
- *              `--workspace` reads the configured keep workspace (`../keep-config.ts`): the one call `down` makes
+ *              `workspace=` reads the configured keep workspace (`../keep-config.ts`): the one call `down` makes
  *   keep-cut   IN THE VESSEL: the keep's vessel half: lay the house's authored memory, cut as a cleartext house bundle, into the
  *              bound workspace, spending a return of the keep lei strung for that workspace (`../rite-keep.ts`); it holds each
  *              cold wiki the house lists in turn before the cut, then hands the pins back
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei (a kūkulu: each lent face's own),
  *              rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head.
- *              `land --abandon --tessera <id>` (`rite-abandon`) sets a stale begun half down instead: a HAND act (the one hand gate,
+ *              `land abandon=true tessera=<id>` (`rite-abandon`) sets a stale begun half down instead: a HAND act (the one hand gate,
  *              `readOwnHand` here and the socket's `hand-act-only` for a seat) that spends nothing, records no par, and frees the
  *              face to begin fresh; conferre reads the half abandoned
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
  *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
  *              vouch per face over the image the host built, and rest the offer the next vessel carries to the pūlama
  *
- * The lei carries the grant: the hand strung it (`lares lei kui --rite kukulu …`, `--rite keep --branch <workspace> …`), and any
+ * The lei carries the grant: the hand strung it (`lares lei kui rite=kukulu …`, `rite=keep branch=<workspace> …`), and any
  * seat holding the line may spend it.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
@@ -72,20 +72,20 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   // Each flag reads by its own literal name, so the accepts law walks them.
   const word = (raw: string | undefined): string | undefined => (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined);
   const faceWord = word(args.options["face"]);
-  if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
+  if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("face= takes a whole persona index from 0");
   const face = faceWord === undefined ? {} : { face: Number(faceWord) };
   const head = word(args.options["head"]);
   // A kūkulu's begin and landing name the image the host made, so a landing over another image never reads par.
   const imageWord = word(args.options["image"]);
   const image = imageWord === undefined ? {} : { image: imageWord };
   if (act === "receipts") {
-    // `--rite kukulu` reads every lent face's begun halves resting unlanded (`--branch` narrows them to its line).
+    // `rite=kukulu` reads every lent face's begun halves resting unlanded (`branch=` narrows them to its line).
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
     return { verb: "rite-receipts", args: { ...(rite === undefined ? {} : { rite }), ...(branch === undefined ? {} : { branch }), ...face } };
   }
   if (act === "begin") {
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
-    if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit> (a keep adds --staging <path>, the bundle it staged inside its workspace)");
+    if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: rite=kukulu branch=<name> head=<commit> (a keep adds staging=<path>, the bundle it staged inside its workspace)");
     const staged = word(args.options["staging"]);
     // THE HALVES A KŪKULU SUPERSEDES (comma-joined tesserae): the vessel sets each down as its own face before it begins.
     const supersedes = word(args.options["supersedes"]);
@@ -93,13 +93,13 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   }
   if (act === "offer") {
     const branch = word(args.options["branch"]), image = word(args.options["image"]);
-    if (branch === undefined || head === undefined || image === undefined) throw new RiteUsage("offer names its branch, its head and the image the host built: --branch <name> --head <commit> --image <digest>");
+    if (branch === undefined || head === undefined || image === undefined) throw new RiteUsage("offer names its branch, its head and the image the host built: branch=<name> head=<commit> image=<digest>");
     // THE KEEPER MOVE rides the offer as the vessel reads it (`keeperTo`, `keeperNext`): both or neither, each in its own shape.
     const keeperTo = word(args.options["keeper-to"]), keeperNext = word(args.options["keeper-next"]);
     if ((keeperTo === undefined) !== (keeperNext === undefined) || (keeperTo !== undefined && (!/^[0-9a-f]{64}$/.test(keeperTo) || !/^sha256:[0-9a-f]{64}$/.test(keeperNext ?? "")))) {
-      throw new RiteUsage("a keeper move names the successor's key and the committed closure together: --keeper-to <64 hex> --keeper-next sha256:<64 hex>, as `keeper-stand` printed them (or neither, and the offer carries no move)");
+      throw new RiteUsage("a keeper move names the successor's key and the committed closure together: keeper-to=<64 hex> keeper-next=sha256:<64 hex>, as `keeper-stand` printed them (or neither, and the offer carries no move)");
     }
-    // THE BASE: the hash of the resting offer this line read (`rite receipts --rite kukulu` answers it as `offerBase`); an
+    // THE BASE: the hash of the resting offer this line read (`rite receipts rite=kukulu` answers it as `offerBase`); an
     // overwrite without it refuses `conflict`.
     const base = word(args.options["base"]);
     return { verb: "rite-offer", args: { branch, head, image, ...face, ...(keeperTo === undefined ? {} : { keeperTo, keeperNext }), ...(base === undefined ? {} : { base }) } };
@@ -107,13 +107,13 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   if (act === "land" && args.flags["abandon"] === true) {
     // THE HAND SETS A STALE HALF DOWN: it names the tessera and no head, since it records no landing.
     const tessera = word(args.options["tessera"]);
-    if (tessera === undefined || head !== undefined || imageWord !== undefined) throw new RiteUsage("land --abandon names the tessera it sets down and no head or image (it records no landing): --abandon --tessera <id> [--face N]");
+    if (tessera === undefined || head !== undefined || imageWord !== undefined) throw new RiteUsage("land abandon=true names the tessera it sets down and no head or image (it records no landing): abandon=true tessera=<id> [face=N]");
     return { verb: "rite-abandon", args: { tessera, ...face } };
   }
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
-    // THE BEGUN HALF NAMES WHAT LANDS: a --head or --image named here must match it, or the vessel refuses `rite-land-differs`.
-    if (tessera === undefined) throw new RiteUsage("land names its tessera: --tessera <id> (a --head or --image must match what the half began at)");
+    // THE BEGUN HALF NAMES WHAT LANDS: a head= or image= named here must match it, or the vessel refuses `rite-land-differs`.
+    if (tessera === undefined) throw new RiteUsage("land names its tessera: tessera=<id> (a head= or image= must match what the half began at)");
     return { verb: "rite-land", args: { tessera, ...(head === undefined ? {} : { head }), ...image, ...face } };
   }
   throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "hoala" ? HOALA_IN_THE_SHIM : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : `name a sub-verb: ${RITE_VERBS.join(", ")}`);
@@ -123,11 +123,11 @@ export function ritePlan(args: ParsedArgs): RitePlan {
 export function keepPlan(args: ParsedArgs): { readonly workspace?: string; readonly into?: string; readonly acceptOmissions: boolean; readonly face?: number; readonly ifDue?: true; readonly sessions?: boolean } {
   const word = (raw: string | undefined): string | undefined => (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined);
   const workspace = word(args.options["workspace"]), into = word(args.options["into"]), faceWord = word(args.options["face"]);
-  // `--if-due` (keep alone) may leave the workspace to the house config (`../keep-config.ts`); every other line names it.
+  // `if-due=true` (keep alone) may leave the workspace to the house config (`../keep-config.ts`); every other line names it.
   const ifDue = args.positional[0] === "keep" && args.flags["if-due"] === true;
-  if (workspace === undefined && !ifDue) throw new RiteUsage("keep names the workspace it lays the bundle into: --workspace <name> [--into <path>] (or `keep --if-due`, which reads LARES_KEEP_WORKSPACE)");
-  if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
-  // `--sessions` / `--no-sessions` (keep alone); with neither, the host half reads LARES_KEEP_SESSIONS and keeps them.
+  if (workspace === undefined && !ifDue) throw new RiteUsage("keep names the workspace it lays the bundle into: workspace=<name> [into=<path>] (or `keep if-due=true`, which reads LARES_KEEP_WORKSPACE)");
+  if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("face= takes a whole persona index from 0");
+  // `sessions=true` / `--no-sessions` (keep alone); with neither, the host half reads LARES_KEEP_SESSIONS and keeps them.
   const sessions = args.positional[0] === "keep" && typeof args.flags["sessions"] === "boolean" ? args.flags["sessions"] : undefined;
   return { ...(workspace !== undefined ? { workspace } : {}), ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}), ...(ifDue ? { ifDue: true as const } : {}), ...(sessions !== undefined ? { sessions } : {}) };
 }
@@ -169,8 +169,8 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
   let plan: ReturnType<typeof keepPlan> & { readonly workspace: string };
   try {
     const read = keepPlan(args);
-    // keep-cut takes no `--if-due`, so its line always names the workspace.
-    if (read.workspace === undefined) throw new RiteUsage("keep-cut names the workspace it lays the bundle into: --workspace <name> [--into <path>]");
+    // keep-cut takes no `if-due=true`, so its line always names the workspace.
+    if (read.workspace === undefined) throw new RiteUsage("keep-cut names the workspace it lays the bundle into: workspace=<name> [into=<path>]");
     plan = { ...read, workspace: read.workspace };
   }
   catch (err) {
@@ -185,8 +185,8 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
       console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
       for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
       if ((out.unreadFaces?.length ?? 0) > 0) console.log(`    standing heads left behind for ${out.unreadFaces!.map((i) => `h${i}`).join(", ")} (this terminal alone names them)`);
-      console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land --tessera ${out.tessera} --head ${out.bundleId}${out.face !== undefined ? ` --face ${out.face}` : ""}`);
-    } }, out.kept ? `keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest}, return ${out.n} of the keep lei spent; land it: lares rite land --tessera ${out.tessera} --head ${out.bundleId}${out.face !== undefined ? ` --face ${out.face}` : ""}` : `keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`);
+      console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land tessera=${out.tessera} head=${out.bundleId}${out.face !== undefined ? ` face=${out.face}` : ""}`);
+    } }, out.kept ? `keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest}, return ${out.n} of the keep lei spent; land it: lares rite land tessera=${out.tessera} head=${out.bundleId}${out.face !== undefined ? ` face=${out.face}` : ""}` : `keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`);
     return 0;
   } catch (err) {
     if (err instanceof KeepRefused) {
@@ -206,8 +206,8 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
 export function abandonHandRefusal(rowArgs: Readonly<Record<string, unknown>>, hand: () => HandReading = () => readOwnHand({ proveRoute: false })): HandRefusal | null {
   const read = hand();
   if (!("refusal" in read)) return null;
-  const line = `lares rite land --abandon --tessera ${String(rowArgs["tessera"] ?? "<tessera>")}${typeof rowArgs["face"] === "number" ? ` --face ${rowArgs["face"]}` : ""}`;
-  return handRefusalOf(read.refusal, { act: "`lares rite land --abandon` (it sets a begun half down)", reads: "branch", line });
+  const line = `lares rite land abandon=true tessera=${String(rowArgs["tessera"] ?? "<tessera>")}${typeof rowArgs["face"] === "number" ? ` face=${rowArgs["face"]}` : ""}`;
+  return handRefusalOf(read.refusal, { act: "`lares rite land abandon=true` (it sets a begun half down)", reads: "branch", line });
 }
 
 async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
@@ -279,11 +279,8 @@ const shimRead = (shim: string, argv: readonly string[]): Promise<string | null>
 });
 
 /** Row args as flags: `true` rides as a bare flag, every other value as the next word. */
-/** A row's args as the CLI line that plans them back: a camelCase key crosses as its kebab flag (`keeperTo` -> `--keeper-to`). */
-const flagsOf = (rowArgs: Record<string, unknown>): string[] => Object.entries(rowArgs).flatMap(([k, v]) => {
-  const flag = `--${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
-  return v === true ? [flag] : [flag, String(v)];
-});
+/** A row's args as the CLI line that plans them back: a camelCase key crosses as its kebab flag (`keeperTo` -> `keeper-to=`). */
+const flagsOf = (rowArgs: Record<string, unknown>): string[] => Object.entries(rowArgs).map(([k, v]) => `${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}=${v === true ? "true" : String(v)}`);
 
 /**
  * One shim line on this terminal; the answer carries its exit code (a spawn that never ran reads as a failure). A CTRL+C reaches
@@ -298,7 +295,7 @@ const runShim = (shim: string, argv: readonly string[]): Promise<number> => new 
   child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
 });
 
-/** The shim's image step (`rebuild --image`): its lines show on this terminal, and its last stdout line carries the reading. */
+/** The shim's image step (`rebuild image=`): its lines show on this terminal, and its last stdout line carries the reading. */
 const stageShim = (shim: string, target: StageTarget): Promise<{ code: number; reading: StandReading | null }> => new Promise((resolve) => {
   const child = spawn(shim, ["rebuild", "--image", ...("prior" in target ? ["--prior"] : ["--at", target.at])], { stdio: ["inherit", "pipe", "inherit"] });
   let text = "";
@@ -396,7 +393,7 @@ async function keepPins(dir: string): Promise<{ readonly ok: boolean; readonly l
  * each landing names the face its tessera began under in its own arguments.
  */
 export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-abandon" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
-  verb === "rite-abandon" ? ["rite", "land", "--abandon", ...flagsOf(rowArgs)] : ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
+  verb === "rite-abandon" ? ["rite", "land", "abandon=true", ...flagsOf(rowArgs)] : ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
 
 /**
  * The standing read's CLI line: it always names a face, the operator's where one is named, else face 0 (the keep's face), so a
@@ -405,7 +402,7 @@ export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-abandon" | 
 export const standingRowLine = (branch: string, face?: number): string[] => hostRowLine("rite-receipts", { rite: "kukulu", branch, face: face ?? 0 });
 
 /**
- * THE BEGIN THAT STANDS, from the vessel's `rite receipts --rite kukulu` answer: its `standing` rows, each naming its face and
+ * THE BEGIN THAT STANDS, from the vessel's `rite receipts rite=kukulu` answer: its `standing` rows, each naming its face and
  * ordinal. A vessel of an older image answers its worn face's receipts and conferre instead, so the host reads that conferre's
  * kūkulu halves resting unlanded on the line (each lands under the worn face): the vessel standing during the very next run
  * is the one that stopped, and it never begins over a half it already rests.
@@ -445,11 +442,11 @@ const hostSeedOffer = hostSeedOfferPort({
 
 /** The words of a spent line's refill: `lares lei kui` with the spent lei's own returns and the face (or every open face), naming no cid. */
 export const refillArgs = (req: RefillReq, returns: number | null): string[] =>
-  ["lei", "kui", "--rite", req.rite, "--branch", req.branch, "--returns", returns === null ? "<n>" : String(returns), ...(req.face !== undefined ? ["--face", String(req.face)] : req.all === true ? ["--all"] : [])];
+  ["lei", "kui", `rite=${req.rite}`, `branch=${req.branch}`, `returns=${returns === null ? "<n>" : String(returns)}`, ...(req.face !== undefined ? [`face=${req.face}`] : req.all === true ? ["all=true"] : [])];
 
 /** The returns the spent line carried, read off `lei show` (one face's `lei`, or the first spent face's); null where none reads. */
 async function spentReturns(req: RefillReq): Promise<number | null> {
-  const shown = await cliVerb(["lei", "show", "--rite", req.rite, "--branch", req.branch, ...(req.face !== undefined ? ["--face", String(req.face)] : [])]);
+  const shown = await cliVerb(["lei", "show", `rite=${req.rite}`, `branch=${req.branch}`, ...(req.face !== undefined ? [`face=${req.face}`] : [])]);
   if (!shown.ok) return null;
   const lines = Array.isArray(shown.output["faces"]) ? (shown.output["faces"] as Array<{ lei?: { returns?: unknown } }>).map((f) => f.lei) : [shown.output["lei"] as { returns?: unknown } | undefined];
   const found = lines.find((l) => typeof l?.returns === "number");
@@ -461,7 +458,7 @@ async function spentReturns(req: RefillReq): Promise<number | null> {
  * where the line reads no answer (no vessel stands, or the door refused), so the rite goes on as it did.
  */
 async function hostLeiStands(branch: string, face?: number): Promise<boolean | string | null> {
-  const shown = await cliVerb(["lei", "show", "--rite", "kukulu", "--branch", branch, ...(face !== undefined ? ["--face", String(face)] : [])]);
+  const shown = await cliVerb(["lei", "show", "rite=kukulu", `branch=${branch}`, ...(face !== undefined ? [`face=${face}`] : [])]);
   return shown.ok ? leiReading(shown.output) : null;
 }
 
@@ -521,7 +518,7 @@ const readPriorImage = (): Promise<PriorImage | null> => new Promise((resolve) =
   });
 });
 
-/** THE LAG as the host reads it: the vessel's `vessel lay --lag` answer, null where it answers no reading of that shape. */
+/** THE LAG as the host reads it: the vessel's `vessel lay lag=true` answer, null where it answers no reading of that shape. */
 export function houseLagOf(output: Record<string, unknown>): HouseLag | null {
   const holdings = output["holdings"], benches = output["benches"];
   if (typeof output["source"] !== "string" || typeof output["lag"] !== "number" || !Array.isArray(holdings) || !Array.isArray(benches)) return null;
@@ -545,7 +542,7 @@ export function houseLagOf(output: Record<string, unknown>): HouseLag | null {
 const layWorkbenchOnTerminal = (): Promise<number> => new Promise((resolve) => {
   const hold = (): void => {};
   process.on("SIGINT", hold);
-  const child = spawn(process.execPath, [BIN, "vessel", "lay", "--workbench", "--apply"], { stdio: "inherit" });
+  const child = spawn(process.execPath, [BIN, "vessel", "lay", "workbench=true", "apply=true"], { stdio: "inherit" });
   child.once("error", () => { process.off("SIGINT", hold); resolve(127); });
   child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
 });
@@ -611,7 +608,7 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     keepOwed: () => runShim(shim, ["keep-owed"]),
     // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay runs diff-gated on this terminal, asking nothing, never canon.
     floorCard: async () => { const read = await cliVerb(["vessel", "floor", "status"]); const card = read.ok ? read.output["card"] as { title?: unknown } | undefined : undefined; return typeof card?.title === "string" ? { title: card.title } : null; },
-    houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
+    houseLag: async () => { const read = await cliVerb(["vessel", "lay", "lag=true"]); return read.ok ? houseLagOf(read.output) : null; },
     layWorkbench: layWorkbenchOnTerminal,
     // An AI launcher seats the rite: the house hand gate reads this command's branch (`readOwnHand`), and any refusal (a harness's
     // mark or chain, or a chain that reads no person's hand; the bridge marks it the same way) reads as a seat that never lays.
@@ -656,7 +653,7 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
     emitAnswer(args, { ok: false, error: { code: "keep-host-half-in-vessel", message }, human: () => console.error(`lares rite: ${message}`) }, `lares rite: ${message}`);
     return 2;
   }
-  // `--if-due` with no workspace named reads the house config's keep workspace; a config naming none keeps nothing, and says so.
+  // `if-due=true` with no workspace named reads the house config's keep workspace; a config naming none keeps nothing, and says so.
   const workspace = plan.workspace ?? configuredKeepWorkspace();
   if (workspace === null) {
     const data = { rite: "keep", due: false, workspace: null, why: "no keep workspace named (LARES_KEEP_WORKSPACE, or one LARES_WORKSPACES pair)" };
@@ -666,12 +663,12 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
   const ports: KeepHostPorts = {
     workspaceDir: hostWorkspaceDir,
     row: (verb, rowArgs) => cliVerb(["rite", verb, ...flagsOf(rowArgs)]),
-    leiShow: (branch, face) => cliVerb(["lei", "show", "--rite", "keep", "--branch", branch, ...(face !== undefined ? ["--face", String(face)] : [])]),
+    leiShow: (branch, face) => cliVerb(["lei", "show", "rite=keep", `branch=${branch}`, ...(face !== undefined ? [`face=${face}`] : [])]),
     git: gitIn,
     say: (line) => console.error(line),
     // THE SHORE'S FLUSH BEFORE THE CUT rides the hand door that stands (daemon and active wiki alone); no reach widens for it.
     flush: shoreFlushRow,
-    // The down path's `--if-due` keep asks nobody; a keep the operator runs by hand offers a spent lei's refill.
+    // The down path's `if-due=true` keep asks nobody; a keep the operator runs by hand offers a spent lei's refill.
     ...(plan.ifDue === true ? {} : { refill: liveRefill }),
   };
   const out = await riteKeepHost(ports, { ...plan, workspace });
@@ -685,13 +682,13 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `--rollback` alone stands the image that ran before; `--rollback <rev>` an older revision's image (its kept tag, or a build
+ * `rollback=` alone stands the image that ran before; `rollback=<rev>` an older revision's image (its kept tag, or a build
  * from that commit with no checkout move). Absent, the rite runs forward.
  */
 export function rollbackOf(args: ParsedArgs): { readonly rollback?: true | string } {
   const word = typeof args.options["rollback"] === "string" ? args.options["rollback"].trim() : undefined;
   if (word !== undefined && word !== "") {
-    if (!/^[A-Za-z0-9._/@^~][A-Za-z0-9._/@^~-]*$/.test(word)) throw new RiteUsage("--rollback takes a revision (a commit, or a kept image's 12 hex), or nothing for the image that ran before");
+    if (!/^[A-Za-z0-9._/@^~][A-Za-z0-9._/@^~-]*$/.test(word)) throw new RiteUsage("rollback= takes a revision (a commit, or a kept image's 12 hex), or nothing for the image that ran before");
     return { rollback: word };
   }
   return args.flags["rollback"] === true || word === "" ? { rollback: true } : {};
@@ -709,7 +706,7 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     }
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
     const faceWord = typeof args.options["face"] === "string" ? args.options["face"].trim() : undefined;
-    if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
+    if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("face= takes a whole persona index from 0");
     const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args) });
     const kukuluMessage = "the kūkulu rite did not complete; the lines above name where it stopped";
     const settled = out.data["awaits"] === "hand" ? `lares rite kukulu: the house waits on your hand: ${String(out.data["hand"])} on a terminal` : out.data["awaits"] === "unlock" ? "lares rite kukulu: the house stands; the landing waits on the unlock" : "lares rite kukulu: the house stands";

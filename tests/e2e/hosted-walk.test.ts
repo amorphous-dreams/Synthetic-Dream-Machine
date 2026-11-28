@@ -77,7 +77,7 @@ async function standWalker(tag: string, name: string, invite: string): Promise<L
   return openStaged({ tag, root, found: async (cli, r) => {
     await foundStagedHearth(cli, r, name);
     // A walker walks as the face it names (the refusal for several faces open and none named is pinned in walk-doors).
-    const take = await cli(["walk", "take", invite, "--face", "0", "--json"]);
+    const take = await cli(["walk", "take", invite, "face=0", "--json"]);
     if (take.code !== 0) throw new Error(`${tag}: walk take failed (${take.code})\n${said(take).slice(-800)}`);
   } });
 }
@@ -100,11 +100,11 @@ describe.skipIf(gaps.length > 0)("★ the walker route ships SHUT by name beside
   });
 
   test("① A's roll and invite still run inside A's standing vessel — hosting is not the shut route", async () => {
-    const roll = await A!.cli(["host", "roll", "--face", "0", "--json"]);
+    const roll = await A!.cli(["host", "roll", "face=0", "--json"]);
     expect(roll.code, said(roll)).toBe(0);
     expect(dataOf(roll)["via"]).toBe("daemon");
     nexusA = String(dataOf(roll)["nexusAid"]);
-    const inv = await A!.cli(["host", "invite", "--relay", relayA, "--json"]);
+    const inv = await A!.cli(["host", "invite", `relay=${relayA}`, "--json"]);
     expect(inv.code, said(inv)).toBe(0);
     expect(dataOf(inv)["via"]).toBe("daemon");
     gateA = decodeInvite(String(dataOf(inv)["invite"]))!.gatePubKey;
@@ -124,7 +124,7 @@ describe.skipIf(gaps.length > 0)("★ the walker route ships SHUT by name beside
   }, 400_000);
 
   test("③ a second walker meets the same shut: named, and A still counts none", async () => {
-    const inv = await A!.cli(["host", "invite", "--relay", relayA, "--json"]);
+    const inv = await A!.cli(["host", "invite", `relay=${relayA}`, "--json"]);
     expect(inv.code, said(inv)).toBe(0);
     C = await standWalker("walkC", "second-wayfarer", String(dataOf(inv)["invite"]));
     expect(C.bootLog(), "C's boot never named the shut walker route").toMatch(/walker-route-shut/);

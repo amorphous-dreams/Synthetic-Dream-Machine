@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.member.reads"
 
 ! realm.member.reads ~ the public record of admits, granting nothing
 
-`lares nexus members --list [--nexus <aid>]` folds one Nexus's members board, the public record of the admits its kahu signed, as this replica last synced it. It grants nothing.
+`lares nexus members list=true [nexus=<aid>]` folds one Nexus's members board, the public record of the admits its kahu signed, as this replica last synced it. It grants nothing.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qbNnSxfC1Ot9nOk5e6rMWw9imrR_v8EeNMTWX1cruRk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZqIbEpgs3YqbW57FNEdHtryQs5_5DDY-yl4cOIQb1Y0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

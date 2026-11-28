@@ -139,7 +139,7 @@ floor=$(boot_log)
 # A locked list may disclose public floor indices. Founding needs the key and
 # refuses before asking a face route, so it supplies the sovereign control.
 refused_rc=0
-refused=$(lares persona new 1 --name locked-probe --json 2>&1) || refused_rc=$?
+refused=$(lares persona new 1 name=locked-probe --json 2>&1) || refused_rc=$?
 result 'leg 1: the boot rests at the floor holding no key'      contains "$floor" 'stands holding no vessel key'
 result 'leg 1: the floor composes no Lararium'                  not_contains "$floor" 'live — wiki:'
 result 'control: a sovereign verb at the floor names the unlock' refusal_names "$refused_rc" "$refused" 'lares vault unlock'
@@ -161,7 +161,7 @@ sed -e 's#ha.ka.ba/lares/docs/federation#ha.ka.ba/lares/docs/harbor-walk-probe#g
   "$ROOT/bags/lares/ha.ka.ba/lares/docs/federation.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 lares meme normalize /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem >/dev/null
 # Keep the settle answer visible: a record can land with no granted mirror.
-lares ingest --source /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem --to lar:///ha.ka.ba/bags/crossroads --apply --yes
+lares ingest source=/workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem to=lar:///ha.ka.ba/bags/crossroads apply=true --yes
 projected="$SCRATCH_WORKSPACE/bags/crossroads/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 tries=0
 while [ ! -f "$projected" ] && [ "$tries" -lt 30 ]; do sleep 1; tries=$((tries + 1)); done   # the bound only bounds the wait

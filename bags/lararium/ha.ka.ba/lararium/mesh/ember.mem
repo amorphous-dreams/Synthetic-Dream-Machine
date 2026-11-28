@@ -194,7 +194,7 @@ Each refusal names `serving-standing` and `lares vault unlock`.
 ''A removed ember never returns.'' A device that serves again binds a fresh ember key at a fresh bind. Every road below drops the pin and offers or owes an SK rotation; no road lifts.
 
 |! road |! who acts |! what the hearth does |! shape |
-| ''unbind at the hearth'' | a person at a human unlock | `lares vault unbind <slot> --rotate` removes the ember slot and rotates SK in one act | the custody door's own act |
+| ''unbind at the hearth'' | a person at a human unlock | `lares vault unbind <slot> rotate=true` removes the ember slot and rotates SK in one act | the custody door's own act |
 | ''the device leaves the fleet'' | the fleet root, by the dyad marker (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/four-edges`>>) | once the act reaches it, even at its floor, it deletes every ember pin that device bound, falls to its floor and owes an SK rotation | the dyad act, as built |
 | ''an ember withdrawal'' | any device of the person, signing with the device key a dyad edge of that fleet's root names, while no shadow stands over that edge; an honest ember's dial, or a human unlock, delivers it | the same, for the one ember the act names | a new signed shape (#/new-shapes) |
 | ''the ember forgets'' | the ember device, by its own hand | nothing until a removal reaches it: the pin answers nothing and the hearth names a silent pin at each human unlock | none |
@@ -296,6 +296,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wN1In4eDkfpkjUwGqY4o2pCMygKT7FdaNUgQ6Mnn0_A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;V2rboEP3CMyvUJOdMFGYsn9SfPQGJvEXLtXCI5eWRbc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

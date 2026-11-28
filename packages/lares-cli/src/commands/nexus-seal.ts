@@ -144,37 +144,37 @@ const SEAL_USAGE: readonly string[] = [
   "          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints",
   "          as a cold key on a card: the card prints once, you type it back, and the genesis commits",
   "          one digest per chair. No next key rests on this machine.",
-  "          [--threshold <k>]            the quorum rule (default: majority of those that stood)",
+  "          [threshold=<k>]            the quorum rule (default: majority of those that stood)",
   "  rotate  type back each chair's card: each revealed key becomes its chair's seat key, and the",
   "          chain advances. The roster becomes exactly what STANDS — the succession door: a kahu",
   "          steps down by no longer standing, a new one takes a chair by standing and signs with a",
   "          fresh key. Fresh cards print for the rolled head, and you type them back.",
-  "          [--threshold <k>]  the quorum rule for the new roster (default: majority)",
+  "          [threshold=<k>]  the quorum rule for the new roster (default: majority)",
   "  show    read the kahu quorum's seats + chain head + quorum verdict + the carried set",
   "  cold rehearse  type back one or more chairs' cards: each reads against the digests the head",
   "          committed and names the chair it would roll. Nothing moves: no key, row or charter.",
   "  import <file>          land a charter at the primary path — only where none stands, or the same one",
-  "  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
+  "  import carry=<file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
   "                         that AID lands only when its seal lineage extends the held head",
-  "  cofound open --release <manifest> --out <offer>   found a Nexus with a second operator, two of two:",
+  "  cofound open release=<manifest> out=<offer>   found a Nexus with a second operator, two of two:",
   "          a seat key for your face and your hearth's cadence key mint here, your chair's next key prints",
-  "          on a card you type back, and the offer file goes to the other founder. [--face <i>] [--charter-law <lar:>]",
-  "  cofound join <offer> --out <join>   answer an offer: type the offer seat's fingerprint as you heard it",
-  "          (--heard <fp>), and your own seat, cadence key and card mint; the join half-signs the inception",
-  "  cofound seal <join> --out <inception>   the offering founder: type the joining seat's fingerprint as you",
-  "          heard it (--heard <fp>); both signatures land, and the joint charter files under its own AID",
+  "          on a card you type back, and the offer file goes to the other founder. [face=<i>] [charter-law=<lar:>]",
+  "  cofound join <offer> out=<join>   answer an offer: type the offer seat's fingerprint as you heard it",
+  "          (heard=<fp>), and your own seat, cadence key and card mint; the join half-signs the inception",
+  "  cofound seal <join> out=<inception>   the offering founder: type the joining seat's fingerprint as you",
+  "          heard it (heard=<fp>); both signatures land, and the joint charter files under its own AID",
   "  cofound seal <inception>   the joining founder: the inception reads against the image you joined, and",
   "          the joint charter files under its own AID. Neither household seed moves.",
-  "  roll open --nexus <aid> --threshold <n> --out <circle>   roll a joint Nexus across its vaults: type this",
+  "  roll open nexus=<aid> threshold=<n> out=<circle>   roll a joint Nexus across its vaults: type this",
   "          chair's revealed cold card, a fresh successor card prints, and the circle file goes to the next holder",
-  "          [--face <i>] [--added]  --added = a chair the head never committed (a new holder): no card reads",
-  "  roll join <circle> --out <circle>   contribute this vault's chair to a carried circle (same flags)",
-  "  roll sign <circle> --out <circle>   sign the circle with the seats this vault contributed, once you type what you",
-  "          heard from the other holders: the rule and every other chair's fingerprint [--heard-threshold <n> --heard <fp,…>]",
+  "          [face=<i>] [added=true]  added=true = a chair the head never committed (a new holder): no card reads",
+  "  roll join <circle> out=<circle>   contribute this vault's chair to a carried circle (same flags)",
+  "  roll sign <circle> out=<circle>   sign the circle with the seats this vault contributed, once you type what you",
+  "          heard from the other holders: the rule and every other chair's fingerprint [heard-threshold=<n> heard=<fp,…>]",
   "  roll file <circle>   file the rolled charter once the circle reads complete; the roll anchor crosses next",
-  "  roll abandon --nexus <aid>   drop this vault's open circle and retire the seats it contributed",
-  "  anchor [--nexus <aid>] --out <partial>   once both vaults filed the roll, sign its anchor with the seats held here",
-  "  anchor --from <partial> [--out <file>]   judge the other vault's anchor partial, cosign it, land it once complete",
+  "  roll abandon nexus=<aid>   drop this vault's open circle and retire the seats it contributed",
+  "  anchor [nexus=<aid>] out=<partial>   once both vaults filed the roll, sign its anchor with the seats held here",
+  "  anchor from=<partial> [out=<file>]   judge the other vault's anchor partial, cosign it, land it once complete",
 ];
 
 /**
@@ -210,7 +210,7 @@ async function quorumRiteSteps(rest: ParsedArgs): Promise<number> {
   const seated = await sealSeat(rest);
   if (seated !== 0) {
     console.error("lares nexus rite quorum: halted at `seal seat`. Re-run after seating");
-    console.error("  personas that stood for a chair (`persona new <i> --name '<label>' --seat [--chair '<chair label>']`).");
+    console.error("  personas that stood for a chair (`persona new <i> name='<label>' seat=true [chair='<chair label>']`).");
     return seated;
   }
   return await sealShow(rest);
@@ -255,7 +255,7 @@ function askedThreshold(args: ParsedArgs): number | undefined {
   const raw = args.options["threshold"];
   if (raw === undefined) return undefined;
   const t = Number(raw);
-  if (!Number.isInteger(t) || t < 1) throw new UsageError(`--threshold expects a whole number ≥ 1, got "${raw}"`);
+  if (!Number.isInteger(t) || t < 1) throw new UsageError(`threshold= expects a whole number ≥ 1, got "${raw}"`);
   return t;
 }
 
@@ -341,7 +341,7 @@ async function armRoll(args: ParsedArgs, doc: NexusDoc, head: SealEpoch): Promis
 
 /**
  * The cards a roll reveals. On a terminal the rite asks for each chair's card in turn, and a blank line skips one.
- * The `--cold-key <code,code,…>` flag stands in for the terminal on a staged test root alone: a card typed into a
+ * The `cold-key=<code,code,…>` flag stands in for the terminal on a staged test root alone: a card typed into a
  * flag on a live machine rests in the shell's history.
  */
 async function gatherCards(args: ParsedArgs, chairs: number): Promise<Uint8Array[]> {
@@ -350,7 +350,7 @@ async function gatherCards(args: ParsedArgs, chairs: number): Promise<Uint8Array
     catch (err) { if (err instanceof ColdKeyCardError) throw new UsageError(err.message); throw err; }
   };
   const flagged = args.options["cold-key"];
-  if (flagged !== undefined && !(await readBackStandsIn())) throw new UsageError("--cold-key stands in for the terminal on a staged test root alone: type each card when the rite asks for it");
+  if (flagged !== undefined && !(await readBackStandsIn())) throw new UsageError("cold-key= stands in for the terminal on a staged test root alone: type each card when the rite asks for it");
   if (flagged === undefined && !canPromptSecret()) throw new UsageError("a roll reads each chair's cold-key card on a terminal; run it on one");
   // A CARD THAT FAILS TO READ LEAVES NO SEED BEHIND: every seed read before it zero-fills before the refusal leaves.
   const seeds: Uint8Array[] = [];
@@ -413,7 +413,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   // THE ARMING HOLDS THE REST OF THE LAW, behind the door and before any key mints: a seat never builds on a
   // charter this vessel did not found (a seated key no row here holds refuses by fingerprint), a chair never
   // holds a persona root or a dialing leaf as its key, and a roster nobody stands for refuses. The roster forms
-  // from what STOOD, never from a list this build shipped; the threshold comes from the operator's `--threshold`,
+  // from what STOOD, never from a list this build shipped; the threshold comes from the operator's `threshold=`,
   // else the charter's own, else a MAJORITY of the chairs.
   // A seed turns to a Nexus when a second operator seats their own key in a fresh charter. A contract moves no phase.
   const { kahu, seatedKeys, threshold, image, spent, minted, cards } = await armGenesis(args);
@@ -474,7 +474,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
       } else {
         const missing = kahu.filter((k) => !k.verifyingKey).map((k) => `"${k.chairLabel}"`);
         console.log(`  quorum SHORT (fail-closed; the antigen stays inert). Unseated: ${missing.join(", ") || "(none)"}`);
-        console.log(`  seat them: lares persona new <index> --name '<label>' --seat [--chair '<chair label>']  →  lares nexus seal seat`);
+        console.log(`  seat them: lares persona new <index> name='<label>' seat=true [chair='<chair label>']  →  lares nexus seal seat`);
       }
     },
   });
@@ -499,10 +499,10 @@ async function crossingStep<T>(act: "crossing.open" | "crossing.bind" | "crossin
   }
 }
 
-/** A step's `--index`: the handle-index of the face whose hand marks the crossing (its seat keys sign; its root witnesses). */
+/** A step's `index=`: the handle-index of the face whose hand marks the crossing (its seat keys sign; its root witnesses). */
 function handIndex(args: ParsedArgs): number {
   const idx = Number(args.options["index"] ?? "0");
-  if (!Number.isSafeInteger(idx) || idx < 0) throw new UsageError(`--index takes a handle-index (a whole number from 0), got "${String(args.options["index"])}"`);
+  if (!Number.isSafeInteger(idx) || idx < 0) throw new UsageError(`index= takes a handle-index (a whole number from 0), got "${String(args.options["index"])}"`);
   return idx;
 }
 
@@ -535,7 +535,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
     }
     case "witness": {
       const note = args.options["note"];
-      if (!note) throw new UsageError("a witness mark carries a note — what stood observed (--note)");
+      if (!note) throw new UsageError("a witness mark carries a note — what stood observed (note=)");
       const witnessed = await crossingStep<{ by: string }>("crossing.witness", { handleIndex: handIndex(args), note, ward: await gatherWardRoute("lares nexus seal grow witness", handIndex(args)) });
       emit(args, { ok: true, data: { witnessed }, human: () => console.log(`witnessed by ${witnessed.by.slice(0, 16)}… — "${note}"`) });
       return 0;
@@ -556,7 +556,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
       return 0;
     }
     default:
-      console.error("lares nexus seal grow <open | bind | sign --index N | witness --index N --note '…' | seal>");
+      console.error("lares nexus seal grow <open | bind | sign index=N | witness index=N note='…' | seal>");
       return 2;
   }
 }
@@ -631,7 +631,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15): the head's own roll stands anchored before any
   // card reads, so no roll stacks over a step its readers cannot carry across a removal.
   // THE FACE THE ROLL ACTS AS, before any card reads: the roll's realm edge anchors land in that face's ledger alone,
-  // two faces open with none named refuse here (`--face N`), so nothing lands and then refuses, and no face open
+  // two faces open with none named refuse here (`face=N`), so nothing lands and then refuses, and no face open
   // reads as null: the place's carriage anchor still lands, and the edge step answers `no-face-open`.
   const named = faceOption(args);
   let resolved: number | null;
@@ -720,7 +720,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
     const armed = headArmed(result.epoch);
     // THE REALM EDGE ANCHORS FOLLOW THE CHARTER, and never abort a roll that stands: no face open answers
     // `no-face-open`; a face whose session or row refuses here (it locked after the preflight) leaves the edge
-    // anchors OWED by that refusal's name, and `lares nexus seal anchor --edge --face N` lands them.
+    // anchors OWED by that refusal's name, and `lares nexus seal anchor edge=true face=N` lands them.
     type EdgeAnchor = { readonly outcome: "no-face-open" } | { readonly outcome: "anchored"; readonly face: number; readonly anchors: unknown }
       | { readonly outcome: "owed"; readonly face: number; readonly reason: string };
     let edgeAnchor: EdgeAnchor | null = null;
@@ -754,8 +754,8 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
         console.log(anchored
           ? `  anchor:     ${anchored.anchorCid.slice(0, 16)}… over ${anchored.parents.length} board head(s) — admits in its past carry to the new head`
           : `  anchor:     none — the closing head rooted no roster, so no admit stood to carry`);
-        if (edgeAnchor?.outcome === "owed") console.log(`  realm edges: OWED (${edgeAnchor.reason}): the head stands; \`lares nexus seal anchor --edge --face ${edgeAnchor.face} --out <partial>\` opens them`);
-        if (edgeAnchor?.outcome === "no-face-open") console.log("  realm edges: no face stands open, so no face's realm edge anchors moved (`lares nexus seal anchor --edge --face N` once one opens)");
+        if (edgeAnchor?.outcome === "owed") console.log(`  realm edges: OWED (${edgeAnchor.reason}): the head stands; \`lares nexus seal anchor edge=true face=${edgeAnchor.face} out=<partial>\` opens them`);
+        if (edgeAnchor?.outcome === "no-face-open") console.log("  realm edges: no face stands open, so no face's realm edge anchors moved (`lares nexus seal anchor edge=true face=N` once one opens)");
         console.log(left.fault !== null
           ? `  seat keys:  the closing head's keys stay held: their retire faulted (${left.fault}); the head stands`
           : `  seat keys:  ${left.retired} of the closing head retired${left.keptForCrossing > 0 ? `; ${left.keptForCrossing} kept until the open crossing seals` : ""}`);
@@ -810,19 +810,19 @@ function sealExport(args: ParsedArgs): number {
 
 /**
  * `lares nexus seal import <file>` — place a charter at the PRIMARY path, and refuse to destroy your own.
- * `lares nexus seal import --carry <file>` — place a PARTNER's charter BESIDE the primary.
+ * `lares nexus seal import carry=<file>` — place a PARTNER's charter BESIDE the primary.
  *
  * The primary path holds the one charter the realm plane and the board climb read, so a plain import lands
  * only where none stands or where the same charter already stands: dropping a partner's roster there would
- * REPLACE a founding. A partner charter takes `--carry`, which lands it at `carried/<aid>/` and leaves the
- * primary's bytes untouched; `accept-carriage --nexus <aid>` then consents to it.
+ * REPLACE a founding. A partner charter takes `carry=`, which lands it at `carried/<aid>/` and leaves the
+ * primary's bytes untouched; `accept-carriage nexus=<aid>` then consents to it.
  */
 async function sealImport(args: ParsedArgs): Promise<number> {
   const carry = args.options["carry"];
   if (carry !== undefined) return await sealImportCarry(args, carry);
   const from = args.positional[2] ?? "";
   if (!from) {
-    console.error("usage: lares nexus seal import <path-to-founding-roster.mem> | --carry <path>");
+    console.error("usage: lares nexus seal import <path-to-founding-roster.mem> | carry=<path>");
     return 2;
   }
   let incomingRaw: string;
@@ -874,14 +874,14 @@ async function sealImport(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `seal import --carry <file>` — land a partner charter beside the primary, under its Nexus AID. Refuses,
+ * `seal import carry=<file>` — land a partner charter beside the primary, under its Nexus AID. Refuses,
  * writing nothing, when the charter carries no verified head, names this vessel's own Nexus, or — for an AID
  * already held — does not extend the held seal lineage.
  */
 async function sealImportCarry(args: ParsedArgs, from: string): Promise<number> {
   let raw: string;
   try { raw = readFileSync(from, "utf8"); }
-  catch { console.error(`lares nexus seal import --carry: cannot read ${from}`); return 4; }
+  catch { console.error(`lares nexus seal import carry=true: cannot read ${from}`); return 4; }
   try {
     const r = importCarriedCharter(larSealHome(), raw);
     // H2: the carried set just grew beside the seal home, never on this vessel's Repo — poke a standing
@@ -896,14 +896,14 @@ async function sealImportCarry(args: ParsedArgs, from: string): Promise<number> 
         console.log(`  nexus:  ${r.aid}`);
         console.log(`  head:   ${r.sealEpochCid} (${r.outcome})`);
         console.log(`  refold: ${refold}`);
-        console.log(`  your primary charter is untouched. Consent with: lares nexus accept-carriage --nexus ${r.aid}`);
+        console.log(`  your primary charter is untouched. Consent with: lares nexus accept-carriage nexus=${r.aid}`);
       },
     });
     return 0;
   } catch (err) {
     if (!(err instanceof CarriedCharterError)) throw err;
     emit(args, { ok: false, error: { code: "refused", message: err.message },
-                 data: { from }, human: () => console.error(`lares nexus seal import --carry: ${err.message}`) });
+                 data: { from }, human: () => console.error(`lares nexus seal import carry=true: ${err.message}`) });
     return 3;
   }
 }
@@ -1001,7 +1001,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
 // own seat signs; every signature and every key stays behind the custody door (`cofound.*`). Neither seed moves:
 // the joint charter files under its own AID beside it.
 
-const COFOUND_USAGE = "usage: lares nexus seal cofound <open --release <manifest> --out <offer> | join <offer> --out <join> | seal <join|inception> [--out <inception>]>";
+const COFOUND_USAGE = "usage: lares nexus seal cofound <open release=<manifest> out=<offer> | join <offer> out=<join> | seal <join|inception> [out=<inception>]>";
 const DEFAULT_CHARTER_LAW = "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus";
 
 /** A founding step on the custody door; the ceremony's own refusal reads as a usage refusal here. */
@@ -1025,7 +1025,7 @@ function readFoundingFile(path: string | undefined, what: string): Record<string
 
 /** Write one founding file the other founder carries; it holds public material alone. */
 function writeFoundingFile(path: string | undefined, file: unknown): string {
-  if (!path) throw new UsageError(`--out <file> names where the file for the other founder lands — ${COFOUND_USAGE}`);
+  if (!path) throw new UsageError(`out=<file> names where the file for the other founder lands — ${COFOUND_USAGE}`);
   atomicWriteFileSync(path, `${JSON.stringify(file, null, 2)}\n`, `${path}.writing`);
   return path;
 }
@@ -1036,7 +1036,7 @@ function writeFoundingFile(path: string | undefined, file: unknown): string {
  * CIDv1, the encoding the offer reads every address in (house reading: the same digest, one spelling).
  */
 function readReleaseAddresses(path: string | undefined): ReleaseManifestAddresses {
-  if (!path) throw new UsageError("--release <manifest> names the release manifest record the Nexus adopts (tools/release-manifest.mjs emit)");
+  if (!path) throw new UsageError("release=<manifest> names the release manifest record the Nexus adopts (tools/release-manifest.mjs emit)");
   let m: Record<string, any>;
   try { m = JSON.parse(readFileSync(path, "utf8")) as Record<string, any>; }
   catch { throw new UsageError(`cannot read ${path} as a release manifest`); }
@@ -1047,7 +1047,7 @@ function readReleaseAddresses(path: string | undefined): ReleaseManifestAddresse
   return { image: String(m["image"]?.["digest"] ?? ""), genesis: cidV1Sha256FromHex(seed), engine: String(m["engine"]?.["cid"] ?? ""), grammar: String(m["grammar"]?.["cid"] ?? "") };
 }
 
-/** The face whose seat stands: `--face <i>`, else the one face standing open; several and none named refuse by name. */
+/** The face whose seat stands: `face=<i>`, else the one face standing open; several and none named refuse by name. */
 async function foundingFace(args: ParsedArgs): Promise<number> {
   try { return await actingFace(args); }
   catch (err) {
@@ -1056,11 +1056,11 @@ async function foundingFace(args: ParsedArgs): Promise<number> {
   }
 }
 
-/** A fingerprint typed as heard: `--heard <fp>`, else asked on the terminal. */
+/** A fingerprint typed as heard: `heard=<fp>`, else asked on the terminal. */
 async function heardFingerprint(args: ParsedArgs, whose: string): Promise<string> {
   const flagged = args.options["heard"];
   if (flagged !== undefined) return flagged;
-  if (!canPromptSecret()) throw new UsageError(`type ${whose} seat fingerprint as you heard it: --heard <fingerprint>, or run on a terminal`);
+  if (!canPromptSecret()) throw new UsageError(`type ${whose} seat fingerprint as you heard it: heard=<fingerprint>, or run on a terminal`);
   return (await promptLine(`${whose} seat fingerprint, as you heard it: `)).trim();
 }
 
@@ -1086,7 +1086,7 @@ async function cofoundOpenVerb(args: ParsedArgs): Promise<number> {
   const manifest = readReleaseAddresses(args.options["release"]);
   const charterLaw = args.options["charter-law"] ?? DEFAULT_CHARTER_LAW;
   const out = args.options["out"];
-  if (!out) throw new UsageError(`--out <file> names where the offer lands — ${COFOUND_USAGE}`);
+  if (!out) throw new UsageError(`out=<file> names where the offer lands — ${COFOUND_USAGE}`);
   const face = await foundingFace(args);
   const { digest, printed } = await cofoundCard(args, "your seat in the joint Nexus");
   const { offer, fingerprint } = await cofoundStep<{ offer: CofoundOffer; fingerprint: string }>("cofound.open", { face, next: digest, charterLaw, manifest });
@@ -1110,7 +1110,7 @@ async function cofoundJoinVerb(args: ParsedArgs): Promise<number> {
   const offer = readCofoundOffer(offerFile);
   if (!offer) throw new UsageError(`${args.positional[3]} reads as no cofound offer`);
   const out = args.options["out"];
-  if (!out) throw new UsageError(`--out <file> names where the join lands — ${COFOUND_USAGE}`);
+  if (!out) throw new UsageError(`out=<file> names where the join lands — ${COFOUND_USAGE}`);
   if (!wantsQuiet(args)) {
     console.error(`  offer fingerprint: ${fingerprintGroups(offerFingerprint(offer))}`);
     console.error(`  charter law:       ${offer.charterLaw}`);
@@ -1143,7 +1143,7 @@ async function cofoundSealVerb(args: ParsedArgs): Promise<number> {
   const read = readCofoundJoin(file);
   if (!read) throw new UsageError(`${args.positional[3]} reads as no cofound join whose signatures hold`);
   const out = args.options["out"];
-  if (!out) throw new UsageError(`--out <file> names where the inception lands — ${COFOUND_USAGE}`);
+  if (!out) throw new UsageError(`out=<file> names where the inception lands — ${COFOUND_USAGE}`);
   if (!wantsQuiet(args)) for (const line of cofoundReadBack(read.join.offer, read.image)) console.error(`  ${line}`);
   const heard = await heardFingerprint(args, "the joining founder's");
   const sealed = await cofoundStep<{ inception: CofoundInception; charter: { aid: string; path: string; outcome: string } }>("cofound.seal", { join: file, heard });
@@ -1184,7 +1184,7 @@ async function cofoundAcceptVerb(args: ParsedArgs, file: Record<string, unknown>
 // each files the rolled charter. The circle file is the only courier; every key and signature stays behind the
 // custody door (`roll-circle.*`).
 
-const ROLL_USAGE = "usage: lares nexus seal roll <open --nexus <aid> --threshold <n> --out <circle> | join <circle> --out <circle> | sign <circle> --out <circle> [--heard-threshold <n>] [--heard <fp,fp,…>] | file <circle> | abandon --nexus <aid>> [--face <i>] [--added]";
+const ROLL_USAGE = "usage: lares nexus seal roll <open nexus=<aid> threshold=<n> out=<circle> | join <circle> out=<circle> | sign <circle> out=<circle> [heard-threshold=<n>] [heard=<fp,fp,…>] | file <circle> | abandon nexus=<aid>> [face=<i>] [added=true]";
 
 type RollStepAnswer = { circle: RollCircle; verdict: RollCircleVerdict; signed: readonly string[]; why?: string };
 
@@ -1217,23 +1217,23 @@ function readCircleFile(path: string | undefined): { readonly file: Record<strin
   return { file, circle };
 }
 
-/** `--out <circle>` for a step that grows a carried circle: named, and never the input file itself. */
+/** `out=<circle>` for a step that grows a carried circle: named, and never the input file itself. */
 function rollOut(args: ParsedArgs, input: string | undefined): string {
   const out = args.options["out"];
-  if (!out) throw new UsageError(`--out <circle> names where the circle lands — ${ROLL_USAGE}`);
-  if (input !== undefined && resolve(out) === resolve(input)) throw new UsageError(`--out names the input file (${out}); write the grown circle to a new file`);
+  if (!out) throw new UsageError(`out=<circle> names where the circle lands — ${ROLL_USAGE}`);
+  if (input !== undefined && resolve(out) === resolve(input)) throw new UsageError(`out= names the input file (${out}); write the grown circle to a new file`);
   return out;
 }
 
 /** This chair's contribution: the revealed cold card (exactly one) unless the chair is added. */
 async function rollContribution(args: ParsedArgs): Promise<{ readonly face: number; readonly cards: string[] | undefined }> {
   const added = args.flags["added"] === true;
-  if (added && args.options["cold-key"] !== undefined) throw new UsageError("--added names a chair the head never committed, so it reveals no card: drop --cold-key");
+  if (added && args.options["cold-key"] !== undefined) throw new UsageError("added=true names a chair the head never committed, so it reveals no card: drop cold-key=");
   const face = await foundingFace(args);
   if (added) return { face, cards: undefined };
   const seeds = await gatherCards(args, 1);
   try {
-    if (seeds.length !== 1) throw new UsageError("a roll reveals exactly one chair's cold-key card per contribution (or --added for a chair the head never committed)");
+    if (seeds.length !== 1) throw new UsageError("a roll reveals exactly one chair's cold-key card per contribution (or added=true for a chair the head never committed)");
     return { face, cards: [hex(seeds[0]!)] };
   } finally { for (const seed of seeds) seed.fill(0); }
 }
@@ -1244,10 +1244,10 @@ async function rollContributeVerb(args: ParsedArgs, which: "open" | "join"): Pro
   let threshold = 0;
   if (which === "open") {
     nexusAid = args.options["nexus"];
-    if (!nexusAid) throw new UsageError(`--nexus <aid> names the joint Nexus to roll — ${ROLL_USAGE}`);
+    if (!nexusAid) throw new UsageError(`nexus=<aid> names the joint Nexus to roll — ${ROLL_USAGE}`);
     const raw = args.options["threshold"];
     threshold = Number(raw);
-    if (raw === undefined || !Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError(`--threshold <n> names the new rule, a count of seats of one or more — ${ROLL_USAGE}`);
+    if (raw === undefined || !Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError(`threshold=<n> names the new rule, a count of seats of one or more — ${ROLL_USAGE}`);
   } else {
     input = args.positional[3];
     readCircleFile(input);
@@ -1292,7 +1292,7 @@ async function heardImage(args: ParsedArgs, circle: RollCircle): Promise<{ reado
   const rawRule = args.options["heard-threshold"];
   const flaggedSeats = args.options["heard"];
   if ((rawRule === undefined || flaggedSeats === undefined) && !canPromptSecret()) {
-    throw new UsageError("type the rule and every other chair's seat fingerprint as you heard them from their holders: --heard-threshold <n> --heard <fp,fp,…>, or run on a terminal");
+    throw new UsageError("type the rule and every other chair's seat fingerprint as you heard them from their holders: heard-threshold=<n> heard=<fp,fp,…>, or run on a terminal");
   }
   const ruleText = rawRule ?? (await promptLine("the rule (seats that must sign), as you heard it: ")).trim();
   const heardThreshold = Number(ruleText);
@@ -1349,7 +1349,7 @@ async function rollFileVerb(args: ParsedArgs): Promise<number> {
 
 async function rollAbandonVerb(args: ParsedArgs): Promise<number> {
   const aid = args.options["nexus"];
-  if (!aid) throw new UsageError(`--nexus <aid> names the joint Nexus whose open circle this vault drops — ${ROLL_USAGE}`);
+  if (!aid) throw new UsageError(`nexus=<aid> names the joint Nexus whose open circle this vault drops — ${ROLL_USAGE}`);
   const r = await rollStep<{ aid: string; abandoned: boolean; retired: readonly string[] }>("roll-circle.abandon", { aid });
   emit(args, {
     ok: true,

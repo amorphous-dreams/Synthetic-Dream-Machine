@@ -110,7 +110,7 @@ test("R1-R3, R6: a stale face recards under its own identity; its own seals and 
   expect(STALE_LIGHT.test(String(told[0]!["reason"])), "the island's reason reads stale at the custody door").toBe(true);
   // THE STALE FACE REFUSES BY NAME, and the refusal names the command that recards it.
   expect(refusal.join(" ")).toContain("holds no prekey secret");
-  expect(refusal.join(" ")).toContain(`lares vault recard --face ${HANDLE}`);
+  expect(refusal.join(" ")).toContain(`lares vault recard face=${HANDLE}`);
 
   const rows = new Map<string, Uint8Array>();
   const write = (bytes: Uint8Array, face: string) => { rows.set(face, Uint8Array.from(bytes)); };
@@ -184,7 +184,7 @@ test("R5: a recard whose Archive could not rest refuses before its card mints, b
     const refusal = s.refused.join(" ");
     expect(refusal).toContain("FaceRecardRefused");
     expect(refusal).toContain("archive-unrouted");
-    expect(refusal).toContain(`lares vault recard --face ${HANDLE}`);
+    expect(refusal).toContain(`lares vault recard face=${HANDLE}`);
     // The mounted face mints its own card at its floor; the sibling's stand never stood, so no sibling card minted.
     const siblingCards = await Promise.all(card.mock.contexts.map(async (p) => {
       try { return (await (p as KeyhiveProvider).whoami()).toLowerCase().endsWith(f.siblingKey.toLowerCase().replace(/^0x/, "")); } catch { return false; }

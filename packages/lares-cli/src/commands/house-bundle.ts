@@ -13,9 +13,9 @@
  *   1. refuses a dest inside the house root or the workspace, or one that already stands (the config home takes one, and so
  *      does a bound workspace for the keep rite that names it, `../rite-keep.ts`);
  *   2. reads the census (`lares vessel census`): an unsettled carrier, a held save or an unanswered line refuses by name,
- *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
+ *      unless `accept-omissions=true` names the export partial, and then each lands in the manifest's omissions;
  *   3. maps each face root (`faces/<pet name>`) to the face whose pet name makes it; a face that holds memory and no
- *      pet-name, two that share one, or a root no face carries (without --accept-omissions), refuses;
+ *      pet-name, two that share one, or a root no face carries (without accept-omissions=true), refuses;
  *   4. (ONE ROW SET FOR ONE DOCUMENT: a wiki's workbench travels once, from its one folder, a sourced wiki's beside its canon
  *      source included, with the vessel-private share rows that name its owner and its seats by pet-name in the sealed re-declare list;
  *      a face-private document, `personal` layers among them, travels for its one face.)
@@ -28,7 +28,7 @@
  *      byte back against the manifest, and only then moves
  *      the bundle into place.
  *
- * IMPORT (previews by default; `--apply` writes):
+ * IMPORT (previews by default; `apply=true` writes):
  *   1. verifies the whole bundle before touching anything (`verifyBundle`), and opens the keep seat it carries with the passphrase
  *      or paper sheet the human supplies, then the roster (a wrong route refuses by name, before anything moves); at the end of a
  *      whole apply, a house that rests no keep pair seats the bundle's, so its next keep seals to the same pair;
@@ -128,7 +128,7 @@ export interface BundleVesselFace {
 /**
  * THE WORN FACE: the one face whose private mirrors lay through the ordinary wave (the daemon's working layer holds its document);
  * every other OPEN face lays through a wave that names it (the lit set), and a shut face waits until it opens (`lares vault unlock
- * --face N`). No face's private memory ever lands in another face. Where the vessel named which face it wears, that face (or none);
+ * face=N`). No face's private memory ever lands in another face. Where the vessel named which face it wears, that face (or none);
  * where no door answered the reading (a direct holder), the one face carrying a relation, else none.
  */
 export function mountFaceOf(faces: readonly BundleVesselFace[]): BundleVesselFace | null {
@@ -157,7 +157,7 @@ export { foldWaveRefusal };
 /** The words a SHUT face reads: unlock it, then lay (or import) again. A named expected state, never a stand-off, and it
  *  never blocks the faces that stand open (THE LIT SET: one lay lays every open face, each in its own layer). */
 export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "lay" | "import"): string {
-  return `${face.petname ?? `h${face.handleIndex}`} stays shut: \`lares vault unlock --face ${face.handleIndex}\`, then ${verb} again`;
+  return `${face.petname ?? `h${face.handleIndex}`} stays shut: \`lares vault unlock face=${face.handleIndex}\`, then ${verb} again`;
 }
 
 /**
@@ -477,7 +477,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   const census = await doors.census();
   if (!census.clean) {
     const lines = [...census.items.map(censusLine), ...census.unanswered.map((u) => `unanswered  ${u.part}: ${u.why}`)];
-    if (!acceptOmissions) throw new BundleRefused("carry-unsettled", `the census names ${lines.length} item(s) the projection has not settled, so a copy now would leave them out:\n  ${lines.join("\n  ")}\nsettle them (unlock the vault, let the projector drain) and export again, or pass --accept-omissions for an explicitly partial bundle`);
+    if (!acceptOmissions) throw new BundleRefused("carry-unsettled", `the census names ${lines.length} item(s) the projection has not settled, so a copy now would leave them out:\n  ${lines.join("\n  ")}\nsettle them (unlock the vault, let the projector drain) and export again, or pass accept-omissions=true for an explicitly partial bundle`);
     const held = census.items.filter((i) => i.kind === "held-save").map(censusLine);
     const carriers = census.items.filter((i) => i.kind === "carrier").map(censusLine);
     // THE OMISSIONS NAME KINDS AND COUNTS ALONE: a census line names documents, bags and uris that carry a face's relation, and the
@@ -506,7 +506,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     if (!acceptOmissions) throw new BundleRefused("carry-unclaimed-face-folder", `${unclaimed} face root(s) belong to no face this vessel wears:\n  ${unclaimedFolders.join("\n  ")}\n`
       + `each holds a face's private memory in cleartext: a face whose key stands shut (unlock every face and export again), or a face whose pet name no standing face carries (found it again under that pet name, or rename the face that should hold it). `
       + `For a face you mean to burn, move its root out of the house root (\`mv <folder> <a place outside ${resolve(house)}>\`) and export again; `
-      + `or export with --accept-omissions to leave them where they stand, out of the bundle`);
+      + `or export with accept-omissions=true to leave them where they stand, out of the bundle`);
     // A face root's folder spells its pet name, and the manifest rides in clear beside the sealed roster: the omission counts the
     // roots and names none (the refusal above names each, on this house's own terminal).
     omissions.push({ kind: "unclaimed-face-folders", detail: "face roots no face this vessel wears claims; they stay under the projections root", count: unclaimed });
@@ -515,8 +515,8 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   // THE FACES KEY BY PET-NAME. A face that carries memory needs one, and no two may share it.
   const carries = (f: BundleVesselFace): boolean => f.relation !== null && ((f.petname !== null && faceSegmentRefusal(f.petname) === null && existsSync(faceRoot(projections, f.petname))) || (f.kahua?.length ?? 0) > 0);
   for (const f of faces) {
-    if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new BundleRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
-    if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new BundleRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
+    if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new BundleRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} name='<label>'\`) and export again`);
+    if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new BundleRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with accept-omissions=true to leave its memory behind`);
     if (f.kahuaRefusal !== undefined) {
       // THE FACE BY COUNT: its handle index and the stage's own refusal text name the face, and the bundle crosses to a remote, so
       // the manifest counts and the house's own terminal names it (`unreadFaces`). Its stage files on disk still travel.
@@ -906,7 +906,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   // never takes that answer for them.
   // A PREVIEW READS THE SAME GUARD AS A WARNING: it names what the apply would refuse, and plans on.
   const unseeded = doors.unseeded ? doors.unseeded() : [];
-  const unseededWhy = `the canon of ${unseeded.join(", ")} stands unlaid on this vessel, and an import lands over laid canon alone: run \`lares vessel lay --apply\` first, then import again`;
+  const unseededWhy = `the canon of ${unseeded.join(", ")} stands unlaid on this vessel, and an import lands over laid canon alone: run \`lares vessel lay apply=true\` first, then import again`;
   if (apply && unseeded.length > 0) throw new BundleRefused("carry-canon-unseeded", unseededWhy);
   const warnings: string[] = unseeded.length > 0 ? [`carry-canon-unseeded: ${unseededWhy}`] : [];
   const projections = larProjectionsHome();
@@ -922,7 +922,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
     let rename = false;
     if (target === undefined) {
       const at = faces.find((f) => f.handleIndex === row.handleIndex);
-      if (at === undefined) throw new BundleRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and none stands at h${row.handleIndex} to carry it: found it (\`lares persona new ${row.handleIndex} --name '${row.petname}'\`) and import again`);
+      if (at === undefined) throw new BundleRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and none stands at h${row.handleIndex} to carry it: found it (\`lares persona new ${row.handleIndex} name='${row.petname}'\`) and import again`);
       if (at.petname !== null) throw new BundleRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and the face at h${row.handleIndex} carries "${at.petname}"; the bundle never merges one face's memory into another's: name the face that should carry "${row.petname}" and import again`);
       target = at;
       rename = true;
@@ -1233,7 +1233,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
       freshSlugs.add(slug);
       minted.push(wikiBagUri(slug));
       if (!apply || journal.done.has(`mint:${slug}`)) continue;
-      // A WIKI mints through the wiki door, so its recipe row stands and `--recipe <slug>` answers; a plain bag through CREATE.
+      // A WIKI mints through the wiki door, so its recipe row stands and `recipe=<slug>` answers; a plain bag through CREATE.
       const asWiki = doors.mintWiki !== undefined && (wikiSlugs.includes(slug) || allShares.some((r) => r.kind === "wiki" && r.slug === slug));
       try { await (asWiki ? doors.mintWiki!(slug) : doors.mintBag(wikiBagUri(slug))); journal.mark(`mint:${slug}`, "minted"); }
       catch (e) { tallies.bag.refused.push(`${wikiBagUri(slug)} (mint refused: ${e instanceof Error ? e.message : String(e)})`); }

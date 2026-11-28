@@ -1,5 +1,5 @@
 /**
- * `lares sense plane-record <cid> [--sensorium-root <path>]` — the CROSS-PLANE WITNESS on one cid.
+ * `lares sense plane-record <cid> [sensorium-root=<path>]` — the CROSS-PLANE WITNESS on one cid.
  *
  * One content id, read against all three planes — content · structure · form — with an honest null
  * wherever a plane holds no record of it. READ-ONLY: it witnesses co-presence and scores nothing.
@@ -26,7 +26,7 @@ const TIMEOUT_MS = 60_000;
 export async function cmdPlaneRecord(args: ParsedArgs): Promise<number> {
   const cid = (args.positional[0] ?? "").trim();
   if (!cid) {
-    console.error("usage: lares sense plane-record <cid> [--sensorium-root <path>]");
+    console.error("usage: lares sense plane-record <cid> [sensorium-root=<path>]");
     console.error("  one cid → its presence across content · structure · form, honest nulls where a plane lacks it.");
     return 2;
   }

@@ -35,7 +35,7 @@ beforeAll(async () => {
     daemonEnv: { LAR_SAME_ORIGIN: "true" },
     riteA: async (source, rootA) => {
       await growStagedQuorum(source, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
-      const pub = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--face", "0", "--json"]);
+      const pub = await source(["nexus", "publish", "plugins", `source=${HIGHLIGHT_SOURCE}`, "apply=true", "face=0", "--json"]);
       const d = pub.json?.["data"] as { offeringCid?: string; boardUrl?: string; blobCount?: number } | undefined;
       offeringCid = d?.offeringCid ?? "";
       boardUrl = d?.boardUrl ?? "";
@@ -52,13 +52,13 @@ beforeAll(async () => {
 afterAll(async () => { await fleet?.stop(); });
 
 /**
- * One read through `v`'s STORE door: `lares nexus kapae --list`, a row of the store's door table that opens no
+ * One read through `v`'s STORE door: `lares nexus kapae list=true`, a row of the store's door table that opens no
  * sealed row and says where it ran. (`lares host` and `lares walk` ride the custody door, a second channel that
  * would answer beside a verb channel that had died.)
  */
 async function storeDoorRead(v: LarInstance): Promise<{ via: string | undefined; ms: number }> {
   const t0 = performance.now();
-  const r = await v.cli(["nexus", "kapae", "--list", "--json"]);
+  const r = await v.cli(["nexus", "kapae", "list=true", "--json"]);
   return { via: (r.json?.["data"] as { via?: string } | undefined)?.via, ms: performance.now() - t0 };
 }
 

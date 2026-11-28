@@ -141,7 +141,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     // and a second face of the same operator, which the last leg wears.
     lar = await openStaged({ root, tag: "tiddler-door", found: async (cli, staged) => {
       await foundStagedHearth(cli, staged, "first-face");
-      const second = await cli(["persona", "new", "1", "--name", "second-face", "--json"]);
+      const second = await cli(["persona", "new", "1", "name=second-face", "--json"]);
       if (second.code !== 0) throw new Error(`the second face failed (${second.code})\n${second.stdout.slice(-400)}\n${second.stderr.slice(-800)}`);
       say("persona new 1 (the second face, before the daemon stands)", { handleIndex: (second.json?.["data"] as Record<string, unknown> | undefined)?.["handleIndex"], petname: (second.json?.["data"] as Record<string, unknown> | undefined)?.["petname"] });
     } });
@@ -325,12 +325,12 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
 
   test("render: the island's own engine wikifies a transcluding span and a slot's title, on both skins", async () => {
     const span = `Why: {{${uriOf(4)}#/why}} (<$count filter="[tag[memory]prefix[${STAGE}]]"/> memories)`;
-    const cli = await lar.cli(["wiki", "render", "--text", span, ...D]);
+    const cli = await lar.cli(["wiki", "render", `text=${span}`, ...D]);
     say("CLI wiki render --text", dataOf(cli));
     expect(cli.code, cli.stderr).toBe(0);
     expect(String(dataOf(cli)["text"]).replace(/\s+/g, " ")).toContain("Because walk 4 measured it.");
     expect(String(dataOf(cli)["text"])).toContain(`(${NOTES} memories)`);
-    const title = await lar.cli(["wiki", "render", `${uriOf(4)}#/rule`, "--form", "html", ...D]);
+    const title = await lar.cli(["wiki", "render", `${uriOf(4)}#/rule`, "form=html", ...D]);
     say("CLI wiki render <slot> --form html", dataOf(title));
     expect(String(dataOf(title)["text"])).toMatch(/<h1[^>]*>Rule 4<\/h1>/);
     expect(String(dataOf(title)["text"])).toContain("Rule 4 builds on");
@@ -477,7 +477,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const status = await lar.cli(["wiki", "status", ...W]);
     say(`CLI wiki status --recipe ${WALK_WIKI}`, dataOf(status));
     expect(dataOf(status)).toMatchObject({ recipe: WALK_WIKI, working: `lar:///ha.ka.ba/wikis/${WALK_WIKI}/working` });
-    const rendered = await lar.cli(["wiki", "render", "--text", "{{Walk wiki note}}", ...W]);
+    const rendered = await lar.cli(["wiki", "render", "text={{Walk wiki note}}", ...W]);
     expect(dataOf(rendered)).toMatchObject({ recipe: WALK_WIKI, text: "a note in the named wiki" });
     const seat = await speak(entry, [
       { name: "get", arguments: { filter, recipe: WALK_WIKI } },

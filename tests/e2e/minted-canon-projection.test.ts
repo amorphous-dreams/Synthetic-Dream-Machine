@@ -67,7 +67,7 @@ describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug
     // 1) mint a fresh user wiki + 2) set it active for the next boot
     const minted = await lar.cli(["wiki", "init", SLUG, "--json"]);
     expect(minted.json?.["ok"], `mint failed: ${JSON.stringify(minted.json)}`).toBe(true);
-    const opened = await lar.cli(["wiki", "switch", SLUG, "--next-boot", "--json"]);
+    const opened = await lar.cli(["wiki", "switch", SLUG, "next-boot=true", "--json"]);
     expect(opened.json?.["ok"] ?? true).not.toBe(false);
 
     // 3) REBOOT — the active-wiki marker only takes on boot (open does not remount)

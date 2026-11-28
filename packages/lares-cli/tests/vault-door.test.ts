@@ -142,7 +142,7 @@ describe("vault door — one face's own tree", () => {
   it("★ bind --face N lands in the face's own tree and leaves the node tree at its one slot ★", async () => {
     const fcid = await foundOneFace();
     answers.push("p", PW, "n", PW2);
-    expect(await run("bind", "--face", "0", "--passphrase")).toBe(0);
+    expect(await run("bind", "face=0", "passphrase=true")).toBe(0);
     expect(await slots()).toHaveLength(1);                                                     // the node tree is untouched
     const homes = vesselCustodyHomes();
     const io = new FsCustodyIo(homes);
@@ -155,7 +155,7 @@ describe("vault door — one face's own tree", () => {
   it("★ lock --face N with no vessel standing says so and changes nothing ★", async () => {
     await foundOneFace();
     const before = tree(root);
-    expect(await run("lock", "--face", "0")).toBe(0);
+    expect(await run("lock", "face=0")).toBe(0);
     expect(tree(root)).toBe(before);
   });
 });
@@ -184,7 +184,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
 
   it("bind adds a slot that opens on its own route; unbind prints the offer and, under --rotate, ends the removed route", async () => {
     answers.push("p", PW, "n", PW2);
-    expect(await run("bind", "--passphrase")).toBe(0);
+    expect(await run("bind", "passphrase=true")).toBe(0);
     const two = await slots();
     expect(two).toHaveLength(2);
 
@@ -198,11 +198,11 @@ describe("vault door — status, unlock, bind, unbind", () => {
 
     // bind again, then unbind WITH --rotate: the staying slot re-reads its route, the removed route opens nothing.
     answers.push("p", PW, "n", PW2);
-    await run("bind", "--passphrase");
+    await run("bind", "passphrase=true");
     const again = await slots();
     out.length = 0;
     answers.push("p", PW, "n", PW);                   // unlock, then re-enter the staying slot's route
-    expect(await run("unbind", again[1]!.id, "--rotate")).toBe(0);
+    expect(await run("unbind", again[1]!.id, "rotate=true")).toBe(0);
     expect(out.join("")).toMatch(/"rotated":true/);
     answers.push("p", PW2, "n");
     expect(await run("unlock")).toBe(1);               // the removed route opens nothing
@@ -210,19 +210,21 @@ describe("vault door — status, unlock, bind, unbind", () => {
     expect(await run("unlock")).toBe(0);               // the staying route still opens
   }, 60_000);
 
-  it("★ `unbind --rotate <id>` rotates, exactly as `unbind <id> --rotate` does; `--rotate=x` refuses ★", async () => {
+  it("★ `unbind rotate=true <id>` rotates, exactly as `unbind <id> rotate=true` does; `rotate=x` refuses ★", async () => {
     answers.push("p", PW, "n", PW2);
-    await run("bind", "--passphrase");
+    await run("bind", "passphrase=true");
     const two = await slots();
     out.length = 0;
     answers.push("p", PW, "n", PW);
-    expect(await run("unbind", "--rotate", two[1]!.id)).toBe(0);
+    expect(await run("unbind", "rotate=true", two[1]!.id)).toBe(0);
     expect(out.join("")).toMatch(/"rotated":true/);
     expect(await slots()).toHaveLength(1);
     answers.push("p", PW2, "n");
     expect(await run("unlock")).toBe(1);               // the removed route opens nothing
-    // `--rotate=<anything>` is no spelling of the flag: the parser refuses it by name.
-    expect(() => parseArgs(["vault", "unbind", "abc", "--rotate=abc"])).toThrow(/--rotate is a flag and takes no value/);
+    // `rotate=<a word>` is no spelling of the switch: the door refuses it by name, and nothing unbinds.
+    out.length = 0;
+    expect(await run("unbind", "abc", "rotate=abc")).toBe(2);
+    expect(out.join("")).toMatch(/rotate= names a switch: run `lares vault unbind abc rotate=true`/);
   }, 60_000);
 
   it("★ status --verbose gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
@@ -230,7 +232,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
-    expect(await cmdVault(parseArgs(["vault", "status", "--verbose"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "status", "verbose=true"]))).toBe(0);
     const lines = out.join("\n").split("\n");
     // each standing file reads on exactly one line
     for (const file of ["gate-root.bin", ".vessel-key.json", ".persona-enroll-pending.json", "s-slots.bin"]) {
@@ -259,7 +261,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
 
   it("★ an unbind that rotates asks the rotation's census FIRST: a sealed file no row names refuses by name and both slots stay bound ★", async () => {
     answers.push("p", PW, "n", PW2);
-    await run("bind", "--passphrase");
+    await run("bind", "passphrase=true");
     const two = await slots();
     const homes = vesselCustodyHomes();
     const io = new FsCustodyIo(homes);
@@ -269,7 +271,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     const before = tree(root);
     out.length = 0;
     answers.push("p", PW, "n", PW);
-    expect(await run("unbind", two[1]!.id, "--rotate")).toBe(1);
+    expect(await run("unbind", two[1]!.id, "rotate=true")).toBe(1);
     expect(out.join("")).toMatch(/CensusRefusal/);
     expect(tree(root)).toBe(before);
     expect(await slots()).toHaveLength(2);
@@ -277,18 +279,18 @@ describe("vault door — status, unlock, bind, unbind", () => {
     rmSync(join(homes.storage, "stray.bin"));
     out.length = 0;
     answers.push("p", PW, "n", PW);
-    expect(await run("unbind", two[1]!.id, "--rotate")).toBe(0);
+    expect(await run("unbind", two[1]!.id, "rotate=true")).toBe(0);
     expect(out.join("")).toMatch(/"rotated":true/);
     expect(await slots()).toHaveLength(1);
   });
 
   it("★ a mistyped staying route refuses BEFORE any byte moves ★", async () => {
     answers.push("p", PW, "n", PW2);
-    await run("bind", "--passphrase");
+    await run("bind", "passphrase=true");
     const two = await slots();
     const before = tree(root);
     answers.push("p", PW, "n", "typo-typo");           // unlock ok, staying slot's route mistyped
-    expect(await run("unbind", two[1]!.id, "--rotate")).not.toBe(0);
+    expect(await run("unbind", two[1]!.id, "rotate=true")).not.toBe(0);
     expect(tree(root)).toBe(before);
   });
 });
@@ -297,14 +299,14 @@ describe("vault door — backup asks the standing vessel", () => {
   it("backup with no vessel standing refuses `no-vessel`, reads no credential and writes no file", async () => {
     const before = tree(root);
     answers.push("p", PW, "n", "p", "a-bundle-route");
-    expect(await run("backup", "--face", "0", "--out", join(root, "face.bundle"))).toBe(1);
+    expect(await run("backup", "face=0", `out=${join(root, "face.bundle")}`)).toBe(1);
     expect(out.join("")).toMatch(/"code":\s*"no-vessel"/);
     expect(answers.length, "no prompt opened: every scripted answer still waits").toBe(5);
     expect(tree(root)).toBe(before);
   });
 
   it("backup without a face or without a file refuses as a usage error", async () => {
-    for (const argv of [["backup"], ["backup", "--face", "0"], ["backup", "--out", join(root, "x")], ["backup", "--face", "-1", "--out", join(root, "x")], ["backup", "--face", "one", "--out", join(root, "x")]]) {
+    for (const argv of [["backup"], ["backup", "face=0"], ["backup", `out=${join(root, "x")}`], ["backup", "face=-1", `out=${join(root, "x")}`], ["backup", "face=one", `out=${join(root, "x")}`]]) {
       out.length = 0;
       expect(await run(...argv)).toBe(2);
       expect(out.join("")).toMatch(/"code":\s*"usage"/);
@@ -314,7 +316,7 @@ describe("vault door — backup asks the standing vessel", () => {
 
 describe("vault door — restore reads the bundle's route on a terminal", () => {
   it("restore without a file, with a bad index, or with --memory and --as together refuses as a usage error", async () => {
-    for (const argv of [["restore"], ["restore", join(root, "x.bundle"), "--as", "one"], ["restore", join(root, "x.bundle"), "--as", "-1"], ["restore", join(root, "x.bundle"), "--memory", "--as", "1"]]) {
+    for (const argv of [["restore"], ["restore", join(root, "x.bundle"), "as=one"], ["restore", join(root, "x.bundle"), "as=-1"], ["restore", join(root, "x.bundle"), "memory=true", "as=1"]]) {
       out.length = 0;
       expect(await run(...argv)).toBe(2);
       expect(out.join("")).toMatch(/"code":\s*"usage"/);
@@ -323,7 +325,7 @@ describe("vault door — restore reads the bundle's route on a terminal", () => 
 
   it("restore --memory with no vessel standing refuses `no-vessel` and reads no credential", async () => {
     answers.push("p", "a-bundle-route");
-    expect(await run("restore", join(root, "x.bundle"), "--memory")).toBe(1);
+    expect(await run("restore", join(root, "x.bundle"), "memory=true")).toBe(1);
     expect(out.join("")).toMatch(/"code":\s*"no-vessel"/);
     expect(answers.length).toBe(2);
   });
@@ -397,7 +399,7 @@ describe("vault status answers a pipe in prose (quiet-pipe)", () => {
 
   it("★ `--verbose` prints one reading of every standing file; `--json` still answers the whole custody object ★", async () => {
     piped();
-    expect(await cmdVault(parseArgs(["vault", "status", "--verbose"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "status", "verbose=true"]))).toBe(0);
     expect(out.join("\n")).toMatch(/gate-root\.bin/);
     out.length = 0;
     expect(await cmdVault(parseArgs(["vault", "status", "--json"]))).toBe(0);
@@ -409,11 +411,11 @@ describe("vault status answers a pipe in prose (quiet-pipe)", () => {
   it("★ a piped `vault unlock` answers in prose: its refusal names itself on stderr and stdout carries no JSON; `--json` keeps the envelope ★", async () => {
     piped();
     tty = false;
-    expect(await cmdVault(parseArgs(["vault", "unlock", "--all"]))).toBe(1);
+    expect(await cmdVault(parseArgs(["vault", "unlock", "all=true"]))).toBe(1);
     expect(out.join("")).toBe("");
     expect(err.join("\n")).toMatch(/lares vault unlock: CredentialTtyRefusal/);
     err.length = 0;
-    expect(await cmdVault(parseArgs(["vault", "unlock", "--all", "--json"]))).toBe(1);
+    expect(await cmdVault(parseArgs(["vault", "unlock", "all=true", "--json"]))).toBe(1);
     expect(JSON.parse(out.join("").trim()).error.code).toBe("CredentialTtyRefusal");
   });
 });

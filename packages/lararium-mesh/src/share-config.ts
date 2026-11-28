@@ -98,7 +98,7 @@ export function shareEntryTitle(slug: string): string {
  */
 export function assertShareKindFree(slug: string, kind: ShareEntry["kind"], standing: ShareEntry["kind"] | null | undefined): void {
   if (standing === null || standing === undefined || standing === kind) return;
-  throw new ShareConfigRefusal("share-kind-standing", `"${slug}" stands shared as a ${standing} row, and a ${kind} share would overwrite it (one row per slug): unshare it first (\`lares ${standing} share ${slug} --remove\`), then share the ${kind}`);
+  throw new ShareConfigRefusal("share-kind-standing", `"${slug}" stands shared as a ${standing} row, and a ${kind} share would overwrite it (one row per slug): unshare it first (\`lares ${standing} share ${slug} remove=true\`), then share the ${kind}`);
 }
 
 /** A row's workspace name, checked: empty or absent reads none; a name outside the grammar refuses `share-workspace-malformed`. */

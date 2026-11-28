@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.hive.restands"
 
 ! face.hive.restands ~ a face whose archive row holds another identity stands from its seed
 
-`lares vault rehive --face N` reads the face's own route on a TTY and hands it to the custody door in a `rehive` frame. The door refuses a face worn or lit, opens the face's key for this act alone, moves the foreign archive row aside (never deleted) and leaves the face to stand from its seed at its next wear. The answer names what moved, what was lost, and the acts that come next.
+`lares vault rehive face=N` reads the face's own route on a TTY and hands it to the custody door in a `rehive` frame. The door refuses a face worn or lit, opens the face's key for this act alone, moves the foreign archive row aside (never deleted) and leaves the face to stand from its seed at its next wear. The answer names what moved, what was lost, and the acts that come next.
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q0puurYtNTUVNmtzVQOojYWQqv4qIlIVaXKWHXroJl0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JqEvkDyfQMFh5uMK8eOyrXkhFTQg0imoHZmmqG_zO_s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

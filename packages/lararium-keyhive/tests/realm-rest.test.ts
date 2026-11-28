@@ -213,7 +213,7 @@ describe("A1 — readers follow the roster; founding stays owner-only", () => {
     const { v, a, b } = await sharedWorkbench([0xb3, 0xb4]);
     const seatB = seatRealm(v, b, EVERY_WRITER, [a]);
     const refused = await seatB.sealValues({ bagId: WORKING, values: [change("too early")], signer: b.signer });
-    expect(said(refused)).toMatch(/^founding-owned-elsewhere:.*`lares vault unlock --face/);
+    expect(said(refused)).toMatch(/^founding-owned-elsewhere:.*`lares vault unlock face=/);
     expect(await new SealedStore(v.rest).records("key-version"), "no founding rests").toEqual([]);
     expect(await new SealedStore(v.rest).lockboxes(), "no lockbox rests").toEqual([]);
   });
@@ -364,10 +364,10 @@ describe("A4 — shareable history by default; chained boxes; the late seat", ()
     const { v, a } = await sharedWorkbench([0xd6, 0xd7]);
     const c = await face("referee", 0xd8);
     const cOnA = (await a.hive.receiveContactCard(await c.hive.contactCard())).id;
-    const cure = "wear the realm's owner face (`lares vault unlock --face 1`, then `lares wear 1`) and land the share again (`lares wiki share notes`)";
+    const cure = "wear the realm's owner face (`lares vault unlock face=1`, then `lares wear 1`) and land the share again (`lares wiki share notes`)";
     await expect(landWorkbench({ slug: SLUG }, [{ face: "group-referee", agentHex: cOnA, access: "write" }], {
       provider: a.hive, ledger: v.ledger, ownerFace: "group-steward", keyholder: async () => ({ cure }),
-    })).rejects.toThrow(/seat-needs-keyholder: .*`lares vault unlock --face 1`/);
+    })).rejects.toThrow(/seat-needs-keyholder: .*`lares vault unlock face=1`/);
     expect(await workbenchFaceHolds(a.hive, SLUG, cOnA, "read"), "no seat moved").toBe(false);
   });
 });
@@ -683,9 +683,9 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
   });
 
   test("C5 (F4): each hand-over refusal names its own cure; any other reads the owner's", () => {
-    const owner = "wear the realm's owner face (`lares vault unlock --face 0`, then `lares wear 0`) and land the share again (`lares wiki share lares`)";
+    const owner = "wear the realm's owner face (`lares vault unlock face=0`, then `lares wear 0`) and land the share again (`lares wiki share lares`)";
     expect(handOverCure("lares", "fresh-base-unavailable", owner)).toMatch(/live working document stands \(`lares wiki switch lares`\).*`lares wiki share lares`/);
-    for (const refusal of ["wrap-failed", "reader-unreached"]) expect(handOverCure("lares", refusal, owner), refusal).toMatch(/light the member face \(`lares vault unlock --face N`\)/);
+    for (const refusal of ["wrap-failed", "reader-unreached"]) expect(handOverCure("lares", refusal, owner), refusal).toMatch(/light the member face \(`lares vault unlock face=N`\)/);
     expect(handOverCure("lares", "seal-refused", owner)).toBe(owner);
   });
 
@@ -726,8 +726,8 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
   test("C7: the sealed-admit door opens no realm-derived act; a member's cure names its handle; no-head-held names its own cure", () => {
     for (const act of [`${REALM_ADMISSION_ACT}abc`, `${REALM_STATE_ROLL_ACT}abc`]) expect(sealedAdmitRefusal(act)?.refusal, act).toBe("realm-act-reserved");
     expect(sealedAdmitRefusal("an-operator-admission-act"), "CONTROL: any other act passes to the holder").toBe(null);
-    const owner = "wear the realm's owner face (`lares vault unlock --face 0`, then `lares wear 0`) and land the share again (`lares wiki share lares`)";
-    expect(handOverCure("lares", "wrap-failed", owner, 2)).toMatch(/`lares vault unlock --face 2`/);
+    const owner = "wear the realm's owner face (`lares vault unlock face=0`, then `lares wear 0`) and land the share again (`lares wiki share lares`)";
+    expect(handOverCure("lares", "wrap-failed", owner, 2)).toMatch(/`lares vault unlock face=2`/);
     expect(handOverCure("lares", "no-head-held", owner)).not.toBe(owner);
     expect(handOverCure("lares", "no-head-held", owner)).toMatch(/holds no key of the workbench's head.*`lares wiki share lares`/);
   });

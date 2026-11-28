@@ -1,5 +1,5 @@
 /**
- * `lares vessel census --docs` — every document the vessel's stores hold, and who names it, read through the vessel's door.
+ * `lares vessel census docs=true` — every document the vessel's stores hold, and who names it, read through the vessel's door.
  *
  *   C1  prose by default: a summary per class, then the unnamed list (each orphan by id, store, bytes and why); exit 0.
  *   C2  a sealed document left unread says an orphan may be named inside it, so no orphan reads proven.

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.settles"
 
 ! realm.edge.settles ~ the key side answers the fleet's raises, idempotent
 
-`lares edge settle [--fleet <root>]` reads the raises this vessel counts on its fleet's edge board, has the daemon island answer them where the face's group keys live, and marks what got answered; running it again changes nothing. A vessel holding no face's root settles nothing and says so.
+`lares edge settle [fleet=<root>]` reads the raises this vessel counts on its fleet's edge board, has the daemon island answer them where the face's group keys live, and marks what got answered; running it again changes nothing. A vessel holding no face's root settles nothing and says so.
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_ZsZYL3SXBDmAsOkMjTUpkoce86POCCeQRZorTUWwnk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kLOKPLfGreugkHV_Wq86mwSBQJmfsO5xFXRaTYb8z9o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

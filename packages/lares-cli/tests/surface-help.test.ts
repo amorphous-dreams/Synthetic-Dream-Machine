@@ -3,7 +3,7 @@
  * top-level list names it on one line, its depth unfolding per door (progressive display; help-flags.test.ts reads every row).
  */
 import { describe, expect, test, vi, afterEach } from "vitest";
-import { COMMANDS, dispatch } from "../src/bin/lares.js";
+import { COMMANDS, dispatch, doorTakes } from "../src/bin/lares.js";
 import { helpLines } from "../src/command-help.js";
 import { affordancePack, packRoute } from "@lararium/tw5/affordance-pack";
 
@@ -19,15 +19,15 @@ describe("lares surface help", () => {
   test("the command table holds `surface`, reading --face, --launch, --message and --realm", () => {
     const row = COMMANDS.find((c) => c.name === "surface");
     expect(row).toBeDefined();
-    for (const f of ["face", "launch", "message", "realm"]) expect(row!.accepts).toContain(f);
+    for (const f of ["face", "launch", "message", "realm"]) expect(doorTakes(row!.name)).toContain(f);
   });
 
   // The surface door flipped to its carriers (comms landings 10 + 23): each verb's carrier holds its words, no registry beside it.
-  test.each(["surface init", "surface check", "surface commit"])("%s takes --realm on its carrier, and its help names it", (spelling) => {
+  test.each(["surface init", "surface check", "surface commit"])("%s takes realm= on its carrier, and its help names it", (spelling) => {
     const address = packRoute("cli", spelling);
     expect(address, spelling).toBeDefined();
-    expect(affordancePack().carriers[address!]!.takes["cli"], spelling).toContain("--realm");
-    expect(helpLines(spelling).join("\n"), spelling).toMatch(/--realm/);
+    expect(affordancePack().carriers[address!]!.takes["cli"], spelling).toContain("realm");
+    expect(helpLines(spelling).join("\n"), spelling).toMatch(/realm=/);
   });
 
   test.each(["surface init", "surface check", "surface open", "surface commit", "surface face"])("%s holds a carrier whose examples run at the surface door", (spelling) => {

@@ -241,21 +241,21 @@ export async function restorePendingRoot(): Promise<string | null> {
 async function preflight(body: FaceBundleBody, target: number, founding: boolean, ward: WardCredential | undefined): Promise<void> {
   if (!existsSync(larBootstrapPath())) refuse("place-unfounded", "no founded place stands here: a restore lands a face onto a vessel `lares vessel found` already stood. Nothing moved.");
   // A RESTORED FACE BINDS THE HEARTH IT LANDS ON: its device edge names this vessel's seed charter, so a place with
-  // none holds no hearth for it. The person founds the fresh hearth first (`lares vessel found --hearth`), and the
+  // none holds no hearth for it. The person founds the fresh hearth first (`lares vessel found hearth=true`), and the
   // restore lands beside persona zero at a free index.
   // The founding act's own restore seats that charter itself, after the root lands and before the face lights.
-  if (founding && hearthAid() !== null) refuse("hearth-stands", "a seed charter already stands on this vessel, so the founding act lands no restored face as its persona zero here. Nothing moved; restore beside persona zero with `lares vault restore <file> --as <N>`.");
-  if (!founding && hearthAid() === null) refuse("no-hearth", "no seed charter stands on this vessel, so no hearth stands for the restored face to bind to. Nothing moved; found the hearth FROM this bundle, its face as persona zero (`lares vessel found --hearth --restore <file>`), or found it with `lares vessel found --hearth --name '<label>'`, then restore at a free index (--as <N>).");
+  if (founding && hearthAid() !== null) refuse("hearth-stands", "a seed charter already stands on this vessel, so the founding act lands no restored face as its persona zero here. Nothing moved; restore beside persona zero with `lares vault restore <file> as=<N>`.");
+  if (!founding && hearthAid() === null) refuse("no-hearth", "no seed charter stands on this vessel, so no hearth stands for the restored face to bind to. Nothing moved; found the hearth FROM this bundle, its face as persona zero (`lares vessel found hearth=true restore=<file>`), or found it with `lares vessel found hearth=true name='<label>'`, then restore at a free index (as=<N>).");
   const roster = await listPersonaRosterLines();
   if (roster.some((l) => l.verifyingKey === body.root.verifyingKey)) {
     refuse("face-already-held", "this vessel already holds this face's root, and no restore of it stands pending: a second restore over it. Nothing moved.");
   }
   const line = roster.find((l) => l.handleIndex === target);
-  if (line) refuse("roster-names-another-key", `this vessel's roster names another root at h${target}. Nothing moved; name a free index with --as <N>.`);
+  if (line) refuse("roster-names-another-key", `this vessel's roster names another root at h${target}. Nothing moved; name a free index with as=<N>.`);
   const orphan = await orphanPersonaRootKey(target, ward!);
   if (orphan !== null && orphan !== body.root.verifyingKey) refuse("orphan-names-another-key", `a root row stands at h${target} under another key, with no roster line. Nothing moved.`);
-  if ((await loadIdentityAnchors(target)) !== null || (target === 0 && faceStands())) refuse("index-held", `a face already stands lit at h${target}. Nothing moved; name a free index with --as <N>.`);
-  if (target > 0 && !faceStands()) refuse("founding-face-unlit", `no founding face stands on this vessel, and a face at h${target} rides beside one. Nothing moved; restore at index 0 (--as 0), or light the founding face first.`);
+  if ((await loadIdentityAnchors(target)) !== null || (target === 0 && faceStands())) refuse("index-held", `a face already stands lit at h${target}. Nothing moved; name a free index with as=<N>.`);
+  if (target > 0 && !faceStands()) refuse("founding-face-unlit", `no founding face stands on this vessel, and a face at h${target} rides beside one. Nothing moved; restore at index 0 (as=0), or light the founding face first.`);
   // EVERY ROW THE LANDING WILL READ, read now: a names row or a handle-book that stands and does not read whole
   // refuses here, by its own name, before the commit row. The landing then meets no row it has not already read.
   await (await makeNodePersonaPetnameStore()).get(target);
@@ -360,7 +360,7 @@ export async function restoreFaceBody(args: {
   /** The genesis the face's rite reads (the founding's own, where a founding act runs the restore). */
   readonly genesisDir?: string;
   /**
-   * THE FOUNDING ACT'S OWN STEP (a restore as persona zero, `found --hearth` from a bundle). Present, the face lands
+   * THE FOUNDING ACT'S OWN STEP (a restore as persona zero, `found hearth=true` from a bundle). Present, the face lands
    * at h0 on a place that holds no seed charter yet, and this step runs after the rows land and the history seats
    * and before the face lights: it seats the seed charter over the restored root, so the face lights bound to that
    * charter's AID. A resumed restore runs it again, and it answers what an earlier run already wrote.
@@ -446,7 +446,7 @@ export class ImportRefused extends Error {
 export interface MemoryImported { readonly bagId: string; readonly keyVersion: string; readonly outcome: string; readonly cause?: string }
 
 /**
- * Import a bundle's memory section through the standing vessel's daemon island (`lares vault restore --memory`).
+ * Import a bundle's memory section through the standing vessel's daemon island (`lares vault restore memory=true`).
  * The vessel stands unlocked and WEARS the face the bundle carries: the island wraps each key for this vessel's own
  * seat in that face's key group. The section's secret half derives from the bundle key on this thread and crosses
  * to the island sealed to a key the island named for this one import; no bare content key crosses the port.

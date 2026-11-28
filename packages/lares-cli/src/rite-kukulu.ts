@@ -15,14 +15,14 @@
  *                   local or untracked changes stops the rite with one line naming it, and its work stays
  *   2. checkout     the checkout's head and branch
  *   3. stage        the host shim makes the image of the revision (the tag holds it, a kept rev tag takes the tag, or a
- *                   build from the commit; `--rollback` names the image that ran before, or an older revision, and never
+ *                   build from the commit; `rollback=` names the image that ran before, or an older revision, and never
  *                   touches the checkout) and READS the house: the vessel, the pūlama's code, lit, admitted, an offer
  *   4. gate         a seat with no terminal stops here, before anything is spent or moved, only where the day owes a
  *                   route: the pūlama's light (its code moved, none runs, or it stands unlit), or its admit (a new vessel
  *                   on an image no admission and no kukulu lei carries). The line names the hand act. A MOVED CLOSURE UNDER
  *                   A LIT KEEPER rides the kukulu lei instead: a return left licenses the keeper's successor (no route; the
  *                   lit keeper's own held keys pass sealed to it, and the rite's begin spends the return); returns spent, or
- *                   no lei standing, names the hand's ONE act (`lares lei kui --rite kukulu …`), after which the seat restands
+ *                   no lei standing, names the hand's ONE act (`lares lei kui rite=kukulu …`), after which the seat restands
  *                   alone; a lei read that answered nothing twice stops as `kukulu-lei-unread` and asks no hand at all
  *   5. rite-begin   IN THE VESSEL, where a vessel stands: every lent face's kukulu lei returns once and rests its guest
  *                   half (`rite-begun`). No lei standing on the line runs the restand with no rite. FIRST the vessel reads
@@ -47,7 +47,7 @@
  *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
  *                   newer seed offer (the seed's floor) the release carries than the vessel serves, named by its card. Where the canon source stands in a checkout
  *                   and the owner holds this terminal, the workbench lay's preview (each title a workbench the worn face mounts
- *                   would take) prints and the lay (`lares vessel lay --workbench --apply`) runs with no question: it reads
+ *                   would take) prints and the lay (`lares vessel lay workbench=true apply=true`) runs with no question: it reads
  *                   diff-gated and stands off a both-moved row by name; a workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
  *                   checkout, or a vessel waiting on its unlock names the lag and lays nothing
  *
@@ -92,7 +92,7 @@ export type RefillPort = (req: RefillReq) => Promise<RefillAnswer>;
 /** The checkout's fast-forward: `ok` goes on (the line names what moved, or that nothing did); otherwise the line names what stopped it. */
 export interface SyncAnswer { readonly ok: boolean; readonly line: string }
 
-/** Which image the stage makes: one revision (the checkout's head, or a `--rollback <rev>`), or the image that ran before. */
+/** Which image the stage makes: one revision (the checkout's head, or a `rollback=<rev>`), or the image that ran before. */
 export type StageTarget = { readonly at: string } | { readonly prior: true };
 
 /** Where the house stands once the image does: the shim's `rebuild --image` reading. */
@@ -183,7 +183,7 @@ export interface RitePorts {
   /** One store row, answered by the vessel that stands. */
   row(verb: "rite-begin" | "rite-land" | "rite-offer", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
   /**
-   * The debt on the branch's line, read by the vessel that stands (`rite receipts --rite kukulu`), as the face `face` names
+   * The debt on the branch's line, read by the vessel that stands (`rite receipts rite=kukulu`), as the face `face` names
    * where the operator names one (the worn face otherwise). Absent, the rite reads none and begins as it did.
    */
   standing?(branch: string, face?: number): Promise<StandingAnswer>;
@@ -221,13 +221,13 @@ export interface RitePorts {
    */
   seedOffer?(head: string): Promise<SeedOffer | null>;
   /**
-   * THE LAG after the raise (`lares vessel lay --lag` in the vessel that stands): canon behind the canon source, each workbench behind
+   * THE LAG after the raise (`lares vessel lay lag=true` in the vessel that stands): canon behind the canon source, each workbench behind
    * the checkout's `wikis/<slug>` and whether the worn face mounts it; null where the vessel reads none. Absent, the rite reads no lag.
    */
   houseLag?(): Promise<HouseLag | null>;
   /** The floor card the vessel's status refreshed (title only), or null where no vessel answers one. */
   floorCard?(): Promise<{ readonly title: string } | null>;
-  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), diff-gated, asking nothing; its exit code. Absent, nothing lays. */
+  /** The workbench lay on this terminal (`lares vessel lay workbench=true apply=true`), diff-gated, asking nothing; its exit code. Absent, nothing lays. */
   layWorkbench?(): Promise<number>;
   /** Whether an AI seat launched this rite (the harness's mark, or a host chain that reads no person's hand); absent, false. */
   seat?(): boolean;
@@ -251,7 +251,7 @@ export interface HouseLag {
 }
 
 /** The line that lays the checkout's workbench projection by hand. */
-export const WORKBENCH_LAY_LINE = "lares vessel lay --workbench --apply";
+export const WORKBENCH_LAY_LINE = "lares vessel lay workbench=true apply=true";
 
 /** The permanent mark: the head, the image and the branch of the last landing that read par. */
 export interface PermanentMark { readonly head: string; readonly image: string; readonly branch: string }
@@ -284,7 +284,7 @@ export const STOP_FLUSHES_LINE = "kūkulu: the restand stops the standing vessel
 
 /** The one command that raises a replaced image again with no rebuild: the rite itself, rolled back to its revision. */
 export const wayBackCommand = (prior: PriorImage): string =>
-  prior.revision === "unlabeled" ? `LARES_IMAGE=${prior.tag} tools/lares-container.sh up` : `lares rite kukulu --rollback ${prior.revision.slice(0, 12)}`;
+  prior.revision === "unlabeled" ? `LARES_IMAGE=${prior.tag} tools/lares-container.sh up` : `lares rite kukulu rollback=${prior.revision.slice(0, 12)}`;
 
 /** The founding record beside the seed an image offers. */
 export interface SeedOffer {
@@ -312,7 +312,7 @@ export const HAND_ACT = "lares rite kukulu";
  */
 export type SyncPlan = { readonly act: "fast-forward" } | { readonly act: "stand"; readonly line: string } | { readonly act: "stop"; readonly line: string };
 export function syncPlan(s: { readonly branch: string; readonly upstream: string | null; readonly ahead: number; readonly behind: number; readonly dirty: boolean }): SyncPlan {
-  if (s.branch === "HEAD") return { act: "stop", line: "the checkout stands on a detached head, so no branch fast-forwards; check out a branch (or name an image: --rollback <rev>), then run it again; nothing moved" };
+  if (s.branch === "HEAD") return { act: "stop", line: "the checkout stands on a detached head, so no branch fast-forwards; check out a branch (or name an image: rollback=<rev>), then run it again; nothing moved" };
   if (s.upstream === null) return { act: "stand", line: `${s.branch} follows no upstream, so nothing fast-forwards; the image builds from the checkout's head` };
   if (s.behind === 0) return { act: "stand", line: s.ahead > 0 ? `${s.branch} stands ${s.ahead} ahead of ${s.upstream} and none behind; the image builds from the checkout's head` : `${s.branch} stands level with ${s.upstream}` };
   if (s.ahead > 0) return { act: "stop", line: `${s.branch} and ${s.upstream} diverged (${s.ahead} ahead, ${s.behind} behind), and a fast-forward cannot join them; merge or rebase by hand, then run it again; nothing moved` };
@@ -322,8 +322,8 @@ export function syncPlan(s: { readonly branch: string; readonly upstream: string
 
 /** The line that clears a lei the line reads as standing not, by the refusal it read. */
 export function leiClearing(refusal: string, branch: string, face?: number): string {
-  const fresh = `lares lei kui --rite kukulu --branch ${branch} --returns ${KUKULU_LEI_RETURNS} ${face === undefined ? "--all" : `--face ${face}`}`;
-  const show = `lares lei show --rite kukulu --branch ${branch}${face === undefined ? "" : ` --face ${face}`}`;
+  const fresh = `lares lei kui rite=kukulu branch=${branch} returns=${KUKULU_LEI_RETURNS} ${face === undefined ? "all=true" : `face=${face}`}`;
+  const show = `lares lei show rite=kukulu branch=${branch}${face === undefined ? "" : ` face=${face}`}`;
   if (refusal === "forked") return `two lei tips stand on the line and neither holds; string one fresh lei that names the tip you keep: ${fresh}`;
   if (refusal === "unstrung" || refusal === "returned" || refusal === "narrowed" || refusal === "head-mismatch") return `a fresh lei restrings the line: ${fresh}`;
   return `read the refusal with \`${show}\` and clear what it names before the rite runs`;
@@ -355,7 +355,7 @@ export interface HandFacts {
 /** The refusal a no-terminal rite stops on where the keeper offers the lei's path and the line's lei answered no reading twice. */
 export const LEI_UNREAD_REFUSAL = "kukulu-lei-unread";
 /** The line a kukulu lei that answered no read says, wherever the verdict turns on it. */
-const LEI_UNREAD = "reads unknown: the kukulu lei answered no reading (read it with `lares lei show --rite kukulu`)";
+const LEI_UNREAD = "reads unknown: the kukulu lei answered no reading (read it with `lares lei show rite=kukulu`)";
 
 /**
  * WHETHER THE NEXT KŪKULU NEEDS A HAND (course pulama-unblur): one line, read off the facts a no-terminal rite reads and through
@@ -434,7 +434,7 @@ const floorMoved = (words: unknown): boolean => typeof words === "string" && /(?
  * floor the release carries. The raise never writes canon: canon fills through promote and the floor's sealed cut. Where the canon
  * source stands in a checkout and the owner holds this terminal, the rite previews the workbench lay (each title a workbench the
  * worn face mounts would take) and lays it with no question (restand-files-smooth: the operator found the y friction): the lay reads
- * diff-gated, so a row both sides moved stands off by name and `lares vessel lay --workbench --apply` lays it later.
+ * diff-gated, so a row both sides moved stands off by name and `lares vessel lay workbench=true apply=true` lays it later.
  * A seat (no terminal, or an AI launcher) names the lag and never lays; so does a source in no checkout, and a vessel that waits on
  * its unlock.
  */
@@ -448,16 +448,16 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
   }
   const floor = floorMoved(seedWords);
   const card = floor && ports.floorCard ? await ports.floorCard().catch(() => null) : null;
-  if (floor) ports.say(`kūkulu: the seed offer waits (the seed's floor moved); the raise stands no floor${card ? `; the card ${card.title} names each drift` : ""}: \`lares vessel floor status --grain seed\``);
+  if (floor) ports.say(`kūkulu: the seed offer waits (the seed's floor moved); the raise stands no floor${card ? `; the card ${card.title} names each drift` : ""}: \`lares vessel floor status grain=seed\``);
   const read = await ports.houseLag().catch(() => null);
   if (read === null) {
-    ports.say("kūkulu: the lag reads nowhere (the vessel answered no reading); `lares vessel lay --lag` reads it");
+    ports.say("kūkulu: the lag reads nowhere (the vessel answered no reading); `lares vessel lay lag=true` reads it");
     return { ...out, data: { ...out.data, lag: { read: false, ...(floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {}) } } };
   }
   const fresh = read.holdings.reduce((n, h) => n + h.new.length, 0), moved = read.holdings.reduce((n, h) => n + h.changed.length, 0);
   ports.say(read.lag === 0
     ? `kūkulu: canon stands level with ${read.source}`
-    : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; canon fills through promote and the floor's sealed cut, never from a raise: \`lares meme offer promote <cid>\`, then \`lares nexus release <manifest-file> --cut\``);
+    : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; canon fills through promote and the floor's sealed cut, never from a raise: \`lares meme offer promote <cid>\`, then \`lares nexus release <manifest-file> cut=true\``);
   const lagging = read.benches.filter((b) => b.planned.length > 0);
   if (read.wikis !== null) {
     ports.say(read.benchLag === 0
@@ -582,7 +582,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     ports.say(`kūkulu: the kukulu lei on ${branch} answered no reading before the image step; the rite reads it once more here, where its return licenses the successor`);
     leiRead = await ports.leiStands(branch, opts.face).catch(() => null);
     if (leiRead === null) {
-      ports.say(`kūkulu: the kukulu lei on ${branch} answered no reading twice (the vessel held the read behind another act, or its door refused), so the rite licenses no successor and asks no route; the house stands as it stood, the image waits built, and nothing spent; read it with \`lares lei show --rite kukulu --branch ${branch}\`, then run \`${HAND_ACT}\` again from this seat`);
+      ports.say(`kūkulu: the kukulu lei on ${branch} answered no reading twice (the vessel held the read behind another act, or its door refused), so the rite licenses no successor and asks no route; the house stands as it stood, the image waits built, and nothing spent; read it with \`lares lei show rite=kukulu branch=${branch}\`, then run \`${HAND_ACT}\` again from this seat`);
       return { code: 1, data: { ...base, begun: false, stopped: "lei", refusal: LEI_UNREAD_REFUSAL } };
     }
     leiLicenses = leiRead === true;
@@ -604,11 +604,11 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   // THE HOʻĀLA LEI LICENSES THE LIGHT, a moved closure included: the raise spends its return where the keeper stands dark, and steps
   // back to the prior keeper closure where the new code fails its waking. No hand gets asked while a return stands.
   const hoalaLicenses = light && !tty && r.hoala === true;
-  if (hoalaLicenses) ports.say(`kūkulu: the keeper owes its light (${r.pulama === "moved" ? "its code closure moved" : r.pulama === "absent" ? "no pūlama runs" : "it stands unlit"}), and a hoʻāla lei holds a return: the raise wakes the keeper under the lei with no route; the prior keeper image stays tagged as the rollback (lares rite kukulu --rollback)`);
+  if (hoalaLicenses) ports.say(`kūkulu: the keeper owes its light (${r.pulama === "moved" ? "its code closure moved" : r.pulama === "absent" ? "no pūlama runs" : "it stands unlit"}), and a hoʻāla lei holds a return: the raise wakes the keeper under the lei with no route; the prior keeper image stays tagged as the rollback (lares rite kukulu rollback=true)`);
   // THE LEI'S PATH NAMES ITS OWN CURE: where the lit keeper offers it and the line's lei licenses nothing, the hand's act strings
   // the lei (one route, once), never a route per restand; a guard that refused the licensed successor names its own cure above.
   if (!hoalaLicenses && light && leiPath) {
-    const kui = `lares lei kui --rite kukulu --branch ${branch} --returns ${KUKULU_LEI_RETURNS} ${opts.face === undefined ? "--all" : `--face ${opts.face}`}`;
+    const kui = `lares lei kui rite=kukulu branch=${branch} returns=${KUKULU_LEI_RETURNS} ${opts.face === undefined ? "all=true" : `face=${opts.face}`}`;
     const after = `the next \`${HAND_ACT}\` from this seat then restands with no route`;
     if (leiRefused) return awaitsHand(`the pūlama's code closure moved, the kukulu lei on ${branch} holds a return, and a guard refused the successor it licenses (the lines above name the guard and its cure): cure it and run \`${HAND_ACT}\` again from this seat, or name the successor by hand on a terminal: lares pulama name-successor`, { lei: "guard-refused" });
     if (leiRead === RETURNS_SPENT_REFUSAL) return awaitsHand(`the pūlama's code closure moved and the kukulu lei on ${branch} stands with no return left, so no successor takes the living fire and nothing lights; one route on a terminal strings more, and ${after}`, { lei: RETURNS_SPENT_REFUSAL }, kui);
@@ -629,7 +629,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     `kūkulu: resuming the begin ${r.offer && r.offerAt ? `of ${r.offerAt}` : `at ${short}`}; no lei spent (${faces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`;
   /** The owed landing, by hand: it names the head and image each begun half names (a landing that names others refuses). */
   const landCallOf = (faces: readonly StandingBegin[]): string =>
-    faces.map((f) => `lares rite land --tessera ${f.tessera} --head ${f.head}${f.image === undefined || f.image === "" ? "" : ` --image ${f.image}`}${f.ordinal === undefined ? "" : ` --face ${f.ordinal}`}`).join("; ");
+    faces.map((f) => `lares rite land tessera=${f.tessera} head=${f.head}${f.image === undefined || f.image === "" ? "" : ` image=${f.image}`}${f.ordinal === undefined ? "" : ` face=${f.ordinal}`}`).join("; ");
   /** The debt this run reads: what it resumes, or the refusal that names what it cannot (and the one line that clears it). */
   const judge = (read: Extract<StandingAnswer, { ok: true }>, image: string = r.image): { resume: readonly StandingBegin[]; offerMatches: boolean; unread: boolean } | { refusal: string; stale: readonly PendingBegin[]; line: string } => {
     // A READ THAT NAMES NO RAW DEBT reads the debt as UNKNOWN, never as empty: a half whose face stands shut or was rehived may rest
@@ -656,7 +656,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     // no par over an image the vessel never ran, and conferre reads it abandoned); a half no lent face holds waits for its face.
     const abandonLine = (p: PendingBegin): string => {
       const ordinal = landable.get(p.tessera)?.ordinal ?? opts.face;
-      return `lares rite land --abandon --tessera ${p.tessera}${ordinal === undefined ? "" : ` --face ${ordinal}`}`;
+      return `lares rite land abandon=true tessera=${p.tessera}${ordinal === undefined ? "" : ` face=${ordinal}`}`;
     };
     const held = off.filter(({ p }) => landable.has(p.tessera)), waiting = off.filter(({ p }) => !landable.has(p.tessera));
     const clear = [
@@ -664,7 +664,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       ...(waiting.length > 0 ? [`${waiting.map(({ p }) => `${p.face ?? p.group} tessera ${p.tessera}`).join(", ")} waits for its face to stand again`] : []),
     ].join("; ");
     // ONE OTHER HEAD for EVERY pending half, each landable there: the rite rolled back to it lands them at their own head instead.
-    const back = allStale && heads.length === 1 && pending.every((p) => p.head === heads[0] && landable.has(p.tessera)) ? `; or land it at its own head: lares rite kukulu --rollback ${heads[0]!.slice(0, 12)} --branch ${branch}` : "";
+    const back = allStale && heads.length === 1 && pending.every((p) => p.head === heads[0] && landable.has(p.tessera)) ? `; or land it at its own head: lares rite kukulu rollback=${heads[0]!.slice(0, 12)} branch=${branch}` : "";
     return {
       refusal: allStale ? BEGUN_STALE : BEGUN_UNMATCHED,
       stale: off.map(({ p }) => p),
@@ -904,7 +904,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   const raisesNew = !r.current || r.pulama === "absent" || r.pulama === "moved";
   // A HOʻĀLA LEI WITH A RETURN LEFT LICENSES THE ADMIT TOO: the raise admits the image under it, and no hand gets asked.
   if (pulama && !light && raisesNew && !begun && r.admitted !== true && !r.offer && !tty && r.hoala !== true) {
-    return awaitsHand(`the pūlama has not admitted the image of ${short}, no kukulu lei carries it, and its admit reads your route on a terminal (or string a lei first: lares lei kui --rite kukulu --branch ${branch} --returns <n> --all)`, spent);
+    return awaitsHand(`the pūlama has not admitted the image of ${short}, no kukulu lei carries it, and its admit reads your route on a terminal (or string a lei first: lares lei kui rite=kukulu branch=${branch} returns=<n> all=true)`, spent);
   }
   const landCall = landCallOf(begunFaces);
   let offered = false;

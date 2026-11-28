@@ -1,5 +1,5 @@
 /**
- * found — the idempotent founding orchestration behind `lares vessel stand --init`.
+ * found — the idempotent founding orchestration behind `lares vessel stand init=true`.
  *
  * Stands up the vessel from a (mostly) fresh pull — node build, social-plane init,
  * genesis — by COMPOSING the existing commands, each FOUND-IF-ABSENT and a
@@ -15,7 +15,7 @@
  *  - `lares vessel found` self-guards on the bootstrap (skips the ceremony if present);
  *  - genesis is BUILD-IF-ABSENT ONLY — a rebuild can shift the CID and diverge a
  *    founded identity, so a rebuild stays a separate operation, never
- *    a stand. `--init` never passes `--force`.
+ *    a stand. `init=true` never passes `force=true`.
  */
 
 import { existsSync } from "node:fs";

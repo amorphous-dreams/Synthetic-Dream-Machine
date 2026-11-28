@@ -103,7 +103,7 @@ export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: stri
     ...(at.head !== undefined && at.head !== begun.head ? [`head ${at.head} (the half began at ${begun.head})`] : []),
     ...(at.image !== undefined && begun.image !== undefined && at.image !== begun.image ? [`image ${at.image} (the half began over ${begun.image})`] : []),
   ];
-  if (differs.length > 0) throw new SwarmRefused("rite-land-differs", `the landing of tessera ${at.tessera} names ${differs.join(" and ")}; a landing rests what its begun half names, so name none: lares rite land --tessera ${at.tessera}`);
+  if (differs.length > 0) throw new SwarmRefused("rite-land-differs", `the landing of tessera ${at.tessera} names ${differs.join(" and ")}; a landing rests what its begun half names, so name none: lares rite land tessera=${at.tessera}`);
   const act = await signSwarmAct({ act: "rite-landed", group, rite: begun.rite, tessera: at.tessera, begun: guest.cid, head: begun.head, ...(begun.image === undefined ? {} : { image: begun.image }) }, vessel);
   if (!(await wiki.writeNew(swarmTesseraTitle(at.tessera, "host"), JSON.stringify(act)))) throw new SwarmRefused("rite-already-landed", `a host half already rests for tessera ${at.tessera}`);
   return { tessera: at.tessera, rite: begun.rite, begun: guest.cid, landed: swarmActCid(act), par: true };

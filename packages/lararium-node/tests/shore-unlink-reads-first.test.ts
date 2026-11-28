@@ -553,8 +553,8 @@ describe("a base names the history its records side read: records that fell behi
     expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
     expect(s.conflicts).toHaveLength(1);
     expect(s.conflicts[0]!.reason).toContain("fell behind");
-    expect(s.conflicts[0]!.reason).toContain(`lares shore keep-disk ${URI} --key ${s.conflicts[0]!.standoff}`);
-    expect(s.conflicts[0]!.reason).toContain(`lares shore take-records ${URI} --key ${s.conflicts[0]!.standoff}`);
+    expect(s.conflicts[0]!.reason).toContain(`lares shore keep-disk ${URI} key=${s.conflicts[0]!.standoff}`);
+    expect(s.conflicts[0]!.reason).toContain(`lares shore take-records ${URI} key=${s.conflicts[0]!.standoff}`);
     // Level-triggered: the same states raise nothing more and still write nothing.
     await s.projector.sense([URI]);
     expect(s.conflicts).toHaveLength(1);

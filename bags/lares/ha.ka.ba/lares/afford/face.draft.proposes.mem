@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.draft.proposes"
 
 ! face.draft.proposes ~ a seat proposes one batch; the operator's hand lifts
 
-`proposals` lists {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's sha-256 digest) and every input from outside the face (a web page, tool output, pasted text); an AI summary inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this device; it carries digests and never a body, and it GRANTS NOTHING: the operator's hand lifts it with `lares kahua lift <title> --proposal <id>`.
+`proposals` lists {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's sha-256 digest) and every input from outside the face (a web page, tool output, pasted text); an AI summary inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this device; it carries digests and never a body, and it GRANTS NOTHING: the operator's hand lifts it with `lares kahua lift <title> proposal=<id>`.
 
 TWO DIGESTS, ONE WORD. A proposal's `digest` names the BODY digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex); the seat's tool computes it from `text`. The ROW digest that `kahua stage` prints and `lift --digest` takes covers the body AND the row's carried fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's.
 
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LGOmyXprcsmr8Jaw9jWcu-EbHt1srq7PP5SiIZxeXyc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WdVe1zzY4SXOuv6lRiv-2MkAgVhewUHh9Zagcy_-qXE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

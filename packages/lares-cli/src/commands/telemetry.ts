@@ -6,8 +6,8 @@
  * through the seat, web3-only (a capability-bearing verb-summons, never a direct
  * subprocess). The same-timing capture hook calls this beside the verbatim mine.
  *
- *   lares sense telemetry --wing <w>        project readings onto a wing's drawers
- *   lares sense telemetry --wing <w> --limit N   cap drawers processed this pass
+ *   lares sense telemetry wing=<w>        project readings onto a wing's drawers
+ *   lares sense telemetry wing=<w> limit=N   cap drawers processed this pass
  *
  * Idempotent (the lar_hv gate skips already-current drawers). If the daemon is
  * down, telemetry no-ops (verbatim capture already landed; the lar_hv sweep
@@ -26,7 +26,7 @@ import type { ParsedArgs } from "../parse-args.js";
 export async function cmdTelemetry(args: ParsedArgs): Promise<number> {
   const wing = args.options["wing"];
   if (!wing) {
-    console.error("usage: lares sense telemetry --wing <wing> [--limit <n>]");
+    console.error("usage: lares sense telemetry wing=<wing> [limit=<n>]");
     return 2;
   }
 

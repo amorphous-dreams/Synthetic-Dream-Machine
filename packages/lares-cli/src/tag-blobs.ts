@@ -1,5 +1,5 @@
 /**
- * tag-blobs — the CAS opt-in writer behind `lares ingest --tag-blobs`.
+ * tag-blobs — the CAS opt-in writer behind `lares ingest tag-blobs=true`.
  *
  * `lares ingest` already scans a bag and weighs every carrier's size + type (exactly
  * the knowledge a blob-readiness verdict needs). This shore turns that verdict into a
@@ -23,7 +23,7 @@
  * Detection reuses the in-tree readiness law verbatim (never re-derives it):
  * `carrierCasFlagged` (already opted in?), `ridesAsPointer` + `mediaTypeFromExt` (a
  * pointer by kind — no tag), `isOversizedBody` (would it fault?), and the same wall as
- * the per-ahu blob floor. It writes ONLY under the explicit `--tag-blobs` gesture — a
+ * the per-ahu blob floor. It writes ONLY under the explicit `tag-blobs=true` gesture — a
  * normal ingest mutates no source.
  *
  * Meme: lar:///ha.ka.ba/lares/api/cas-stage

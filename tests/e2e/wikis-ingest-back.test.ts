@@ -2,7 +2,7 @@
  * wikis-ingest-back.test.ts — thread 2: the working write-layer's disk
  * surface ingests BACK. working projects per-wiki to wikis/{slug}/…;
  * editing a projected wikis/ file and running
- * `lares ingest --source <wikis> --to working --in-wiki` derives the carrier
+ * `lares ingest source=<wikis> to=working in-wiki=true` derives the carrier
  * URI off the working plane (wikisFileToUri) and lands the edit back in
  * working — closing the loop the projection opened (wikis/ projected OUT
  * only until this thread).
@@ -50,7 +50,7 @@ async function awaitWikisCarrier(timeoutMs = 60_000): Promise<string> {
 }
 
 function ingest(extra: string[]): ReturnType<LarInstance["cli"]> {
-  return lar.cli(["ingest", "--source", wikisDir, "--to", WORKING, "--in-wiki", ...extra, "--json"]);
+  return lar.cli(["ingest", `source=${wikisDir}`, `to=${WORKING}`, "in-wiki=true", ...extra, "--json"]);
 }
 
 beforeAll(async () => {
@@ -87,7 +87,7 @@ describe.skipIf(!stagedTarget)("wikis ingest-back — the working write-layer ro
     expect(edited).not.toBe(before);  // guard: a carrier with no heading at all fails loud, never a no-op
     writeFileSync(projected, edited);
 
-    const r = await ingest(["--apply", "--yes"]);
+    const r = await ingest(["apply=true", "--yes"]);
     const d = r.json?.["data"] as Record<string, unknown>;
     const carriers = d["carriers"] as Array<Record<string, unknown>>;
     expect(carriers?.[0]?.["decision"]).toBe("ingest");

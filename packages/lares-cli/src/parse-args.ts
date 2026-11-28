@@ -3,61 +3,41 @@
 // anchored); this file is a dep-free token-walker beneath it.
 
 /**
- * parse-args — minimal arg parser for `lares <command> [args...] [--flag] [--key value] [--key=value]`, and the call shape's
- * one token rule (`splitCall`: `lares get title=… aperture=measure`).
+ * parse-args — the CLI's one token rule: `lares <door> [words...] [name=value...]`, and the call shape's split (`splitCall`:
+ * `lares get title=… aperture=measure`).
  *
- * Stays dep-free on purpose. The CLI's whole grammar lives in this file plus
- * the per-command handlers; no external parser hides dispatch behavior.
+ * Stays dep-free on purpose. The CLI's whole grammar lives in this file plus the per-command handlers; no external parser
+ * hides dispatch behavior.
  *
- * Conventions:
+ * Conventions on a door line:
  *   bare tokens   → positional[]
- *   --key         → flag (boolean true)
- *   --key value   → option (string); a VALUE_FLAGS name takes the next token whatever it starts with
- *   --key=value   → option (string); splits at the FIRST `=`, so the value may carry more `=`.
- *                   An empty value (`--key=`) stays an option holding "".
- *   --no-key      → flag (boolean false)
- *   --no-key=…    → refused: a negation takes no value (`ArgsError`)
- *   --            → end-of-options marker; remaining tokens land in positional[]
+ *   name=value    → a param, split at its FIRST `=` (the value may carry more `=`): `true` and `false` land in flags, every
+ *                   other value (the empty one too) lands in options, so a handler reads `flags["dry-run"]` and
+ *                   `options["face"]` where it always read them. A repeated name joins its values with a space.
+ *   --<global>    → one of GLOBAL_FLAGS (`--help`, `--json`, `--no-json`, …): a flag, taking no value
+ *   --<name>      → refused by name (`ArgsError`), naming the param spelling that cures it
+ *   --            → end of params: every later token lands in positional[] whole, a `--x` or a `k=v` included
  *
- * A name in `BOOLEAN_FLAGS` takes NO value, in every position: `--rotate <id>` leaves `<id>` positional,
- * `--rotate=x` refuses by name. A flag nobody reads is refused BY NAME before the handler runs (bin/lares.ts,
- * each command's `accepts` row).
+ * A call head (`get`, `put`, `delete`, `rename`, `msg`, `watch`, `act`, `-`, a `lar:///` address) keeps its params in
+ * positional[] as written: the call door splits them itself (`splitCall`), and a value spelled `--x` rides as a value.
  */
 
 /**
- * THE BOOLEAN FLAGS: every name some handler reads through `args.flags[...]` and none reads through
- * `args.options[...]`. A name outside this set parses greedily (`--k v` binds `v`), so a boolean flag left out
- * would swallow the positional after it. `tests/parse-args.test.ts` walks the handlers' source: a name in this
- * set that any handler reads as an option reds, and so does a flag-read name missing from the set unless it is
- * one of `VALUE_OR_FLAG`.
+ * THE GLOBAL FLAGS: the dash spellings every line still reads, each a flag that takes no value. `--json`/`--no-json` pick the
+ * render (render.ts); `--help` and `--meme` ask the door's help; `--yes` passes the confirmation gate; `--skip-build` rides the
+ * fresh-build gate's re-exec; `--keyhive-trace` asks for Keyhive's own tracing. Each reads as its param spelling too
+ * (`json=true`).
  */
-export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
-  "abandon", "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "commit", "cosign", "confirm", "cut", "drain",
-  "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
-  "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "new", "offer", "orphans", "over-fresher",
-  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "revert", "rotate", "seat", "sessions", "shadow", "skip-build", "spectral", "split-root",
-  "staged", "streams", "sweep", "tag-blobs", "terms", "tree", "verbose", "wait", "watch", "with-web", "witness", "workbench", "writeback", "yes",
-]);
+export const GLOBAL_FLAGS: readonly string[] = ["json", "help", "meme", "yes", "skip-build", "keyhive-trace"];
 
-/**
- * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
- * alone or `--check <x>`; `--grammar`; `rite kukulu --rollback` alone or `--rollback <rev>`). The parser cannot tell which spelling comes, so these
- * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`wiki render T --target h1`) and `--land`
- * (`kahua lift <uri> --land <answer>`); each flag read only refuses the bare spelling. `--observe` stands alone on `vessel stand`
- * (read the standing, act on nothing) and takes the arm's pointers on `oracle cast --observe <pointers>`.
- */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "land", "observe", "rollback", "target", "recipe", "realm"]);
+/** The verb words the call door answers as commands of their own; an address (`lar:///…`), `act` and `-` answer beside them. */
+export const CALL_VERBS = ["get", "put", "delete", "rename", "msg", "watch"] as const;
 
+/** True where a command word heads a call line, whose params the call door splits itself. */
+export const isCallWord = (command: string | null): boolean =>
+  command !== null && ((CALL_VERBS as readonly string[]).includes(command) || command === "-" || command === "act" || command.startsWith("lar:///"));
 
-/**
- * THE VALUE FLAGS: names that carry free text (a note, a reason, a field list, a spirit's words) and ALWAYS take the next
- * token as their value, whatever it starts with: `--text "---\nfront: matter\n---"` binds the front matter, never reads
- * as a flag. Every other non-boolean name keeps the peek (`--key --other` leaves `--key` bare). `tests/parse-args.test.ts`
- * reds a name here that a handler reads as a flag, or that sits in `BOOLEAN_FLAGS` / `VALUE_OR_FLAG`.
- */
-export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
-
-/** A command line the grammar itself refuses (`--no-key=…`, `--=v`, a word after a param); the dispatcher turns it into exit 2. */
+/** A command line the grammar itself refuses (a dash flag outside GLOBAL_FLAGS, a word after a param); the dispatcher turns it into exit 2. */
 export class ArgsError extends Error {
   constructor(message: string) { super(message); this.name = "ArgsError"; }
 }
@@ -99,12 +79,58 @@ export function splitCall(tokens: readonly string[]): CallLine {
 export interface ParsedArgs {
   /** Subcommand name, or null when the user invoked `lares` with no command. */
   readonly command:    string | null;
-  /** Positional args after the command. */
+  /** Positional args after the command (a call line's params among them, as written). */
   readonly positional: readonly string[];
-  /** --key value / --key=value pairs (string-valued). */
+  /** The params a door line names whose value reads as words (`face=2`, `note=`). */
   readonly options:    Readonly<Record<string, string>>;
-  /** --flag (true) and --no-flag (false). */
+  /** The params a door line names `true` or `false` (`dry-run=true`), and each global flag (`--json` true, `--no-json` false). */
   readonly flags:      Readonly<Record<string, boolean>>;
+}
+
+/** The flags a call line names that burned into the dials, each to the param it reads as. */
+export const BURNED_FLAGS: Readonly<Record<string, string>> = Object.freeze({
+  "dry-run": "mu=_0", json: "mu=!0", quiet: "mu=!0", meme: "aperture=measure", skinny: "aperture=measure", all: "aperture=arc", grain: "aperture=arc",
+});
+
+/** A value as a shell word, quoted where it holds a space or a quote. */
+const shellWord = (value: string): string => (/^[A-Za-z0-9_@%+=:,./#*?!<>~-]+$/.test(value) ? value : `'${value.replace(/'/g, "'\\''")}'`);
+
+/** One dash token read: its name, the value it names after `=` (or null), and whether it negates (`--no-x`). */
+function dashOf(token: string): { readonly name: string; readonly value: string | null; readonly negated: boolean } {
+  const body = token.slice(2);
+  const eq = body.indexOf("=");
+  const name = eq === -1 ? body : body.slice(0, eq);
+  const value = eq === -1 ? null : body.slice(eq + 1);
+  return name.startsWith("no-") && value === null ? { name: name.slice(3), value: null, negated: true } : { name, value, negated: false };
+}
+
+/**
+ * THE DASH SPELLINGS BURNED INTO PARAMS: the refusal a line carrying a `--name` outside GLOBAL_FLAGS answers, naming each
+ * flag's param reading and the whole line spelled in params. A bare `--x` before a word reads as `x=<word>`, and before nothing,
+ * another flag or a param as `x=true`; `--no-x` reads `x=false`. On a call line a flag that burned into the dials names its dial.
+ */
+function burnedDashes(command: string, tokens: readonly string[], call: boolean): ArgsError {
+  const cure: string[] = ["lares", command];
+  const readings: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i]!;
+    if (!tok.startsWith("--") || tok === "--") { cure.push(shellWord(tok)); continue; }
+    const dash = dashOf(tok);
+    if (GLOBAL_FLAGS.includes(dash.name) && dash.value === null) { cure.push(tok); continue; }
+    let reading: string;
+    if (call && BURNED_FLAGS[dash.name] !== undefined) reading = BURNED_FLAGS[dash.name]!;
+    else if (dash.negated) reading = `${dash.name}=false`;
+    else if (dash.value !== null) reading = `${dash.name}=${shellWord(dash.value)}`;
+    else {
+      const next = tokens[i + 1];
+      if (next !== undefined && !next.startsWith("--") && !PARAM_TOKEN.test(next)) { reading = `${dash.name}=${shellWord(next)}`; i++; }
+      else reading = `${dash.name}=true`;
+    }
+    readings.push(`${tok} reads as ${reading}`);
+    cure.push(reading);
+  }
+  const kind = call ? "a call takes name=value params" : "a door takes name=value params";
+  return new ArgsError(`dash-flag-burned: ${readings.join(" · ")} (${kind}; the dash spellings left are ${GLOBAL_FLAGS.map((g) => `--${g}`).join(" ")}); run: ${cure.join(" ")}`);
 }
 
 export function parseArgs(argv: readonly string[]): ParsedArgs {
@@ -113,40 +139,35 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   const positional: string[]                 = [];
   const options:    Record<string, string>   = {};
   const flags:      Record<string, boolean>  = {};
+  const call = isCallWord(command);
 
-  let endOfOptions = false;
-  while (tokens.length > 0) {
-    const tok = tokens.shift() as string;
-    if (endOfOptions) { positional.push(tok); continue; }
-    if (tok === "--") { endOfOptions = true; continue; }
+  const end = tokens.indexOf("--");
+  const head = end === -1 ? tokens : tokens.slice(0, end);
+  const burned = head.some((tok) => {
+    if (!tok.startsWith("--") || tok === "--") return false;
+    const dash = dashOf(tok);
+    return !GLOBAL_FLAGS.includes(dash.name) || dash.value !== null;
+  });
+  if (burned) throw burnedDashes(command ?? "", head, call);
+
+  for (const tok of head) {
     if (tok.startsWith("--")) {
-      const body = tok.slice(2);
-      const eq = body.indexOf("=");
-      if (body.startsWith("no-")) {
-        if (eq !== -1) throw new ArgsError(`${tok}: a --no-<name> negation takes no value`);
-        flags[body.slice(3)] = false;
-        continue;
-      }
-      if (eq !== -1) {
-        const key = body.slice(0, eq);
-        if (key === "") throw new ArgsError(`${tok}: a flag needs a name before "="`);
-        if (BOOLEAN_FLAGS.has(key)) throw new ArgsError(`${tok}: --${key} is a flag and takes no value`);
-        options[key] = body.slice(eq + 1);
-        continue;
-      }
-      if (BOOLEAN_FLAGS.has(body)) { flags[body] = true; continue; }
-      const next = tokens[0];
-      // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
-      if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {
-        options[body] = next;
-        tokens.shift();
-      } else {
-        flags[body] = true;
-      }
+      const dash = dashOf(tok);
+      flags[dash.name] = !dash.negated;
+      continue;
+    }
+    if (!call && command !== null && PARAM_TOKEN.test(tok)) {
+      const eq = tok.indexOf("=");
+      const key = tok.slice(0, eq);
+      const value = tok.slice(eq + 1);
+      if (value === "true" || value === "false") { flags[key] = value === "true"; continue; }
+      const held = options[key];
+      options[key] = held === undefined || held === "" ? value : value === "" ? held : `${held} ${value}`;
       continue;
     }
     positional.push(tok);
   }
+  if (end !== -1) positional.push(...tokens.slice(end + 1));
 
   return { command, positional, options, flags };
 }

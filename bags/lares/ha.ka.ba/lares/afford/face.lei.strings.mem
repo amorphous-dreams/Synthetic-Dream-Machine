@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.strings"
 
 ! face.lei.strings ~ kui ~ swarm-lei-kui
 
-`lares lei kui --rite <rite> --branch <name>` strings a lei: wide by default (`--returns <n>`), or `--reach head --head <h>` to pin one head. With no `--after` it follows the line's own tip (the first on an empty line); a named `--after` that is no tip refuses as forked, before any route or signature. More than twelve returns asks `--yes`. `--all` (push, kukulu) strings one lei for every open face under one route, each face's own record by its own hand at its own line's tip; a keep lei names one face and never rides `--all`.
+`lares lei kui rite=<rite> branch=<name>` strings a lei: wide by default (`--returns <n>`), or `--reach head --head <h>` to pin one head. With no `--after` it follows the line's own tip (the first on an empty line); a named `--after` that is no tip refuses as forked, before any route or signature. More than twelve returns asks `--yes`. `--all` (push, kukulu) strings one lei for every open face under one route, each face's own record by its own hand at its own line's tip; a keep lei names one face and never rides `--all`.
 
 <<~/ahu>>
 
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JsDSBFqKlSbC9Fm42R7CeNJAzVucqKzKG5mFYdKMwsM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0FASUeykp9mYZXZQEEY1wRHdA80ENGlq__g4146mePo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

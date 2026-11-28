@@ -23,11 +23,11 @@
  * IDEMPOTENT (causal-island law): each run converges from whatever state it finds — a virgin Synced tree reads
  * everything NEW; a converged tree no-ops per holding.
  *
- *   lares vessel lay [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
- *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
- *   lares vessel lay --workbench [--apply]                  — the checkout's workbench folders alone (`<source>/../wikis/<slug>`)
+ *   lares vessel lay [apply=true] [--yes] [lift-kahua=<N>]   — preview per holding by default (the ingest posture);
+ *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or lift-kahua=N
+ *   lares vessel lay workbench=true [apply=true]                  — the checkout's workbench folders alone (`<source>/../wikis/<slug>`)
  *                                          into each wiki's working layer the worn face mounts; never canon, never a face root
- *   lares vessel lay --lag                                  — the house's lag; writes nothing
+ *   lares vessel lay lag=true                                  — the house's lag; writes nothing
  *
  * THE LAG (`readHouseLag`) reads what the kūkulu prints on every raise: each disk-sourced holding's titles its canon lacks (NEW)
  * or holds in other bytes (CHANGED), scanned against the Synced tree the INGEST gate keeps; each checkout workbench folder's titles
@@ -102,7 +102,7 @@ export async function layHolding(
   // A dir named for the TW5 docs library stands no bag (`tw5-docs-name`, `projectionRoots`): the lay names that, never the
   // off-disk reason the sourced-slug reading would otherwise give it.
   if (namesTw5Docs(h.holding)) {
-    return { ...h, gesture: "skip", exitCode: 0, reason: "tw5-docs-reserved: dir stands no bag (the name rests with the read-only TW5 docs library, `--recipe tw5-docs`)" };
+    return { ...h, gesture: "skip", exitCode: 0, reason: "tw5-docs-reserved: dir stands no bag (the name rests with the read-only TW5 docs library, `recipe=tw5-docs`)" };
   }
   if (!diskSourced) {
     return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the lay feeds disk canon alone" };
@@ -153,7 +153,7 @@ export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknow
       return r === undefined ? [] : [`lay:   ${String(p["uri"])}: ${retirementLine(r)}`];
     });
     return [
-      `lay: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`,
+      `lay: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove all=true count=${n} bag=${bag}\` (or \`restore all=true count=${n} bag=${bag}\`)`,
       ...retired.slice(0, LAY_RECEIPT_NAMES),
       ...(retired.length > LAY_RECEIPT_NAMES ? [`lay:   … ${retired.length - LAY_RECEIPT_NAMES} more retired carrier(s): \`lares shore\` names each`] : []),
     ];
@@ -211,7 +211,7 @@ export function createReadsFloor(lines: readonly string[]): boolean {
 
 /**
  * Run the CREATE and hear its answer on BOTH mouths `act` speaks through: the human lines ride `console.log` (folded to one
- * line unless --verbose), and off a terminal the one JSON line rides `process.stdout.write` (`emit`). The JSON line passes
+ * line unless verbose=true), and off a terminal the one JSON line rides `process.stdout.write` (`emit`). The JSON line passes
  * through to the caller untouched and the fold listens beside it, so a lay in a pipe, a seat or a harness hears `readsFloor`
  * exactly as a lay at a terminal does.
  */
@@ -236,7 +236,7 @@ async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): P
   } finally { console.log = log; process.stdout.write = write; }
 }
 
-/** Run the mirror leg off the lay's own flags: `--apply`, `--lift-kahua <N>`, `--json`. */
+/** Run the mirror leg off the lay's own flags: `apply=true`, `lift-kahua=<N>`, `--json`. */
 export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahuaOnly?: boolean } = {}): Promise<number> {
   return runMirrors({ apply: args.flags["apply"] === true, liftKahua: args.options["lift-kahua"], json: args.flags["json"] === true, ...(opts.kahuaOnly ? { kahuaOnly: true } : {}) }, doors);
 }
@@ -316,16 +316,16 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
   // AN APPLY THAT NO HAND CONFIRMS REFUSES OUT LOUD: without `--yes` the lay asks at a terminal, and with none (a pipe, a seat, a
   // harness) no one can answer, so it names the cure instead of standing silent.
   if (args.flags["apply"] === true && args.flags["yes"] !== true && !(process.stdin.isTTY && process.stdout.isTTY)) {
-    const cure = `lares vessel lay ${args.flags["workbench"] ? "--workbench " : ""}--apply --yes`;
+    const cure = `lares vessel lay ${args.flags["workbench"] ? "workbench=true " : ""}apply=true --yes`;
     emit(args, {
       ok: false,
       error: { code: "usage", message: "confirmation required", hint: `no terminal answers the lay's confirmation; pass --yes (the operator's relayed approval): ${cure}` },
       human: () => { /* the line below speaks for the prose route and rides stderr beside a JSON envelope too */ },
     });
-    console.error(`lares vessel lay: --apply needs a confirmation and no terminal stands to give it; run \`${cure}\` to confirm (add --lift-kahua <N> to lift kahua items).`);
+    console.error(`lares vessel lay: apply=true needs a confirmation and no terminal stands to give it; run \`${cure}\` to confirm (add lift-kahua=<N> to lift kahua items).`);
     return exitFor("usage");
   }
-  // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu runs after its raise): no holdings leg, no
+  // `workbench=true` walks the checkout's workbench folders alone (the lay a kūkulu runs after its raise): no holdings leg, no
   // face root, no share, no kahua; each workbench lays only where the worn face holds a writer's seat.
   if (args.flags["workbench"]) return runMirrors({ apply: args.flags["apply"] === true, json: args.flags["json"] === true, benchesOnly: true }, mirrorDoors);
   const holdings = discoverHoldings(bagsDir);

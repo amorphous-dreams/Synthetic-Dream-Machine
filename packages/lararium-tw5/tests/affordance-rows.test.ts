@@ -60,19 +60,19 @@ describe("the skins derive spellings by rule", () => {
   test("RED 5: one neutral call renders runnable on every surface", () => {
     const call = neutralCallOf("library.oracle.speaks recipe/default asking/<words>", "lar:///x.y.z");
     expect(call.address).toBe("lar:///library.oracle.speaks");
-    expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --recipe default --asking <words>");
+    expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast recipe=default asking=<words>");
     expect(renderCall("mcp", "oracle_cast", call)).toBe(`oracle_cast(recipe="default", asking="<words>")`);
     expect(renderCall("tw5", "action-oracle-cast", call)).toBe(`<$action-oracle-cast recipe="default" asking="<words>"/>`);
     expect(renderCall("console", "", call)).toBe(`$tw.lares.call("library.oracle.speaks", {"recipe": "default", "asking": "<words>"})`);
     // A carrier that skins a console spelling (a verb word) renders the call by that word.
     expect(renderCall("console", "get", { address: "lar:///engine.record.reads", args: [["title", "Room 4"]] })).toBe(`$tw.lares.call("get", {"title": "Room 4"})`);
     const example = parseHasRows("<<has entity=`example` name=`e` params=`recipe/default asking/[[which road first?]] fresh then/oracle.read.casts ~ x`>>")[0]!;
-    expect(renderCall("cli", "lares oracle cast", exampleCall(example, "lar:///library.oracle.speaks"))).toBe("lares oracle cast --recipe default --asking 'which road first?' --fresh");
+    expect(renderCall("cli", "lares oracle cast", exampleCall(example, "lar:///library.oracle.speaks"))).toBe("lares oracle cast recipe=default asking='which road first?' fresh=true");
   });
 
   test("RED 6: the usage spine groups a one-of choice and brackets every optional arg", () => {
     const rows = parseHasRows(TAKES);
-    expect(usageOf("cli", "lares oracle cast", rows)).toBe("usage: lares oracle cast (--recipe <slug> | --bag <slug>) [--asking <words>] [--fresh]");
+    expect(usageOf("cli", "lares oracle cast", rows)).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=true]");
     expect(usageOf("mcp", "oracle_cast", rows)).toBe("oracle_cast((recipe=<slug> | bag=<slug>), [asking=<words>], [fresh])");
   });
 
@@ -87,7 +87,7 @@ describe("the skins derive spellings by rule", () => {
     expect(usageOf("cli", "lares get", seated, called("[[lares get]]"))).toBe("usage: lares get [title=<title>]");
     expect(renderCall("cli", "lares get", { address: "lar:///engine.record.reads", args: [["title", "x"]] }, called("[[lares get]]"), seatsOf(seated))).toBe("lares get title=x");
     // CONTROL: a cli row with no grammar/call keeps its door's --flag table.
-    expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES))).toBe("usage: lares oracle cast (--recipe <slug> | --bag <slug>) [--asking <words>] [--fresh]");
+    expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES))).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=true]");
   });
 
   test("RED 7: the unfold read speaks the read door's own words on each surface", () => {
@@ -132,7 +132,7 @@ describe("the canon seat (weaver#1: canon seats no bare root)", () => {
     expect(kaheaTitles("<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>"))
       .toEqual(["lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container"]);
     const call = neutralCallOf("library.oracle.speaks fresh/true", "lar:///x.y.z");
-    expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --fresh");
+    expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast fresh=true");
   });
 });
 

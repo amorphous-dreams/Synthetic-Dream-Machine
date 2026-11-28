@@ -71,7 +71,7 @@ sweepable. Three holds bind it:
 <<~ scale name=`law` ranks=```ephemeral-by-default ~ `run` reaps on exit unless `--keep` retains it -> keep-explicit ~ durability NEVER happens by accident; the operator promotes -> trap-EXIT ~ dissolve fires on success OR error; an interrupted run leaves no half-paved scratch```>>
 
 ''Two independent reapers close the leak.'' The trap reaps on exit, and an interrupted run the trap missed
-(SIGKILL, a crashed host) falls to `lares sensorium dissolve --orphans` and to `lares sense teardown`, whose
+(SIGKILL, a crashed host) falls to `lares sensorium dissolve orphans=true` and to `lares sense teardown`, whose
 sweep takes `.corpus/*`. Ephemeral state never leaks past both.
 
 ''The help that teaches.'' The door's words live in the per-command help registry (examples first), and
@@ -226,6 +226,6 @@ global-now it cannot ground. The reconciliation cost `R*_sem = log₂ dim H¹` g
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;luAsCCddREZDdyG95-g6mTcJUNIkwsKeQMR_Oo9gbG0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XMZTLxJyk6QSBcAfM5fXSyI5XHzBYmpt4jIoTyUITf0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

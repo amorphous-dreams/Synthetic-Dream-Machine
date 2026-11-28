@@ -221,7 +221,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   }
 
   if (!nodeUp && observeOnly) {
-    nodeNote = "down — `--observe` withholds the stand; run `lares vessel stand` to serve";
+    nodeNote = "down — `observe=true` withholds the stand; run `lares vessel stand` to serve";
   } else if (!nodeUp && engineHeldByHost()) {
     // The host holds the engine: a daemon that does not answer yet is the host's to wait on or restart.
     nodeNote = "the container runs and its daemon has not answered yet — the host holds the engine (lares-container.sh logs)";
@@ -361,8 +361,8 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     // The founding names come from the OPERATOR, never from this build — the roster forms at the seat from
     // the personas that declared a Handle and stood for a chair. So the counsel shows the SHAPE and leaves
     // every name blank.
-    "lares persona new 0 --name '<private label>' --handle '<Handle>' --seat",
-    "lares persona new 1 --name '<private label>' --handle '<Handle>' --seat   # …one command per kahu",
+    "lares persona new 0 name='<private label>' handle='<Handle>' seat=true",
+    "lares persona new 1 name='<private label>' handle='<Handle>' seat=true   # …one command per kahu",
     `Then seat the 2-of-3 quorum from the named personas: lares nexus seal seat`,
     `(These three name the founding KAHU QUORUM, never a limit on faces — this vessel's own slot ceiling rides LAR_PERSONA_SLOTS.)`,
     // WHAT THE VAULT HOLDS, said HERE: the founding sealed every private row under the vessel key, so nothing waits
@@ -415,7 +415,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         console.log("    → lares sense setup          the sovereign sensorium organs");
       }
       if (founding !== undefined) {
-        console.log("  founding (--init):");
+        console.log("  founding (init=true):");
         for (const s of founding) console.log(`    ${s.action.padEnd(6)} ${s.step}: ${s.detail}`);
       }
       if (foundingHint !== undefined) {

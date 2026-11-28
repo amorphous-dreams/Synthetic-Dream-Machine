@@ -2,7 +2,7 @@
  * cold-card-readback — PRINT EACH COLD-KEY CARD ONCE, AND READ IT BACK BEFORE A CHARTER MOVES.
  *
  * One printer serves every act that commits a chair's next key to a card: the seal rite's seat and roll, and the
- * Stable founding act (`lares vessel found --hearth`). A card a person mis-copies would freeze the chair at its
+ * Stable founding act (`lares vessel found hearth=true`). A card a person mis-copies would freeze the chair at its
  * next roll, so the printer asks each one back on the terminal and the act writes nothing until every card reads
  * true. A harness can explicitly seat a read-back stand-in in this CLI process; then the JSON answer carries each
  * card's code. With no seat the answer carries the digest and the confirm phrase alone.

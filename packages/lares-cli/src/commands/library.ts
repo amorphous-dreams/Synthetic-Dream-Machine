@@ -18,9 +18,9 @@
  *
  *   list                          the collections, and what each holds
  *   show <collection>             one collection's bodies, with anchors
- *   acquire <file> --to <coll>    take a body in (MOVES by default — moving is the point; --keep copies)
+ *   acquire <file> to=<coll>    take a body in (MOVES by default — moving is the point; keep=true copies)
  *   verify [<collection>]         re-digest the BYTES against each directory name
- *   index <collection> --out <p>  write the tracked index — the part that travels
+ *   index <collection> out=<p>  write the tracked index — the part that travels
  *   path <collection>             resolve `library:<collection>` for a caller that needs the directory
  *
  * A reference NAMES, it never paths: `library:mark-twain` travels, a directory does not.
@@ -115,7 +115,7 @@ function libraryAcquire(args: ParsedArgs): number {
   const file = args.positional[1];
   const to   = (args.options["to"] ?? "").trim().toLowerCase();
   if (!file) throw new LibraryUsageError("acquire wants a file");
-  if (!to)   throw new LibraryUsageError("acquire wants a destination: --to <collection>");
+  if (!to)   throw new LibraryUsageError("acquire wants a destination: to=<collection>");
   if (!existsSync(file)) throw new LibraryUsageError(`no such file: ${file}`);
 
   const out = acquireIntoLibrary(file, {
@@ -132,7 +132,7 @@ function libraryAcquire(args: ParsedArgs): number {
       console.log(`  ${out.meta.name}  ${(out.meta.size / 1024).toFixed(0)} KiB`);
       console.log(`  anchor: ${out.meta.integrity}`);
       console.log(`  path:   ${out.path}`);
-      console.log(out.moved ? `  the source left its old home — which is the point.` : `  --keep: the source stands where it was.`);
+      console.log(out.moved ? `  the source left its old home — which is the point.` : `  keep=true: the source stands where it was.`);
     },
   });
   return 0;
@@ -159,7 +159,7 @@ function libraryVerify(args: ParsedArgs): number {
 function libraryIndex(args: ParsedArgs): number {
   const collection = collectionArg(args, "index");
   const out = args.options["out"];
-  if (!out) throw new LibraryUsageError("index wants a destination: --out <path>");
+  if (!out) throw new LibraryUsageError("index wants a destination: out=<path>");
   const path = writeLibraryIndex(collection, out);
   emit(args, {
     ok: true, data: { collection, path, entries: listCollection(collection).length },

@@ -19,7 +19,7 @@ function run(argv: string[]): { code: Promise<number>; err: () => string } {
 }
 
 describe("a recall filter needs a query", () => {
-  for (const argv of [["--speaker", "operator"], ["--agent", "a1"], ["--surface", "claude", "--list"], ["--pair"], ["--imago", "cid-1", "--channel", "speech"]]) {
+  for (const argv of [["speaker=operator"], ["agent=a1"], ["surface=claude", "list=true"], ["pair=true"], ["imago=cid-1", "channel=speech"]]) {
     test(`★ ${argv.join(" ")} refuses with a query pointer, and reaches no daemon ★`, async () => {
       const r = run(argv);
       expect(await r.code).toBe(2);

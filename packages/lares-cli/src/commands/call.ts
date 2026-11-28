@@ -32,22 +32,20 @@ import { stageBodyToCas } from "../cas-stage.js";
 import { landedFace } from "./meme-shared.js";
 import { actHostDoor } from "./act.js";
 import { summonedStream } from "../summoned-stream.js";
-import { ArgsError, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
+import { ArgsError, CALL_VERBS, isCallWord, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
 import { cmdWatchLine } from "./watch-line.js";
 
 /** The heads that name the msg door: its verb word and its address. */
 const MSG_HEADS: ReadonlySet<string> = new Set(["msg", "lar:///engine.msg.lands"]);
 
-/** The verb words the CLI answers as commands of their own; an address (`lar:///…`) and `-` answer beside them. */
-export const CALL_VERBS = ["get", "put", "delete", "rename", "msg", "watch"] as const;
+export { CALL_VERBS };
 
 /**
  * True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act` (the one act, fork 9:
  * `lares act lar:///<address> …` and `lares lar:///<address> …` read the same, and every residency act rides by its address).
  */
 export function isCallHead(command: string | null, _positional: readonly string[] = []): boolean {
-  if (command === null) return false;
-  return (CALL_VERBS as readonly string[]).includes(command) || command === "-" || command === "act" || command.startsWith("lar:///");
+  return isCallWord(command);
 }
 
 /** The line a parsed command names as a call: `act` drops, since `lares act lar:///x` and `lares lar:///x` read the same. */

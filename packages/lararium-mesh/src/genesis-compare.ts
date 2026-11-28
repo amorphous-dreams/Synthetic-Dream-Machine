@@ -168,7 +168,7 @@ export interface SeedRatchetStance { readonly ratchet: GenesisRatchet; readonly 
 /** The line that acts on an offered skin: the adopt's preview over the pin's base (S2); `--apply` lands it by hand. */
 export const SEED_OFFER_NEXT = "lares vessel floor adopt";
 /** The line that reads the held engine: the seed row of the floor status. */
-export const SEED_HELD_NEXT = "lares vessel floor status --grain seed";
+export const SEED_HELD_NEXT = "lares vessel floor status grain=seed";
 
 /** Each ratchet the seed moves, with its stance and its line; a same ratchet leaves the list. */
 export function seedRatchetStances(differences: readonly RatchetDifference[]): readonly SeedRatchetStance[] {

@@ -132,7 +132,7 @@ export function extractSignalFromTarget(sensoriumDir: string, opts: ExtractSigna
   const declared = manifest.coupling.children.length;
   if (children.length < 2) {
     const note = declared === 0
-      ? "no coupling children — a single-stream sensorium hosts nothing to couple (pass an explicit --signal)"
+      ? "no coupling children — a single-stream sensorium hosts nothing to couple (pass an explicit signal=)"
       : `insufficient child signals (${children.length}/${declared} lands a signal.json) — the calibration awaits the re-pour that lands child streams`;
     return { sensorium: manifest.sensorium, children, rows: [], names: [], readable: children.length, note };
   }

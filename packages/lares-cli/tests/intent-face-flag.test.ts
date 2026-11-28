@@ -19,14 +19,14 @@ describe("intent CLI face", () => {
   beforeEach(() => { seam.calls = []; seam.output = { id: "intent-1", rows: [] }; vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {}); });
 
   test("control: explicit h1 reaches issue; absent face reaches resolver for a sole-face positive", async () => {
-    expect(await run("issue", "face-join", "--face", "1", "--to", "a".repeat(64))).toBe(0);
+    expect(await run("issue", "face-join", "face=1", `to=${"a".repeat(64)}`)).toBe(0);
     expect(seam.calls[0]).toEqual(["intent-issue", expect.objectContaining({ face: 1 })]);
     expect(await run("show")).toBe(0);
     expect(seam.calls[1]).toEqual(["intent-show", expect.not.objectContaining({ face: expect.anything() })]);
   });
 
   test("bare, negated and malformed face refuse before the store door", async () => {
-    for (const arg of ["--face", "--no-face", "--face=1.5", "--face=-1"]) {
+    for (const arg of ["face=true", "face=false", "face=1.5", "face=-1"]) {
       expect(await run("show", arg)).toBe(1);
     }
     expect(seam.calls).toEqual([]);
@@ -36,11 +36,11 @@ describe("intent CLI face", () => {
     const lines: string[] = [];
     vi.spyOn(console, "log").mockImplementation((line: unknown) => { lines.push(String(line)); });
     seam.output = { rows: [{ id: "one", status: "unknown-frontier", winner: null, duplicates: ["duplicate-cid"], voidAfterAct: ["late-cid"], outcomeCount: "unknown" }], standing: "unknown", strayAnswers: ["stray-cid"], refused: [] };
-    expect(await run("show", "--face", "0")).toBe(0);
+    expect(await run("show", "face=0")).toBe(0);
     expect(lines.join("\n")).toMatch(/duplicate-cid.*late-cid.*outcomes=unknown/);
     lines.length = 0;
     seam.output = { rows: [{ id: "one", status: "open", winner: null, duplicates: [], voidAfterAct: [], outcomeCount: 0 }], standing: "stands", strayAnswers: [], refused: [] };
-    expect(await run("show", "--face", "0")).toBe(0);
+    expect(await run("show", "face=0")).toBe(0);
     expect(lines.join("\n")).toMatch(/outcomes=0/);
   });
 });
@@ -50,13 +50,13 @@ describe("intent CLI co-sign detail", () => {
   test("RED: ask without --detail carries none; CONTROL: --detail reaches the ask row, and answer prints the act it approves", async () => {
     const lines: string[] = [];
     vi.spyOn(console, "log").mockImplementation((line: unknown) => { lines.push(String(line)); });
-    expect(await run("ask", "intent-1", "--face", "0")).toBe(0);
+    expect(await run("ask", "intent-1", "face=0")).toBe(0);
     expect(seam.calls[0]![1]).not.toHaveProperty("detail");
     const digest = "d".repeat(64);
-    expect(await run("ask", "intent-1", "--face", "0", "--detail", digest)).toBe(0);
+    expect(await run("ask", "intent-1", "face=0", `detail=${digest}`)).toBe(0);
     expect(seam.calls[1]).toEqual(["intent-ask", expect.objectContaining({ target: "intent-1", detail: digest })]);
     seam.output = { cid: "answer-1", shown: { verb: "ward-push-lei", askedBy: "a".repeat(64), intent: "intent-1", detail: digest } };
-    expect(await run("answer", "ask-1", "--face", "0", "--executor", "b".repeat(64))).toBe(0);
+    expect(await run("answer", "ask-1", "face=0", `executor=${"b".repeat(64)}`)).toBe(0);
     expect(lines.join("\n")).toMatch(new RegExp(`act ward-push-lei asked-by=a+ intent=intent-1 detail=${digest}\\nanswer-1`));
   });
 });
@@ -64,10 +64,10 @@ describe("intent CLI co-sign detail", () => {
 describe("intent relay CLI", () => {
   beforeEach(() => { seam.calls = []; seam.output = { enabled: false, path: null, pin: null }; vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {}); });
   test("RED: malformed face refuses before the door; CONTROL: enable, status and rotate select their named rows", async () => {
-    expect(await cmdIntentRelay(parseArgs(["intent-relay", "enable", "--face=1.5"]))).toBe(1);
+    expect(await cmdIntentRelay(parseArgs(["intent-relay", "enable", "face=1.5"]))).toBe(1);
     expect(seam.calls).toEqual([]);
-    expect(await cmdIntentRelay(parseArgs(["intent-relay", "enable", "--face", "1"]))).toBe(0);
-    expect(await cmdIntentRelay(parseArgs(["intent-relay", "status", "--face", "1"]))).toBe(0);
+    expect(await cmdIntentRelay(parseArgs(["intent-relay", "enable", "face=1"]))).toBe(0);
+    expect(await cmdIntentRelay(parseArgs(["intent-relay", "status", "face=1"]))).toBe(0);
     expect(await cmdIntentRelay(parseArgs(["intent-relay", "rotate"]))).toBe(0);
     expect(seam.calls).toEqual([["intent-relay-enable", { face: 1 }], ["intent-relay-status", { face: 1 }], ["intent-relay-rotate", {}]]);
   });

@@ -12,7 +12,7 @@
  *   lares sense worldline <run|handle>        the braid (tree, default) — spawn=fork ·
  *                                       retire=join · concurrent siblings marked ∥
  *   lares sense worldline tree <run>          the same, spelled
- *   lares sense worldline <run> --as-of <ts>  the braid AS-OF a valid-time frontier — a
+ *   lares sense worldline <run> as-of=<ts>  the braid AS-OF a valid-time frontier — a
  *                                       pure READ refinement (rows spawned after <ts>
  *                                       drop; an interval still open at <ts> reads OPEN).
  *                                       Mirrors the MCP `worldline(as_of)` arg.
@@ -262,7 +262,7 @@ const KAPAE_REFUSAL =
 /** Refuse a kapae / un-kapae call honestly: a read-only KG handle cannot land the branch-mute write. */
 function kapaeStub(args: ParsedArgs, verb: "kapae" | "un-kapae", branch: string): number {
   if (!branch) {
-    console.error(`usage: lares sense worldline ${verb} <branch> [--tick <n>]  (refuses honestly — see below)`);
+    console.error(`usage: lares sense worldline ${verb} <branch> [tick=<n>]  (refuses honestly — see below)`);
     return 2;
   }
   emit(args, {
@@ -322,7 +322,7 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
 
   const target = (pos[0] ?? "").trim();
   if (!target) {
-    console.error("usage: lares sense worldline <handle|session-id[-prefix]> [--palace <dir>] [--as-of <ts>] | lares sense worldline enrich [--palace <content-dir>] | lares sense worldline kapae <branch> | lares sense worldline diff <A> <B>");
+    console.error("usage: lares sense worldline <handle|session-id[-prefix]> [palace=<dir>] [as-of=<ts>] | lares sense worldline enrich [palace=<content-dir>] | lares sense worldline kapae <branch> | lares sense worldline diff <A> <B>");
     return 2;
   }
   // A worldline handle (`<run>.<agentId>`) walks its whole run; a run/session id walks itself.
@@ -376,7 +376,7 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
   }
 
   const run = runs[0] ?? runArg;
-  // --as-of: a pure read-only frontier reconstruction (default undefined = the whole braid, unchanged).
+  // as-of=: a pure read-only frontier reconstruction (default undefined = the whole braid, unchanged).
   const asOf = args.options["as-of"];
   const framedRows = filterRowsAsOf(rows, asOf);
   const tree = buildWorldlineTree(run, framedRows);

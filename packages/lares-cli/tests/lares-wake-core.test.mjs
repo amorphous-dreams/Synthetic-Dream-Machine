@@ -32,7 +32,7 @@ test("the wake carries the memory index beside the frame and the homes line", as
   // The read rides the vessel's own door: the daemon wiki, the index tag, title and description, a row limit, a byte cap.
   assert.deepEqual(calls.index, ["get", "filter=[tag[stage/index]] -[lares.stage[state]]", "fields=title,description", "limit=32", `max-bytes=${INDEX_BYTES}`, "--json"]);
   assert.deepEqual(calls.index, indexArgv());
-  assert.deepEqual(calls.observe, ["vessel", "stand", "--observe", "--json"]);
+  assert.deepEqual(calls.observe, ["vessel", "stand", "observe=true", "--json"]);
 });
 
 test("a page with a cursor names the call that reads further", async () => {
@@ -230,7 +230,7 @@ test("wake-names-the-lei: the wake names the lei a session wears at its branch, 
     calls.push([name, argv]);
     return ({
       observe: answered(UP), homes: answered("h"), index: answered(page([])), git: gitHead(),
-      lei: lei(argv[3] === "push" ? { lei: { standing: true, after: CID } } : { lei: { standing: false, refusal: "absent", after: null } }),
+      lei: lei(argv.includes("rite=push") ? { lei: { standing: true, after: CID } } : { lei: { standing: false, refusal: "absent", after: null } }),
     })[name];
   };
   const context = await wake({ run });
@@ -294,11 +294,11 @@ test("wake-names-the-keep-line: the wake reads the keep lei at the configured ke
   const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
   const run = (name, argv) => { calls.push([name, argv]); return ({ ...base, keep: lei({ lei: { standing: true, reach: "wide", returnsLeft: 11, after: CID } }) })[name]; };
   const context = await wake({ run, keepWorkspace: "backup" });
-  assert.match(context, /Lares keep: a keep lei stands for workspace "backup" with 11 returns left; `lares rite keep --workspace backup` spends one/);
+  assert.match(context, /Lares keep: a keep lei stands for workspace "backup" with 11 returns left; `lares rite keep workspace=backup` spends one/);
   assert.deepEqual(calls.find(([n]) => n === "keep")[1], keepArgv("backup"));
-  assert.deepEqual(keepArgv("backup"), ["lei", "show", "--rite", "keep", "--branch", "backup", "--json"]);
+  assert.deepEqual(keepArgv("backup"), ["lei", "show", "rite=keep", "branch=backup", "--json"]);
   const none = await wake({ run: runner({ ...base, keep: lei({ lei: { standing: false, refusal: "absent", after: null } }) }), keepWorkspace: "backup" });
-  assert.match(none, /Lares keep: no keep lei stands for workspace "backup" \(absent\); `lares vault unlock` offers one, or by hand: lares lei kui --rite keep --branch backup --returns <n>/);
+  assert.match(none, /Lares keep: no keep lei stands for workspace "backup" \(absent\); `lares vault unlock` offers one, or by hand: lares lei kui rite=keep branch=backup returns=<n>/);
   const broken = await wake({ run: runner({ ...base, keep: answered("", 127) }), keepWorkspace: "backup" });
   assert.match(broken, /Lares keep unread: the read exited 127 with no answer/);
   // CONTROL: a house config that names no keep workspace reads no keep line.
@@ -320,7 +320,7 @@ test("wake-names-a-red-keep-tessera-and-its-cure: a keep cut and never landed na
     observe: answered(UP), homes: answered("h"), index: answered(page([])), halves: answered(JSON.stringify({ ok: true, data: { receipts, conferre } })),
   }) });
   assert.match(context, /Lares tessera conferre: 0 par, 1 red/);
-  assert.match(context, new RegExp(`Lares keep red: tessera ${"9".repeat(12)} \\(workspace "backup", bundle ${"f".repeat(16)}\\) reads landed-absent: cut and never landed; cure: lares rite keep --workspace backup \\(it pushes what waits and lands it\\)`));
+  assert.match(context, new RegExp(`Lares keep red: tessera ${"9".repeat(12)} \\(workspace "backup", bundle ${"f".repeat(16)}\\) reads landed-absent: cut and never landed; cure: lares rite keep workspace=backup \\(it pushes what waits and lands it\\)`));
   // CONTROL: a red half of another rite names no keep cure.
   const other = await wake({ run: runner({
     observe: answered(UP), homes: answered("h"), index: answered(page([])),
@@ -365,7 +365,7 @@ test("wake-offers-the-workspace-tree: a bound workspace in no git tree draws one
   const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
   const binds = [{ name: "backup", dir: "/srv/backup" }, { name: "notes", dir: "/srv/notes" }];
   const context = await wake({ run: runner(base), workspaces: binds, treeStands: (dir) => dir === "/srv/notes" });
-  assert.match(context, /^workspace backup holds no git tree; lares surface init --workspace backup$/m);
+  assert.match(context, /^workspace backup holds no git tree; lares surface init workspace=backup$/m);
   assert.doesNotMatch(context, /workspace notes holds no git tree/);
   // CONTROL: every workspace in a tree, and no workspace bound, each leave the wake without an offer.
   assert.doesNotMatch(await wake({ run: runner(base), workspaces: binds, treeStands: () => true }), /holds no git tree/);
@@ -406,7 +406,7 @@ test("wake-offers-the-law: the pins lead, marked, then the first law rows they l
   assert.equal(lines[head + 3], `📌 ${API}/mu — null-oracle core`);
   assert.equal(lines[head + 6], `   ${API}/pono/law-00 — the law of pono/law-00`);
   assert.equal(lines[head + 5 + LAW_ROWS], `   ${API}/pono/law-07 — the law of pono/law-07`);
-  assert.ok(lines[head + 6 + LAW_ROWS].startsWith(`read the rest: act(address="lar:///engine.law.indexes", args={"after": <next>}) or lares law index --all; the filter: get(filter="${LAW_INDEX_FILTER}", recipe="default", params={"fields": "title,description,role"}); pin or unpin: act(address="lar:///engine.law.pins"`));
+  assert.ok(lines[head + 6 + LAW_ROWS].startsWith(`read the rest: act(address="lar:///engine.law.indexes", args={"after": <next>}) or lares law index all=true; the filter: get(filter="${LAW_INDEX_FILTER}", recipe="default", params={"fields": "title,description,role"}); pin or unpin: act(address="lar:///engine.law.pins"`));
   assert.doesNotMatch(context, /law-08/);
   // Both reads ride the vessel's own filter door over the daemon wiki.
   assert.deepEqual(calls.law, lawArgv());
@@ -583,7 +583,7 @@ test("wake-names-the-docs-library: the line names the library only where the ves
   const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
   const read = await wake({ run: runner({ ...base, docs: answered(status) }, calls) });
   assert.match(read, /^Library: tw5-docs \(TiddlyWiki docs, read-only\)/m);
-  assert.deepEqual(calls.docs, ["wiki", "status", "--recipe", "tw5-docs", "--json"]);
+  assert.deepEqual(calls.docs, ["wiki", "status", "recipe=tw5-docs", "--json"]);
   assert.deepEqual(calls.docs, core.docsArgv());
   const older = JSON.stringify({ ok: false, error: { code: "wiki-unreached", message: "wiki-unreached: wiki-status — no wiki \"tw5-docs\" this face reaches" } });
   const unreached = await wake({ run: runner({ ...base, docs: answered(older, 4) }) });

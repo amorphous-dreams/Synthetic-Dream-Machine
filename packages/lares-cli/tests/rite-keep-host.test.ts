@@ -211,8 +211,8 @@ describe("the keep rite, host half", () => {
     expect(out).toMatchObject({ code: 1, data: { kept: true, committed: true, stopped: "push", refusal: "keep-push-refused" } });
     expect(r.calls.some((c) => c.startsWith("land"))).toBe(false);
     expect(String(out.data["message"])).toContain(`tessera ${tessera} reads red (landed-absent)`);
-    expect(String(out.data["message"])).toContain("lares rite keep --workspace backup");
-    expect(String(out.data["message"])).toContain(`lares rite land --tessera ${tessera} --head ${bundleId}`);
+    expect(String(out.data["message"])).toContain("lares rite keep workspace=backup");
+    expect(String(out.data["message"])).toContain(`lares rite land tessera=${tessera} head=${bundleId}`);
     must(r.ws, "remote", "set-url", "origin", r.remote);
     const again = await riteKeepHost(r.ports, { workspace: "backup" });
     expect(again).toMatchObject({ code: 0, data: { kept: false, committed: false, pushed: true, par: true, landed: [{ tessera, par: true }] } });
@@ -312,10 +312,10 @@ describe("the keep rite, host half", () => {
     expect(moved.data, JSON.stringify(moved.data)).toMatchObject({ kept: true, due: true, pushed: true, par: true });
     expect(r.remoteManifest()).toBe(String(moved.data["bundleId"]));
     // The line: `--if-due` alone names no workspace (the CLI reads the configured one); a plain keep still needs one.
-    expect(keepPlan(parseArgs(["rite", "keep", "--if-due"]))).toEqual({ acceptOmissions: false, ifDue: true });
-    expect(keepPlan(parseArgs(["rite", "keep", "--if-due", "--workspace", "backup"]))).toEqual({ workspace: "backup", acceptOmissions: false, ifDue: true });
-    expect(keepPlan(parseArgs(["rite", "keep", "--workspace", "backup", "--no-sessions"]))).toEqual({ workspace: "backup", acceptOmissions: false, sessions: false });
-    expect(keepPlan(parseArgs(["rite", "keep", "--workspace", "backup", "--sessions"]))).toEqual({ workspace: "backup", acceptOmissions: false, sessions: true });
+    expect(keepPlan(parseArgs(["rite", "keep", "if-due=true"]))).toEqual({ acceptOmissions: false, ifDue: true });
+    expect(keepPlan(parseArgs(["rite", "keep", "if-due=true", "workspace=backup"]))).toEqual({ workspace: "backup", acceptOmissions: false, ifDue: true });
+    expect(keepPlan(parseArgs(["rite", "keep", "workspace=backup", "sessions=false"]))).toEqual({ workspace: "backup", acceptOmissions: false, sessions: false });
+    expect(keepPlan(parseArgs(["rite", "keep", "workspace=backup", "sessions=true"]))).toEqual({ workspace: "backup", acceptOmissions: false, sessions: true });
     expect(() => keepPlan(parseArgs(["rite", "keep"]))).toThrow();
   });
 
@@ -553,7 +553,7 @@ describe("the keep rite, host half", () => {
     });
     const out = await riteKeepHost(watched(false), { workspace: "backup", face: 0 });
     expect(out).toMatchObject({ code: 1, data: { refusal: "swarm-lei-returns-spent" } });
-    expect(String(out.data["message"])).toContain("`lares lei kui --rite keep --branch backup --returns 12 --face 0`");
+    expect(String(out.data["message"])).toContain("`lares lei kui rite=keep branch=backup returns=12 face=0`");
     expect(touched).toEqual([]);
     expect(r.calls).toEqual([]);
     expect(existsSync(join(r.ws, r.device))).toBe(false);
@@ -667,12 +667,12 @@ describe("the keep rite, host half", () => {
     const out = await riteKeepHost(ports, { workspace: "backup" });
     const { tessera, bundleId } = out.data as { tessera: string; bundleId: string };
     expect(out).toMatchObject({ code: 1, data: { stopped: "push", face: 0 } });
-    expect(String(out.data["message"])).toContain(`lares rite land --tessera ${tessera} --head ${bundleId} --face 0`);
+    expect(String(out.data["message"])).toContain(`lares rite land tessera=${tessera} head=${bundleId} face=0`);
   });
 
   test("KH19 spent-lei-offers-its-refill: a keep stopped on a spent lei strings the refill the refusal names (its returns, its face) through the refill port and goes on once; declined or on a pipe it keeps today's refusal", async () => {
     const spentRow = (r: ReturnType<typeof rig>, strung: { n: number }): KeepHostPorts["row"] => async (verb, args) => {
-      if (verb === "keep-cut" && strung.n === 0) { r.calls.push(`${verb} ${JSON.stringify(args)}`); return { ok: false, code: "swarm-lei-returns-spent", message: "no keep lei stands for the workspace \"backup\" (returns-spent); the hand strings one: `lares lei kui --rite keep --branch backup --returns 6 --face 0`" }; }
+      if (verb === "keep-cut" && strung.n === 0) { r.calls.push(`${verb} ${JSON.stringify(args)}`); return { ok: false, code: "swarm-lei-returns-spent", message: "no keep lei stands for the workspace \"backup\" (returns-spent); the hand strings one: `lares lei kui rite=keep branch=backup returns=6 face=0`" }; }
       return r.ports.row(verb, args);
     };
     const r = rig(); const strung = { n: 0 }; const asked: unknown[] = [];
@@ -681,7 +681,7 @@ describe("the keep rite, host half", () => {
     expect(yes.code).toBe(0);
     expect(r.calls.filter((c) => c.startsWith("keep-cut"))).toHaveLength(2);
     const n = rig({ at: join(scratch, "declined") }); const none = { n: 0 };
-    const no = await riteKeepHost({ ...n.ports, sessions: null, row: spentRow(n, none), refill: async () => ({ strung: false, remedy: "lares lei kui --rite keep --branch backup --returns 6 --face 0" }) }, { workspace: "backup" });
+    const no = await riteKeepHost({ ...n.ports, sessions: null, row: spentRow(n, none), refill: async () => ({ strung: false, remedy: "lares lei kui rite=keep branch=backup returns=6 face=0" }) }, { workspace: "backup" });
     expect(no).toMatchObject({ code: 1, data: { refusal: "swarm-lei-returns-spent" } });
     expect(n.calls.filter((c) => c.startsWith("keep-cut"))).toHaveLength(1);
   });

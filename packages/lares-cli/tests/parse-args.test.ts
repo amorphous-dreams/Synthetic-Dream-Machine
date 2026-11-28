@@ -1,106 +1,63 @@
 /**
- * THE PARSER READS `--key=value`, AND A FLAG NOBODY READS REFUSES BY NAME.
+ * THE PARSER KEEPS ONE TOKEN RULE: a door line's params ride `name=value`, a dash flag outside the global ones refuses by name
+ * with its param spelling, and a param the line's carrier takes nowhere refuses by name before the handler runs.
  *
- * Measured before this file: `vessel found --skip-build --root=/state` parsed to flags
- * `{"skip-build":true,"root=/state":true}` and options `{}`; `vessel --root=/state read` parsed to
- * `options {"root=/state":"read"}`, so the subcommand vanished. Each parse below pins one of those, and
- * the CONTROL rows pin that the space form still reads exactly as it did.
+ * Course: lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts#/burn (24 · the parser's flag tables leave).
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
-import { parseArgs, splitCall, ArgsError, BOOLEAN_FLAGS, PARAM_TOKEN, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
-import { dispatch, unknownFlags, COMMANDS } from "../src/bin/lares.js";
+import { parseArgs, splitCall, ArgsError, GLOBAL_FLAGS, PARAM_TOKEN } from "../src/parse-args.js";
+import { dispatch, doorTakes, unknownParams, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
 
-describe("parseArgs: --key=value", () => {
-  test("★ `--root=/state` is an option, not a flag named `root=/state` ★", () => {
-    const a = parseArgs(["vessel", "found", "--skip-build", "--root=/state", "--genesis=/app/genesis"]);
+describe("parseArgs: a door line's params", () => {
+  test("★ `name=value` lands in options, `name=true` and `name=false` in flags ★", () => {
+    const a = parseArgs(["vessel", "found", "--skip-build", "root=/state", "genesis=/app/genesis", "force=true", "hearth=false"]);
+    expect(a.positional).toEqual(["found"]);
     expect(a.options).toEqual({ root: "/state", genesis: "/app/genesis" });
-    expect(a.flags).toEqual({ "skip-build": true });
+    expect(a.flags).toEqual({ "skip-build": true, force: true, hearth: false });
   });
-  test("★ `vessel --root=/state read` keeps its subcommand ★", () => {
-    const a = parseArgs(["vessel", "--root=/state", "read"]);
-    expect(a.positional).toEqual(["read"]);
-    expect(a.options).toEqual({ root: "/state" });
+  test("★ a param before a word leaves the word positional ★", () => {
+    const a = parseArgs(["vault", "unbind", "rotate=true", "abc"]);
+    expect(a.positional).toEqual(["unbind", "abc"]);
+    expect(a.flags).toEqual({ rotate: true });
   });
-  test("splits at the FIRST `=`; an empty value stays an option", () => {
-    expect(parseArgs(["x", "--k=a=b"]).options).toEqual({ k: "a=b" });
-    expect(parseArgs(["x", "--k="]).options).toEqual({ k: "" });
+  test("splits at the FIRST `=`; an empty value stays an option; a repeat joins with a space", () => {
+    expect(parseArgs(["x", "k=a=b"]).options).toEqual({ k: "a=b" });
+    expect(parseArgs(["x", "k="]).options).toEqual({ k: "" });
+    expect(parseArgs(["x", "tag=a", "tag=b"]).options).toEqual({ tag: "a b" });
   });
-  test("`--no-key=…` and `--=v` refuse", () => {
-    expect(() => parseArgs(["x", "--no-json=1"])).toThrow(ArgsError);
-    expect(() => parseArgs(["x", "--=v"])).toThrow(ArgsError);
+  test("★ a value spelled like a flag rides as a value ★", () => {
+    expect(parseArgs(["x", "text=--note"]).options).toEqual({ text: "--note" });
   });
-  test("a token after `--` stays positional", () => {
-    const a = parseArgs(["x", "--", "--root=/y"]);
-    expect(a.positional).toEqual(["--root=/y"]);
+  test("a token after `--` stays positional, a dash flag and a param alike", () => {
+    const a = parseArgs(["mcp", "serve", "--", "--root=/y", "k=v"]);
+    expect(a.positional).toEqual(["serve", "--root=/y", "k=v"]);
     expect(a.options).toEqual({});
   });
-  test("CONTROL: the space form reads as before", () => {
-    const a = parseArgs(["vessel", "found", "--root", "/state", "--force", "--no-json"]);
-    expect(a.options).toEqual({ root: "/state" });
-    expect(a.flags).toEqual({ force: true, json: false });
+  test("★ each global flag reads as a dash spelling, taking no value; `--no-json` reads false ★", () => {
+    for (const name of GLOBAL_FLAGS) expect(parseArgs(["x", `--${name}`]).flags[name], name).toBe(true);
+    expect(parseArgs(["x", "--no-json"]).flags).toEqual({ json: false });
+    expect(() => parseArgs(["x", "--json=1"])).toThrow(ArgsError);
   });
 });
 
-describe("parseArgs: a boolean flag takes no value, in every position", () => {
-  test("★ `--rotate <id>` keeps `<id>` positional; `<id> --rotate` reads the same ★", () => {
-    for (const argv of [["vault", "unbind", "--rotate", "abc"], ["vault", "unbind", "abc", "--rotate"]]) {
-      const a = parseArgs(argv);
-      expect(a.positional).toEqual(["unbind", "abc"]);
-      expect(a.flags).toEqual({ rotate: true });
-      expect(a.options).toEqual({});
-    }
+describe("parseArgs: every other dash spelling burned into params", () => {
+  test("★ a dash flag refuses by name, naming its param reading and the whole line spelled in params ★", () => {
+    expect(() => parseArgs(["rite", "kukulu", "--dry-run"])).toThrow(/--dry-run reads as dry-run=true .*; run: lares rite kukulu dry-run=true$/);
+    expect(() => parseArgs(["wiki", "status", "--face", "1"])).toThrow(/--face reads as face=1 .*; run: lares wiki status face=1$/);
+    expect(() => parseArgs(["wiki", "status", "--face=1"])).toThrow(/run: lares wiki status face=1$/);
+    expect(() => parseArgs(["rite", "keep", "--no-sessions"])).toThrow(/--no-sessions reads as sessions=false/);
   });
-  test("★ every declared boolean flag placed before a positional leaves the positional alone ★", () => {
-    for (const name of BOOLEAN_FLAGS) {
-      const a = parseArgs(["x", `--${name}`, "pos"]);
-      expect(a.positional, `--${name} swallowed the positional`).toEqual(["pos"]);
-      expect(a.flags[name], `--${name}`).toBe(true);
-      expect(a.options[name], `--${name}`).toBeUndefined();
-    }
+  test("★ on a call line a flag that burned into the dials names its dial ★", () => {
+    expect(() => parseArgs(["act", "lar:///carriage.record.adds", "--dry-run"])).toThrow(/--dry-run reads as mu=_0/);
+    expect(() => parseArgs(["get", "title=x", "--draft"])).toThrow(/--draft reads as draft=true \(a call takes name=value params/);
   });
-  test("★ every declared boolean flag refuses `=value` by name ★", () => {
-    for (const name of BOOLEAN_FLAGS) expect(() => parseArgs(["x", `--${name}=anything`]), name).toThrow(/takes no value/);
-  });
-  test("CONTROL: a valued option still binds the next token", () => {
-    const a = parseArgs(["x", "--root", "/r", "pos"]);
-    expect(a.options).toEqual({ root: "/r" });
-    expect(a.positional).toEqual(["pos"]);
-  });
-  test("★ a value flag takes the next token whatever it starts with: front matter binds as the body ★", () => {
-    const body = "---\nfront: matter\n---\nbody";
-    expect(parseArgs(["kahua", "stage", "T", "--text", body]).options).toEqual({ text: body });
-    expect(parseArgs(["kahua", "stage", "T", "--text", "--literal"]).options).toEqual({ text: "--literal" });
-    expect(parseArgs(["kahua", "stage", "T", `--text=${body}`]).options).toEqual({ text: body });
-    expect(parseArgs(["kahua", "stage", "T", "--text", body]).positional).toEqual(["stage", "T"]);
-  });
-  test("CONTROL: any other valued name still peeks, so `--key --other` leaves the first bare and an unknown flag stays a flag", () => {
-    const a = parseArgs(["x", "--root", "--mystery"]);
-    expect(a.flags).toEqual({ root: true, mystery: true });
-    expect(a.positional).toEqual([]);
-  });
-  test("the declaration cannot drift from the handlers: flag reads are declared, option reads are not", () => {
-    const files: string[] = [];
-    const walk = (d: string): void => {
-      for (const n of readdirSync(d)) {
-        const p = join(d, n);
-        if (statSync(p).isDirectory()) walk(p); else if (p.endsWith(".ts")) files.push(p);
-      }
-    };
-    walk(join(import.meta.dirname, "..", "src"));
-    const flagReads = new Set<string>(); const optionReads = new Set<string>();
-    for (const f of files) {
-      const text = readFileSync(f, "utf8");
-      for (const m of text.matchAll(/\bflags\["([a-z0-9-]+)"\]/g)) flagReads.add(m[1]!);
-      for (const m of text.matchAll(/\boptions\["([a-z0-9-]+)"\]/g)) optionReads.add(m[1]!);
-    }
-    expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n) && !["bag", "release"].includes(n)), "read as a flag, never declared").toEqual([]);
-    expect([...BOOLEAN_FLAGS].filter((n) => optionReads.has(n)), "declared boolean, read as an option").toEqual([]);
-    expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
-    expect([...VALUE_OR_FLAG].filter((n) => !optionReads.has(n) || !flagReads.has(n)), "listed as dual, read one way only").toEqual([]);
+  test("★ a call line keeps its params positional, a value spelled `--x` included ★", () => {
+    const a = parseArgs(["get", "title=--x", "--json"]);
+    expect(a.positional).toEqual(["title=--x"]);
+    expect(a.options).toEqual({});
+    expect(a.flags).toEqual({ json: true });
   });
 });
 
@@ -140,36 +97,37 @@ describe("splitCall: the call shape's one token rule", () => {
   });
 });
 
-describe("dispatch: an unread flag refuses by name, before the handler", () => {
+describe("dispatch: a param the carrier takes nowhere refuses by name, before the handler", () => {
   const quiet = () => ({
     err: vi.spyOn(console, "error").mockImplementation(() => {}),
     log: vi.spyOn(console, "log").mockImplementation(() => {}),
   });
 
-  test("★ the refusal also reads the `=` spelling, and names the nearest accepted one ★", async () => {
+  test("★ the refusal names the nearest taken spelling ★", async () => {
     const { err } = quiet();
-    expect(await dispatch(["circle", "--petnam=x"])).toBe(2);
-    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("did you mean --petname");
+    expect(await dispatch(["circle", "add", "n", "petnam=x"])).toBe(2);
+    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("did you mean petname=");
   });
-  test("★ `sense recall kw --limit 1` still reads: --limit is the operator-kept second name for --k ★", () => {
+  test("★ a dash flag exits 2 from dispatch, naming its param, never a stack ★", async () => {
+    const { err } = quiet();
+    expect(await dispatch(["vessel", "stand", "--foreground"])).toBe(2);
+    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("run: lares vessel stand foreground=true");
+  });
+  test("★ the door's params come from its carriers' #/takes ★", () => {
+    expect(doorTakes("sense")).toContain("limit");
+    expect(doorTakes("sense")).toContain("k");
     const sense = COMMANDS.find((c) => c.name === "sense")!;
-    expect(sense.accepts).toContain("limit");
-    expect(sense.accepts).toContain("k");
-    expect(unknownFlags(sense, parseArgs(["sense", "recall", "kw", "--limit", "1"]))).toEqual([]);
+    expect(unknownParams(sense, parseArgs(["sense", "recall", "kw", "limit=1"]))).toEqual([]);
   });
-  test("a malformed `--no-x=1` exits 2 from dispatch, not a stack", async () => {
-    quiet();
-    expect(await dispatch(["vessel", "--no-json=1"])).toBe(2);
-  });
-  test("CONTROL: a command's own flags and the global ones read", () => {
+  test("CONTROL: a command's own params and the global flags read", () => {
     const circle = COMMANDS.find((c) => c.name === "circle")!;
-    expect(unknownFlags(circle, parseArgs(["circle", "add", "n", "--to", "c", "--petname=p", "--json", "--yes"]))).toEqual([]);
+    expect(unknownParams(circle, parseArgs(["circle", "add", "n", "to=c", "petname=p", "--json", "--yes"]))).toEqual([]);
     const vessel = COMMANDS.find((c) => c.name === "vessel")!;
-    expect(unknownFlags(vessel, parseArgs(["vessel", "found", "--skip-build", "--root=/state", "--genesis=/app/genesis"]))).toEqual([]);
+    expect(unknownParams(vessel, parseArgs(["vessel", "found", "--skip-build", "root=/state", "genesis=/app/genesis"]))).toEqual([]);
   });
   test("mempalace hands an unwrapped verb to the vendored parser untouched", () => {
     const mp = COMMANDS.find((c) => c.name === "mempalace")!;
-    expect(unknownFlags(mp, parseArgs(["mempalace", "search", "q", "--n-results", "3"]))).toEqual([]);
-    expect(unknownFlags(mp, parseArgs(["mempalace", "status", "--n-results", "3"])).map((u) => u.name)).toEqual(["n-results"]);
+    expect(unknownParams(mp, parseArgs(["mempalace", "search", "q", "n-results=3"]))).toEqual([]);
+    expect(unknownParams(mp, parseArgs(["mempalace", "status", "n-results=3"])).map((u) => u.name)).toEqual(["n-results"]);
   });
 });

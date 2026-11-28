@@ -9,9 +9,9 @@ usage: lares nexus kahuli <engine | grammar>
              delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;
              the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.
     grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —
-             never the engine CID. Reads the current epoch; --apply re-derives the island (the bake).
+             never the engine CID. Reads the current epoch; apply=true re-derives the island (the bake).
 
-  a read NEVER builds — the deliberate build+push lives behind --apply and in \`nexus rite kahuli\`."
+  a read NEVER builds — the deliberate build+push lives behind apply=true and in \`nexus rite kahuli\`."
 `;
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
@@ -53,35 +53,35 @@ usage: lares nexus seal <seat | rotate | show | export | import | grow | cold re
           of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints
           as a cold key on a card: the card prints once, you type it back, and the genesis commits
           one digest per chair. No next key rests on this machine.
-          [--threshold <k>]            the quorum rule (default: majority of those that stood)
+          [threshold=<k>]            the quorum rule (default: majority of those that stood)
   rotate  type back each chair's card: each revealed key becomes its chair's seat key, and the
           chain advances. The roster becomes exactly what STANDS — the succession door: a kahu
           steps down by no longer standing, a new one takes a chair by standing and signs with a
           fresh key. Fresh cards print for the rolled head, and you type them back.
-          [--threshold <k>]  the quorum rule for the new roster (default: majority)
+          [threshold=<k>]  the quorum rule for the new roster (default: majority)
   show    read the kahu quorum's seats + chain head + quorum verdict + the carried set
   cold rehearse  type back one or more chairs' cards: each reads against the digests the head
           committed and names the chair it would roll. Nothing moves: no key, row or charter.
   import <file>          land a charter at the primary path — only where none stands, or the same one
-  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
+  import carry=<file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
                          that AID lands only when its seal lineage extends the held head
-  cofound open --release <manifest> --out <offer>   found a Nexus with a second operator, two of two:
+  cofound open release=<manifest> out=<offer>   found a Nexus with a second operator, two of two:
           a seat key for your face and your hearth's cadence key mint here, your chair's next key prints
-          on a card you type back, and the offer file goes to the other founder. [--face <i>] [--charter-law <lar:>]
-  cofound join <offer> --out <join>   answer an offer: type the offer seat's fingerprint as you heard it
-          (--heard <fp>), and your own seat, cadence key and card mint; the join half-signs the inception
-  cofound seal <join> --out <inception>   the offering founder: type the joining seat's fingerprint as you
-          heard it (--heard <fp>); both signatures land, and the joint charter files under its own AID
+          on a card you type back, and the offer file goes to the other founder. [face=<i>] [charter-law=<lar:>]
+  cofound join <offer> out=<join>   answer an offer: type the offer seat's fingerprint as you heard it
+          (heard=<fp>), and your own seat, cadence key and card mint; the join half-signs the inception
+  cofound seal <join> out=<inception>   the offering founder: type the joining seat's fingerprint as you
+          heard it (heard=<fp>); both signatures land, and the joint charter files under its own AID
   cofound seal <inception>   the joining founder: the inception reads against the image you joined, and
           the joint charter files under its own AID. Neither household seed moves.
-  roll open --nexus <aid> --threshold <n> --out <circle>   roll a joint Nexus across its vaults: type this
+  roll open nexus=<aid> threshold=<n> out=<circle>   roll a joint Nexus across its vaults: type this
           chair's revealed cold card, a fresh successor card prints, and the circle file goes to the next holder
-          [--face <i>] [--added]  --added = a chair the head never committed (a new holder): no card reads
-  roll join <circle> --out <circle>   contribute this vault's chair to a carried circle (same flags)
-  roll sign <circle> --out <circle>   sign the circle with the seats this vault contributed, once you type what you
-          heard from the other holders: the rule and every other chair's fingerprint [--heard-threshold <n> --heard <fp,…>]
+          [face=<i>] [added=true]  added=true = a chair the head never committed (a new holder): no card reads
+  roll join <circle> out=<circle>   contribute this vault's chair to a carried circle (same flags)
+  roll sign <circle> out=<circle>   sign the circle with the seats this vault contributed, once you type what you
+          heard from the other holders: the rule and every other chair's fingerprint [heard-threshold=<n> heard=<fp,…>]
   roll file <circle>   file the rolled charter once the circle reads complete; the roll anchor crosses next
-  roll abandon --nexus <aid>   drop this vault's open circle and retire the seats it contributed
-  anchor [--nexus <aid>] --out <partial>   once both vaults filed the roll, sign its anchor with the seats held here
-  anchor --from <partial> [--out <file>]   judge the other vault's anchor partial, cosign it, land it once complete"
+  roll abandon nexus=<aid>   drop this vault's open circle and retire the seats it contributed
+  anchor [nexus=<aid>] out=<partial>   once both vaults filed the roll, sign its anchor with the seats held here
+  anchor from=<partial> [out=<file>]   judge the other vault's anchor partial, cosign it, land it once complete"
 `;

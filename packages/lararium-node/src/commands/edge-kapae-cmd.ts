@@ -88,7 +88,7 @@ export interface EdgeKapaeOptions {
   /** The holder hand on a FLEET's board: WHICH held persona root signs. Absent → the first held root. A realm's
    *  board takes none: its holder hand signs with the acting face's key at the realm's Nexus. */
   readonly handleIndex?: number;
-  /** The face whose hand acts on a REALM's board (`--face N`); absent, the one face standing open. */
+  /** The face whose hand acts on a REALM's board (`face=N`); absent, the one face standing open. */
   readonly face?:        number;
   /** The Nexus a realm stands under, for a vessel's first act there. Absent → the primary charter's. */
   readonly nexusAid?:    string;
@@ -162,7 +162,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   if ([opts.edgeId, member, device].filter((v) => v !== undefined).length !== 1) {
     throw new EdgeKapaeError("name ONE relationship: an edge id, a member's key (with a realm), or a device's key.");
   }
-  if (realm !== undefined && !HEX64.test(realm)) throw new EdgeKapaeError(`--realm expects a 64-hex realm id, got "${opts.realm}".`);
+  if (realm !== undefined && !HEX64.test(realm)) throw new EdgeKapaeError(`realm= expects a 64-hex realm id, got "${opts.realm}".`);
   if (member !== undefined && (!HEX64.test(member) || realm === undefined)) {
     throw new EdgeKapaeError("a member's edge takes the member's 64-hex key and the realm it stands in.");
   }
@@ -181,9 +181,9 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   if (!anchors || !atomSeed) throw new EdgeKapaeError("this face holds no atom; re-found or re-admit it");
   const vesselKey = faceAtomKeyFromSeed(atomSeed!, anchors!.personaGroupId).key;
   if (realm !== undefined && opts.handleIndex !== undefined) {
-    throw new EdgeKapaeError("a realm's holder hand signs with the key the acting face presents at the realm's Nexus (--face N) — `--as` names a fleet root, on a fleet's board alone.");
+    throw new EdgeKapaeError("a realm's holder hand signs with the key the acting face presents at the realm's Nexus (face=N) — `as=` names a fleet root, on a fleet's board alone.");
   }
-  if (realm === undefined && opts.nexusAid !== undefined) throw new EdgeKapaeError("a fleet's board stands under no Nexus — `--nexus` names a realm's.");
+  if (realm === undefined && opts.nexusAid !== undefined) throw new EdgeKapaeError("a fleet's board stands under no Nexus — `nexus=` names a realm's.");
   const realmNexus = realm !== undefined
     ? await actingRealmNexus({ repo: opts.repo, vesselKey, realm, sealHome: opts.sealHome, ...(opts.nexusAid !== undefined ? { named: opts.nexusAid } : {}), refuse: (m) => new EdgeKapaeError(m) })
     : null;
@@ -214,11 +214,11 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     // A read never mints, so a face that holds no key there holds no vouch there either. A member's edge answers
     // to the seat quorum alone, whatever face acts.
     if (member !== undefined) {
-      throw new EdgeKapaeError("REFUSED: no single key holds a member's edge on this realm's board — it answers to the seat quorum (--quorum).");
+      throw new EdgeKapaeError("REFUSED: no single key holds a member's edge on this realm's board — it answers to the seat quorum (quorum=true).");
     }
     const leaf = await faceNexusLeaf(realmNexus!, faceIndex);
     if (!leaf) {
-      throw new EdgeKapaeError("the acting face holds no key at the Nexus this realm stands under, so it holds no vouch here — name the face that vouched (--face N).");
+      throw new EdgeKapaeError("the acting face holds no key at the Nexus this realm stands under, so it holds no vouch here — name the face that vouched (face=N).");
     }
     const signerDid = leaf.verifyingKey.toLowerCase();
     signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(leaf.seed) }];
@@ -268,8 +268,8 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
         throw new EdgeKapaeError(
           holder === undefined
             ? "REFUSED: no single key holds that edge on this realm's board. A voucher holds their own vouch " +
-              "(name its edge id, as `lares cabal vouch` printed it); a member's edge answers to the seat quorum (--quorum)."
-            : "REFUSED: that vouch belongs to another voucher. Only the face key that made a vouch withdraws it; the seat quorum may strike it (--quorum).",
+              "(name its edge id, as `lares cabal vouch` printed it); a member's edge answers to the seat quorum (quorum=true)."
+            : "REFUSED: that vouch belongs to another voucher. Only the face key that made a vouch withdraws it; the seat quorum may strike it (quorum=true).",
         );
       }
     }

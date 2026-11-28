@@ -38,7 +38,7 @@ Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/
 The held-out run 38975094627 on `1f0759b53` uploaded its cell's container logs. Tallying each container's `[carriage] nexus-…: N place floor pin(s) …` lines:
 
 |! container |! reads |
-| `lararium-a` (A, the Nexus founder; every carry ran there as `lares nexus carry --floor-pin`) | `1 place floor pin(s) read` ×6, `3 place floor pin(s) refused (place-uncarried)` ×7 |
+| `lararium-a` (A, the Nexus founder; every carry ran there as `lares nexus carry floor-pin=true`) | `1 place floor pin(s) read` ×6, `3 place floor pin(s) refused (place-uncarried)` ×7 |
 | `herm-relay-2` (carried last) | `3 place floor pin(s) read` ×129 |
 | `herm-relay` (took its bundle before relay-2's carry) | `2 place floor pin(s) read` ×80 |
 
@@ -115,6 +115,6 @@ The controller's session (Lares-Awakens) stays open for a short while after this
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;N751vMtG1yFA-DebcyS_etTOGnD4LjrBtAK7YjegPl4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x0p6bXm5u5gW0cv2RMT0B1ghgNJ8eg5CV-LS6DLQz3E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

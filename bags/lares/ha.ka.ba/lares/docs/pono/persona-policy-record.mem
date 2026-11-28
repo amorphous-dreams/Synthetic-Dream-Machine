@@ -29,7 +29,7 @@ The remaining cells of the three-layer table place objects as a model study read
 
 The code as it stands cracks against the ruling in three places (read 2026-10-11, nothing run):
 
-# ''One vessel-wide worn face.'' The node keeps no `persona wear`. Its lit set keeps several faces OPEN, each sealing under its own key, and one face WORN: the face `lares vault unlock --all --face N` names, the face the composition mounts, and the face the AI seat acts as (`wornOrdinal`, `seat-hand.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>). The container shim keeps the last worn face (`config/last-worn-face`) and wears it again after a stand. The worn face reads vessel-wide, so the per-session wear stays owed. The browser's `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) still moves one active pointer, and its boot resolves ONE worn face.
+# ''One vessel-wide worn face.'' The node keeps no `persona wear`. Its lit set keeps several faces OPEN, each sealing under its own key, and one face WORN: the face `lares vault unlock all=true face=N` names, the face the composition mounts, and the face the AI seat acts as (`wornOrdinal`, `seat-hand.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>). The container shim keeps the last worn face (`config/last-worn-face`) and wears it again after a stand. The worn face reads vessel-wide, so the per-session wear stays owed. The browser's `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) still moves one active pointer, and its boot resolves ONE worn face.
 # ''The gate proof names the VESSEL.'' The leaf identity presents a selected face's atom and card at a face gate; the place carries only its public floor card and pin while faceless. Each face holds its own Keyhive identity by atom.
 # ''The holder broadcasts.'' The shared holder forwards every island message to every tab (`packages/lararium-browser/src/shared-holder-core.ts`), and the PersonaGroup ring's own-hand path skips the grant check (`packages/lararium-mesh/src/persona-group-ring.ts`), so plane names separate bags without authorizing sessions.
 
@@ -39,6 +39,6 @@ The code as it stands cracks against the ruling in three places (read 2026-10-11
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gMANZh0lC7ilyZVy77ISD3uveVKflIqzD7I4qX1pDck`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gHyGpKWXsPIMr0f1h274iFdUjr_d8RU6rulypwRZt2Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

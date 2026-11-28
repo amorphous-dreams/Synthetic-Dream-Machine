@@ -15,7 +15,7 @@
 #   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act lar:///carriage.bag.creates bag=… yes=true`); prints its URI.
 #                                           A bare name becomes lar:///ha.ka.ba/bags/<name>; a lar: URI passes through
 #   browser-ci.sh ingest <path>             copy a repo carrier (bags/<bag>/<w.w.w>/…) into the scratch workspace volume and
-#                                           `lares ingest --source … --to <bag uri> --apply --yes`
+#                                           `lares ingest source=… to=<bag uri> apply=true --yes`
 #                                           (default bag lar:///ha.ka.ba/bags/lares; BROWSER_CI_BAG overrides)
 #   browser-ci.sh recipe add <bag-uri>      ensure the catalog recipe exists, then add the bag to the wiki the browser mounts
 #   browser-ci.sh recipe remove <bag-uri>   `wiki remove-bag` — the swarm's negative control
@@ -154,7 +154,7 @@ case "$verb" in
     compose up -d lares
     compose up -d --wait lares
     unlock
-    lares persona new 0 --name "$FACE"
+    lares persona new 0 name="$FACE"
     # The face stands named; the restart below re-stands the vessel, and its unlock mounts h0 (the test door names it).
     compose restart lares
     compose up -d --wait lares
@@ -206,7 +206,7 @@ case "$verb" in
     # `docker cp` into the named workspace volume's mount: the node reads /workspace/<path>.
     docker exec "$cid" mkdir -p "/workspace/$(dirname -- "$1")"
     docker cp "$ROOT/$1" "$cid:/workspace/$1"
-    lares ingest --source "/workspace/$1" --to "$BAG" --apply --yes ;;
+    lares ingest source="/workspace/$1" to="$BAG" apply=true --yes ;;
   recipe)
     [ "$#" -eq 2 ] || die "recipe wants add|remove and one bag URI"
     act=$1; uri=$(bag_uri "$2")
@@ -251,7 +251,7 @@ case "$verb" in
     faces=$(lares persona list --json)
     ok_or_die "$faces"
     # `persona new 0` is idempotent on a lit face and answers its verifying key.
-    key=$(lares persona new 0 --name "$FACE" 2>/dev/null | sed -n 's/.*"verifyingKey":"\([0-9a-f]*\)".*/\1/p' | tail -n 1)
+    key=$(lares persona new 0 name="$FACE" 2>/dev/null | sed -n 's/.*"verifyingKey":"\([0-9a-f]*\)".*/\1/p' | tail -n 1)
     [ -n "$key" ] || die "no face stands; run up first"
     # The gate key: the hearth's own `[lararium] gate key:` boot line (its vessel key, which the gate arms with). A
     # crossroads prints a `[herm]   gate key:` line too; the read names the hearth's line alone, and the last boot.
@@ -261,7 +261,7 @@ case "$verb" in
     # Every document the catalog and oracle plane register is data in the JSON wiki status.
     wikis=$(lares wiki status --json)
     # The recipe's bag stack, in the layer order `wiki status --recipe` answers. A wiki without a catalog recipe yet answers no stack.
-    stack=$(lares wiki status --recipe "$slug" --json 2>/dev/null | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{try{console.log((JSON.parse(s).data?.layers ?? []).map(l=>l.bag).join("\n"));}catch{}});' || true)
+    stack=$(lares wiki status recipe="$slug" --json 2>/dev/null | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{try{console.log((JSON.parse(s).data?.layers ?? []).map(l=>l.bag).join("\n"));}catch{}});' || true)
     INFO_ORIGIN_QA=$origin INFO_PORT=$PORT INFO_SLUG=$slug INFO_FACES=$faces INFO_GATE=$gate INFO_BAGS=$bags \
     INFO_KEY=$key INFO_WIKIS=$wikis INFO_STACK=$stack \
     node -e '

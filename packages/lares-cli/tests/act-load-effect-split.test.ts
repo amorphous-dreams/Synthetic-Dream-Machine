@@ -32,7 +32,21 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { cmdAct } from "../src/commands/act.js";
-import { parseArgs } from "../src/parse-args.js";
+import { splitCall, type ParsedArgs } from "../src/parse-args.js";
+
+/**
+ * The runner's own parsed shape (`positional: [VERB]`, options and flags), as the call door hands it once it binds the act's
+ * params: `act` heads a call line, so `parseArgs` keeps its params as written and the runner never reads them raw.
+ */
+function actLine(verb: string, ...params: string[]): ParsedArgs {
+  const options: Record<string, string> = {};
+  const flags: Record<string, boolean> = { yes: true, json: true };
+  for (const [key, value] of Object.entries(splitCall(params).params)) {
+    if (value === "true" || value === "false") flags[key] = value === "true";
+    else options[key] = value;
+  }
+  return { command: "act", positional: [verb], options, flags };
+}
 
 let dir: string;
 let server: Server | undefined;
@@ -82,16 +96,15 @@ async function standScripted(answers: readonly ((inv: Invocation) => unknown)[])
   return { path, received };
 }
 
-function loadArgs(extra: Record<string, boolean> = {}): ReturnType<typeof parseArgs> {
+function loadArgs(extra: Record<string, boolean> = {}): ParsedArgs {
   // A nonexistent source path: `cmdAct` catches the stat failure and sends a provenance-only LOAD
   // (no carriers) — exactly the shape this proof needs, with no filesystem fixture to maintain.
-  return parseArgs([
-    "act", "LOAD",
-    "--source-uri", "/nonexistent-lares-test-source",
-    "--to", "lar:///test/catalog",
-    "--change-id", "fixed-probe-change-id",
-    "--yes", "--json",
-  ]);
+  return actLine(
+    "LOAD",
+    "source-uri=/nonexistent-lares-test-source",
+    "to=lar:///test/catalog",
+    "change-id=fixed-probe-change-id",
+  );
 }
 
 function doneReply(landed: number, effectOf?: string): (inv: Invocation) => unknown {
@@ -112,7 +125,7 @@ describe("directory LOAD respects catalog ownership", () => {
     writeFileSync(join(source, "meta.mem"), '```toml meta\ntitle = "lar:///ha.ka.ba/bags/bag"\n```\n');
     writeFileSync(join(source, "nested", "meta.mem"), "nested authored content");
     writeFileSync(join(source, "receipt.mem"), "receipt fact carrier");
-    await cmdAct(parseArgs(["act", "LOAD", "--source-uri", source, "--to", "lar:///test/catalog", "--yes", "--json"]));
+    await cmdAct(actLine("LOAD", `source-uri=${source}`, "to=lar:///test/catalog"));
     const action = received[0]!.args as { carriers: { text: string }[] };
     expect(action.carriers.map((c) => c.text).sort()).toEqual(["nested authored content", "receipt fact carrier"]);
   });
@@ -121,7 +134,7 @@ describe("directory LOAD respects catalog ownership", () => {
     const source = join(dir, "ordinary");
     mkdirSync(source);
     writeFileSync(join(source, "meta.mem"), '```toml meta\ntitle = "lar:///authored/example"\n```\n');
-    await cmdAct(parseArgs(["act", "LOAD", "--source-uri", source, "--to", "lar:///test/catalog", "--yes", "--json"]));
+    await cmdAct(actLine("LOAD", `source-uri=${source}`, "to=lar:///test/catalog"));
     const action = received[0]!.args as { carriers: { text: string }[] };
     expect(action.carriers).toHaveLength(1);
     expect(action.carriers[0]!.text).toContain("lar:///authored/example");
@@ -194,8 +207,8 @@ describe("lares act — the split requestId/effectKey, every action verb (H4, wi
     // across both attempts is what tells the daemon's effect index this is one retry of one change,
     // never the bare bag args alone (two genuinely distinct CLEARs of the same bag must NOT collapse).
     const { received } = await standScripted([doneReply(1), doneReply(1)]);
-    const codeA = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-clear-split", "--yes", "--json"]));
-    const codeB = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-clear-split", "--yes", "--json"]));
+    const codeA = await cmdAct(actLine("CLEAR", "bag=lar:///test/catalog", "change-id=cid-clear-split"));
+    const codeB = await cmdAct(actLine("CLEAR", "bag=lar:///test/catalog", "change-id=cid-clear-split"));
     expect(codeA).toBe(0);
     expect(codeB).toBe(0);
     expect(received).toHaveLength(2);
@@ -209,9 +222,9 @@ describe("lares act — the split requestId/effectKey, every action verb (H4, wi
 
   test("★ a non-LOAD verb's abandoned-then-retry ALSO closes (fresh id per attempt, never wedged under one id) ★", async () => {
     const { received } = await standScripted([abandonedReply(), doneReply(1)]);
-    const codeFirst = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-clear-retry", "--yes", "--json"]));
+    const codeFirst = await cmdAct(actLine("CLEAR", "bag=lar:///test/catalog", "change-id=cid-clear-retry"));
     expect(codeFirst).toBe(6); // request-abandoned
-    const codeRetry = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-clear-retry", "--yes", "--json"]));
+    const codeRetry = await cmdAct(actLine("CLEAR", "bag=lar:///test/catalog", "change-id=cid-clear-retry"));
     expect(codeRetry).toBe(0); // the retry actually ran — never refused again under the same id
     expect(received).toHaveLength(2);
     expect(received[0]!.requestId).not.toBe(received[1]!.requestId);

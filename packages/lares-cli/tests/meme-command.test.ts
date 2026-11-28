@@ -356,11 +356,11 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
 });
 
 describe("projectPlan — the seat law, no daemon", () => {
-  test("a target off the list refuses; a missing --to refuses; --recipe with --bag refuses", () => {
-    expect(() => projectPlan(memeArgs(["project", "x.mem"], { to: "pdf" }))).toThrow(/--to/);
+  test("a target off the list refuses; a missing to= refuses; recipe= with bag= refuses", () => {
+    expect(() => projectPlan(memeArgs(["project", "x.mem"], { to: "pdf" }))).toThrow(/to= names the target/);
     // The carrier itself reads through the one door (`lares get title=<uri> aperture=arc`): `mem` left the targets.
-    expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "mem", recipe: "default" }))).toThrow(/--to names the target, one of md · html · tid · json/);
-    expect(() => projectPlan(memeArgs(["project", "x.mem"]))).toThrow(/--to/);
+    expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "mem", recipe: "default" }))).toThrow(/to= names the target, one of md · html · tid · json/);
+    expect(() => projectPlan(memeArgs(["project", "x.mem"]))).toThrow(/to= names the target/);
     expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "html", recipe: "sdm", bag: "sdm" }))).toThrow(/no-container/);
   });
   test("local file projection refuses two named containers before creating output", async () => {
@@ -370,7 +370,7 @@ describe("projectPlan — the seat law, no daemon", () => {
     writeFileSync(source, "<<^ code=`&#x0001;`>> local\n", "utf8");
     const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await cmdMeme(memeArgs(["project", source], { to: "md", out: output, recipe: "a", bag: "b" }, { json: false }))).toBe(2);
-    expect(stderr.mock.calls.flat().join(" ")).toMatch(/no-container.*--recipe.*--bag/s);
+    expect(stderr.mock.calls.flat().join(" ")).toMatch(/no-container.*recipe=.*bag=/s);
     stderr.mockRestore();
     expect(existsSync(join(output, "source.md"))).toBe(false);
     expect(existsSync(join(output, "source.md.meta"))).toBe(false);
@@ -378,7 +378,7 @@ describe("projectPlan — the seat law, no daemon", () => {
   });
 });
 
-describe("lares meme project --to md over a file — local, byte for byte", () => {
+describe("lares meme project to=md over a file — local, byte for byte", () => {
   test("★ writes <name>.md + <name>.md.meta as projectSubmission renders them, and touches no wire ★", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
@@ -487,7 +487,7 @@ describe("lares meme project store targets", () => {
  * corpus carrier (`docs/pono/lar-uri.mem` — pinned ground, same as weave.test.ts's own use of it)
  * proves it rather than a hand-built stub.
  */
-describe("lares meme project --to md — a bare re-project reads the pair's OWN recorded target", () => {
+describe("lares meme project to=md — a bare re-project reads the pair's OWN recorded target", () => {
   const LAR_URI = join(REPO, "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem");
 
   test("★ RED→GREEN: a bare re-project of a standing kramdown pair keeps its dialect — no flags, no clobber ★", async () => {
@@ -558,7 +558,7 @@ describe("lares meme project --to md — a bare re-project reads the pair's OWN 
  * address (`lar:///ha.ka.ba/lares/api/pono/prism`) resolves back to itself, so a pair projected
  * from it here proves current against the real corpus file, exactly as the shelf's pairs do.
  */
-describe("lares meme project --to md --check — the fold of submission-parity", () => {
+describe("lares meme project to=md check=true — the fold of submission-parity", () => {
   const clean = (d: string): void => {
     void cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
   };

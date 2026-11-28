@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.bundle.backs-up"
 
 ! face.bundle.backs-up ~ one face, carried off the vessel as a sealed bundle
 
-`lares vault backup --face <N> --out <file>` asks the standing vessel to seal face hN's body, binds the bundle's routes and writes it to a file that must not yet stand. Indices print under `lares persona list`.
+`lares vault backup face=<N> out=<file>` asks the standing vessel to seal face hN's body, binds the bundle's routes and writes it to a file that must not yet stand. Indices print under `lares persona list`.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h0FuU5x-T06WHuA3jWJGaPOfL1LCJqOoBJQxFD2_lyg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3gYmO795tAgvHXIhiiIfPGh_bul3Fs03HM-qqWiShcc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

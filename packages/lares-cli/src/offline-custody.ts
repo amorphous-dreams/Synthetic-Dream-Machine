@@ -95,7 +95,7 @@ export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
   for (;;) {
     const typed = await gatherCredentials("this command", { kind: "vessel" });
     const u = await holder.unlock(typed);
-    // The typed credential tries every face tree too (`--all`): a face it does not fit stays shut and costs nothing.
+    // The typed credential tries every face tree too (`all=true`): a face it does not fit stays shut and costs nothing.
     if (u.reading === "opens" || u.reading === "already-unlocked") { await holder.unlockFaces(typed); return; }
     if (u.reading !== "no-slot-opens") throw refusal(u.reading);
     if (u.attemptsLeft <= 0) throw refusal("attempts-spent");

@@ -2,7 +2,7 @@
  * pulama-hoala — THE HOʻĀLA LEI: a restarted keeper stands lit again with no terminal, one counted return per restart.
  *
  * A host restart ends the keeper's process, and the fire with it: every key it held lived in memory alone. The hand strings ONE
- * hoʻāla lei on a terminal (`lares lei kui --rite hoala --returns <n>`), proving the vessel's route against the lit keeper as an
+ * hoʻāla lei on a terminal (`lares lei kui rite=hoala returns=<n>`), proving the vessel's route against the lit keeper as an
  * admit does; from then the keeper that starts unlit on the same code closure may spend one return (`hoala`, no route) and stand
  * lit with the faces that stood lit at the stringing. Returns spent, the lei unstrung, the closure moved, or either half missing:
  * the keeper stays at the locked floor and the hand lights it.
@@ -79,7 +79,7 @@ export const hoalaUnstrungTitle = (lei: string): string => `${PREFIX}unstrung/${
 /** A count above this asks the hand to confirm it, as a lei's does (`LEI_RETURNS_ASK_ABOVE`). */
 export const HOALA_RETURNS_ASK_ABOVE = 12;
 /** THE CURE every refusal that leaves the keeper dark names: the hand's light, then a fresh stringing. */
-export const HOALA_HAND_CURE = "light the keeper by hand on a terminal (`lares pulama light`), then string a hoʻāla lei again: lares lei kui --rite hoala --returns <n>";
+export const HOALA_HAND_CURE = "light the keeper by hand on a terminal (`lares pulama light`), then string a hoʻāla lei again: lares lei kui rite=hoala returns=<n>";
 
 const HOALA_INFO = new TextEncoder().encode("lares/pulama/hoala-slot");
 const hex = (b: Uint8Array): string => Buffer.from(b).toString("hex");

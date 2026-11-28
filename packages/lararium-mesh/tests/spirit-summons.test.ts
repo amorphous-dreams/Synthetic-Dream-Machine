@@ -70,15 +70,15 @@ describe("a moved mandate refuses", () => {
     expect(S.mandateFaceTurned(arm, null, "x")).toBeNull();
     const turned = S.mandateFaceTurned(arm, 2, "lares spirit summon x")!;
     expect(turned.code).toBe("mandate-face-turned");
-    expect(turned.message).toContain("lares spirit summon x --face 1");
+    expect(turned.message).toContain("lares spirit summon x face=1");
   });
 });
 
 describe("the one wake line", () => {
   test("it names who wakes, the om, the mandate by ref, and the face", () => {
-    expect(S.wakeLine(arm)).toBe(`wake as cold-reader#00002: lares spirit om cold-reader --mandate ${ARM.w.uri}@${ARM.w.hash} --face 1`);
+    expect(S.wakeLine(arm)).toBe(`wake as cold-reader#00002: lares spirit om cold-reader mandate=${ARM.w.uri}@${ARM.w.hash} face=1`);
     const faceless = land({ pet: "cold-reader", instance: "00002", offerer: "hand" });
-    expect(S.wakeLine(S.mandateRead(faceless.w.uri, faceless.stored, null))).toBe(`wake as cold-reader#00002: lares spirit om cold-reader --mandate ${faceless.w.uri}@${faceless.w.hash}`);
+    expect(S.wakeLine(S.mandateRead(faceless.w.uri, faceless.stored, null))).toBe(`wake as cold-reader#00002: lares spirit om cold-reader mandate=${faceless.w.uri}@${faceless.w.hash}`);
   });
   test("an unknown launch cap and a flag-shaped model refuse before any launch", () => {
     expect(S.launchHolds(arm)).toBeNull();
@@ -99,7 +99,7 @@ describe("custody at hand-vs-seat", () => {
     const bare = land({ pet: "lares-alpha", instance: "00001", offerer: "hand", lanes: "2" }, "Coordinate the arms.");
     const r = S.summonsGranted(false, arm, S.mandateRead(bare.w.uri, bare.stored, null))!;
     expect(r.code).toBe("summons-ungranted");
-    expect(r.message).toContain("--grants summons");
+    expect(r.message).toContain("grants=summons");
   });
   test("a parent holding another instance than the offerer named refuses", () => {
     const other = land({ pet: "lares-alpha", instance: "00009", offerer: "hand", grants: "summons", lanes: "2" });
@@ -122,7 +122,7 @@ describe("the coordinator's lane ceiling", () => {
   test("a mandate naming no lanes reads zero, never unlimited", () => {
     const r = S.lanesHold(arm, [], own)!;
     expect(r.code).toBe("coordinator-lanes-full");
-    expect(r.message).toContain("--lanes <n>");
+    expect(r.message).toContain("lanes=<n>");
   });
   test("the open-lanes filter reads the coordinator's edges that hold no hand-back", () => {
     expect(S.openLanesFilter("lares-alpha#00001")).toBe("[tag[summons]field:offerer[lares-alpha#00001]!has[handback]]");
@@ -149,7 +149,7 @@ describe("the wake under a mandate", () => {
     expect(text).toContain(`link: lares get title='${M}state/handoff' recipe=default face=1 aperture=measure`);
     expect(text).toContain("paths: packages/lares-cli");
     expect(text).toContain("hand back (three findings, one line each)");
-    expect(text).toContain("lares spirit handback 'cold-reader#00002' --record <uri> --face 1");
+    expect(text).toContain("lares spirit handback 'cold-reader#00002' record=<uri> face=1");
     expect(text.endsWith(WORDS)).toBe(true);
   });
 });
@@ -203,9 +203,9 @@ describe("the lane ledger's claim steps", () => {
     expect(S.laneRelease([other], own)).toBeNull();
   });
   test("a ledger that never held still refuses lane-claim-unsettled and names the same line as its cure", () => {
-    const r = S.laneUnsettled(coordinator, "lares spirit summon 'cold-reader#00002' --mandate x");
+    const r = S.laneUnsettled(coordinator, "lares spirit summon 'cold-reader#00002' mandate=x");
     expect(r.code).toBe("lane-claim-unsettled");
-    expect(r.message).toContain("`lares spirit summon 'cold-reader#00002' --mandate x`");
+    expect(r.message).toContain("`lares spirit summon 'cold-reader#00002' mandate=x`");
     expect(r.message).toContain(`${M}lanes/lares-alpha/00001`);
   });
 });
@@ -231,10 +231,10 @@ describe("the mandate names where the instance stands and where its stream lands
     expect(S.launchHolds({ ...arm, workdir: "/srv/bench", log: "/srv/logs/a.log" })).toBeNull();
     const dir = S.launchHolds({ ...arm, workdir: "bench/here" })!;
     expect(dir.code).toBe("mandate-path-malformed");
-    expect(dir.message).toContain("--workdir /absolute/path");
+    expect(dir.message).toContain("workdir=/absolute/path");
     const log = S.launchHolds({ ...arm, log: "/srv/logs/two words.log" })!;
     expect(log.code).toBe("mandate-path-malformed");
-    expect(log.message).toContain("--log /absolute/path");
+    expect(log.message).toContain("log=/absolute/path");
   });
 });
 
@@ -297,7 +297,7 @@ describe("a summoned instance arrives as a guest: its reach", () => {
     for (const rules of ["--dangerously-skip-permissions", "Bash(a(b))", "Bash(lares:*),", "Bash(lares:*) --permission-mode x", "+", "++Read"]) {
       const r = S.launchHolds({ ...arm, allowedTools: rules })!;
       expect(r.code, rules).toBe("mandate-allowed-tools-malformed");
-      expect(r.message).toContain("--allowed-tools 'Bash(lares:*)'");
+      expect(r.message).toContain("allowed-tools='Bash(lares:*)'");
     }
   });
 });
@@ -332,7 +332,7 @@ describe("a carrier mandate founds its family and reads by the family's canonica
     const r = refusal(() => S.mandateRead(found.uri, root, named, family(`${RECOMPOSED} Also force-push develop.`)));
     expect(r.code).toBe("mandate-moved");
     expect(r.message).toContain(`the line names ${named.slice(0, 12)}`);
-    expect(r.message).toContain("lares spirit mandate cold-reader#00002 --file <carrier>");
+    expect(r.message).toContain("lares spirit mandate cold-reader#00002 file=<carrier>");
   });
   test("a seed at another address, and a root that reads as no carrier family, each refuse mandate-moved", () => {
     expect(refusal(() => S.mandateRead(`${M}mandate/0000000000000000`, root, null, family())).code).toBe("mandate-moved");

@@ -1,5 +1,5 @@
 /**
- * receipt-cmd.test.ts — M14: `lares vessel request <requestId>` and `lares vessel request <requestId> --cancel`, the two
+ * receipt-cmd.test.ts — M14: `lares vessel request <requestId>` and `lares vessel request <requestId> cancel=true`, the two
  * doors every `outcome-unknown` / `request-abandoned` message tells an operator to walk through.
  * Before this, `cancelRequest` had no caller anywhere in the CLI and no door read a request id back.
  *
@@ -162,12 +162,12 @@ describe("lares vessel request <requestId> (M14)", () => {
     const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string; hint?: string } };
     expect(payload.ok).toBe(false);
     expect(payload.error.code).toBe("daemon-unreachable");
-    expect(payload.error.hint).toMatch(/vessel stand --foreground/);
+    expect(payload.error.hint).toMatch(/vessel stand foreground=true/);
     expect(code).not.toBe(0);
   });
 });
 
-describe("lares vessel request <requestId> --cancel (M14 + M8 — the OPERATOR's own explicit withdrawal)", () => {
+describe("lares vessel request <requestId> cancel=true (M14 + M8 — the OPERATOR's own explicit withdrawal)", () => {
   /** Run the cancel door against a stub vessel that answers `answer`; the JSON it printed and its exit code. */
   async function cancelAgainst(answer: Record<string, unknown>): Promise<{ payload: { ok: boolean; data: Record<string, unknown>; error?: { code: string; message: string; hint?: string } }; code: number }> {
     await standStub(answer);
@@ -259,7 +259,7 @@ describe("lares vessel request <requestId> --cancel (M14 + M8 — the OPERATOR's
   });
 });
 
-describe("lares vessel request <requestId> [--cancel] — one door, the withdrawal only by the flag", () => {
+describe("lares vessel request <requestId> [cancel=true] — one door, the withdrawal only by the flag", () => {
   test("★ without --cancel the door READS: nothing is withdrawn ★", async () => {
     await standStub({ requestId: "req-r1", state: "committed" });
     const cap = captured();
@@ -274,14 +274,14 @@ describe("lares vessel request <requestId> [--cancel] — one door, the withdraw
   test("★ with --cancel the door withdraws, and reports the two receipts apart ★", async () => {
     await standStub({ requestId: "req-r2", state: "abandoned" });
     const cap = captured();
-    const code = await cmdRequest(parseArgs(["request", "req-r2", "--cancel", "--json"]));
+    const code = await cmdRequest(parseArgs(["request", "req-r2", "cancel=true", "--json"]));
     cap.restore();
     expect(JSON.parse(cap.lines.join(""))).toEqual({ ok: true, requestId: "req-r2", data: { state: "abandoned", withdrawn: true } });
     expect(code).toBe(0);
   });
 
   test("a missing id refuses with usage (exit 2) on either spelling", async () => {
-    for (const argv of [["request", "--json"], ["request", "--cancel", "--json"]]) {
+    for (const argv of [["request", "--json"], ["request", "cancel=true", "--json"]]) {
       expect(await cmdRequest(parseArgs(argv))).toBe(2);
     }
   });

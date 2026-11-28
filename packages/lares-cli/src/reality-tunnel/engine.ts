@@ -34,7 +34,7 @@ export interface Item {
   /** A link item: the target the link names. */
   readonly link?: string;
   /**
-   * The forced form of `transform`, for bytes that parse: under `--force` it replaces only what this item owns and keeps every
+   * The forced form of `transform`, for bytes that parse: under `force=true` it replaces only what this item owns and keeps every
    * other key. An item without it takes the whole target (a rebuild from nothing).
    */
   readonly taking?: (current: string | null) => string | null;

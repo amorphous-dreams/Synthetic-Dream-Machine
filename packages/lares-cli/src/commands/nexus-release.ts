@@ -1,23 +1,23 @@
 /**
- * `lares nexus release <manifest-file> --approval <file> [--nexus <aid>]` — publish the Nexus's FLOOR RELEASE: the one
+ * `lares nexus release <manifest-file> approval=<file> [nexus=<aid>]` — publish the Nexus's FLOOR RELEASE: the one
  * porch body naming the floor manifest the Kahu cabal released. A seat held in this vault seals it as the steward, the
  * seats' approval of the manifest file's exact bytes rides attached, and the release lands on the Nexus's publication
  * board once it counts (w26-floor-lane#/the-slices).
  *
  * The approval comes first, from the doors that already carry one between vaults:
  *
- *   lares nexus approve open <manifest-file> --purpose floor-release --surface floor-release --class high-impact --out a.json
- *   lares nexus approve sign a.json --confirm-statement <digest> --out a.json        (each further vault)
- *   lares nexus release <manifest-file> --approval a.json
+ *   lares nexus approve open <manifest-file> purpose=floor-release surface=floor-release class=high-impact out=a.json
+ *   lares nexus approve sign a.json confirm-statement=<digest> out=a.json        (each further vault)
+ *   lares nexus release <manifest-file> approval=a.json
  *
  * The verb rides the store door (`nexus-release`), so a standing vessel's own Repo takes the write and a bare tree
  * holds the store for the moment of the act. A release that counts nothing (a short approval, other bytes, a chain
  * left unsettled) lands nothing and says why. A herm carries the answer and signs none.
  *
- * `--cut` CUTS the manifest first, from live house canon (offering#/the-canon-offer): the floor a release after a promotion
+ * `cut=true` CUTS the manifest first, from live house canon (offering#/the-canon-offer): the floor a release after a promotion
  * names, written to <manifest-file> and staged in this hearth's CAS. It lands nothing; the approval and the release follow on
- * that file. `lares nexus release <manifest-file> --cut` → `nexus approve open|sign` → `nexus release <manifest-file> --approval`.
- * The cut refuses `floor-cut-thin`, by slug, where a bag's live rows count under half its prior snapshot's; `--thin <slug[,slug]>`
+ * that file. `lares nexus release <manifest-file> cut=true` → `nexus approve open|sign` → `nexus release <manifest-file> approval=`.
+ * The cut refuses `floor-cut-thin`, by slug, where a bag's live rows count under half its prior snapshot's; `thin=<slug[,slug]>`
  * names a bag that shrank on purpose.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
@@ -34,7 +34,7 @@ export async function cmdNexusRelease(args: ParsedArgs): Promise<number> {
   const file = args.positional[1], approvalPath = args.options["approval"];
   const aid = args.options["nexus"];
   if (file && args.flags["cut"] === true) return cutRelease(args, resolve(file), aid);
-  if (!file || !approvalPath) return refuseUsage(args, "nexus", helpLines("nexus"), "release needs <manifest-file> and --approval <file> (or --cut to cut that file from live canon)");
+  if (!file || !approvalPath) return refuseUsage(args, "nexus", helpLines("nexus"), "release needs <manifest-file> and approval=<file> (or cut=true to cut that file from live canon)");
   try {
     let approval: unknown;
     try { approval = JSON.parse(readFileSync(approvalPath, "utf8")); }
@@ -62,7 +62,7 @@ export async function cmdNexusRelease(args: ParsedArgs): Promise<number> {
   }
 }
 
-/** `--cut`: the floor-cut row, then the next steps named. */
+/** `cut=true`: the floor-cut row, then the next steps named. */
 async function cutRelease(args: ParsedArgs, out: string, aid: string | undefined): Promise<number> {
   try {
     const thin = (args.options["thin"] ?? "").split(",").map((s) => s.trim()).filter((s) => s !== "");
@@ -72,20 +72,20 @@ async function cutRelease(args: ParsedArgs, out: string, aid: string | undefined
     emit(args, {
       ok: true, data: { ...r },
       human: () => {
-        console.log(`nexus release --cut → CUT ${r.manifestCid}${r.manifestCid === r.prior ? " (canon unmoved: the prior floor)" : ""}`);
+        console.log(`nexus release cut=true → CUT ${r.manifestCid}${r.manifestCid === r.prior ? " (canon unmoved: the prior floor)" : ""}`);
         console.log(`  prior:  ${r.prior}`);
         console.log(`  moved:  ${r.moved.join(", ") || "(none)"}   cut: ${r.cut.join(", ")}${r.kept.length ? `   kept (no live canon here): ${r.kept.join(", ")}` : ""}`);
         if (r.dropped.length) console.log(`  dropped (the bag declares a tier the public floor never carries): ${r.dropped.join(", ")}`);
         console.log(`  wrote ${r.out}; the floor stands whole in this hearth's CAS. Next:`);
-        console.log(`    lares nexus approve open ${r.out} --purpose floor-release --surface floor-release --class high-impact --out a.json`);
-        console.log(`    lares nexus release ${r.out} --approval a.json`);
+        console.log(`    lares nexus approve open ${r.out} purpose=floor-release surface=floor-release class=high-impact out=a.json`);
+        console.log(`    lares nexus release ${r.out} approval=a.json`);
       },
     });
     return 0;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const failure = storeFailure(err, err instanceof FloorRefused ? err.refusal : "error");
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus release --cut: ${msg}`) });
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus release cut=true: ${msg}`) });
     return exitFor(failure.code);
   }
 }

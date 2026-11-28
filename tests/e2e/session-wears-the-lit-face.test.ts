@@ -97,7 +97,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const root = mkdtempSync(join(stageDir(), "lares-two-face-walk-"));
     walk = await openStaged({ root, tag: "two-face-walk", found: async (cli, staged) => {
       await foundStagedHearth(cli, staged, "worn-face");
-      const second = await cli(["persona", "new", "1", "--name", "sibling-face", "--json"]);
+      const second = await cli(["persona", "new", "1", "name=sibling-face", "--json"]);
       if (second.code !== 0) throw new Error(`the second face failed (${second.code})\n${second.stdout.slice(-400)}\n${second.stderr.slice(-800)}`);
     } });
     if (!(await awaitRendezvous(walk))) throw new Error(`the staged daemon bound no rendezvous:\n${walk.bootLog().slice(-800)}`);
@@ -108,14 +108,14 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     // terminal alone, so the staged test door performs the acts: wear face 1, then wear face 0 again with face 1 lit beside it.
     const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };
     const faceBagOf = (r: CliResult): string => ((data(r)["layers"] ?? []) as Array<{ bag: string }>).map((l) => l.bag).find((b) => /\/bags\/daemon-/.test(b)) ?? "";
-    const wornBag = faceBagOf(await walk.cli(["wiki", "status", "--recipe", "default", "--json"]));
+    const wornBag = faceBagOf(await walk.cli(["wiki", "status", "recipe=default", "--json"]));
     faceZeroBag = wornBag;
     await door.unlockTestCustody(walk.root, "lock");
     const wearOne = await door.unlockTestCustody(walk.root, "unlock", 1);
     if ((wearOne as { wears?: number } | null)?.wears !== 1) throw new Error(`the test door never wore face 1: ${JSON.stringify(wearOne)}`);
     if (!(await awaitRendezvous(walk))) throw new Error(`the daemon bound no rendezvous after wearing face 1:\n${walk.bootLog().slice(-800)}`);
     for (let look = 0; look < 90 && (siblingBag === "" || siblingBag === wornBag); look++) {
-      const status = await walk.cli(["wiki", "status", "--recipe", "default", "--json"]);
+      const status = await walk.cli(["wiki", "status", "recipe=default", "--json"]);
       siblingBag = status.code === 0 ? faceBagOf(status) : "";
       if (siblingBag === "" || siblingBag === wornBag) await new Promise((r) => setTimeout(r, 1000));
     }
@@ -125,7 +125,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     if ((wearZero as { wears?: number } | null)?.wears !== 0) throw new Error(`the test door never wore face 0 again: ${JSON.stringify(wearZero)}`);
     if (!(await awaitRendezvous(walk))) throw new Error(`the daemon bound no rendezvous after wearing face 0:\n${walk.bootLog().slice(-800)}`);
     for (let look = 0; look < 90; look++) {
-      const status = await walk.cli(["wiki", "status", "--recipe", "default", "--json"]);
+      const status = await walk.cli(["wiki", "status", "recipe=default", "--json"]);
       if (status.code === 0 && faceBagOf(status) === wornBag) break;
       await new Promise((r) => setTimeout(r, 1000));
     }
@@ -137,7 +137,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
   const out = (r: CliResult): string => `${r.stdout}\n${r.stderr}`;
 
   test("W0: the sibling's engine composes over its own daemon wiki: its daemon canon opens for reading (promotion-only) and its working layer takes a write", async () => {
-    const s = await walk.cli(["wiki", "status", "--recipe", "default", "--face", "1", "--json"]);
+    const s = await walk.cli(["wiki", "status", "recipe=default", "face=1", "--json"]);
     expect(s.code, out(s)).toBe(0);
     const status = data(s) as { working: string | null; layers: Array<{ bag: string; read?: boolean; write: boolean; mounted?: string; working?: boolean }> };
     expect(status["face" as never], "the answer names the sibling").toBe(1);
@@ -317,7 +317,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
   }, 180_000);
 
   test("W8 VOTA ON THE SIBLING'S OWN TURN: a ddate votum on the lit sibling's plane is answered by its own door, under its own atom, while face 0 stands worn; the same word again names the same votum and lands no second outcome", async () => {
-    const word = ["intent", "issue", "ddate", "--face", "1", "--every", "--args", JSON.stringify({ today: { year: 2026, month: 11, day: 21 } })];
+    const word = ["intent", "issue", "ddate", "face=1", "every=true", `args=${JSON.stringify({ today: { year: 2026, month: 11, day: 21 } })}`];
     const doorLines = (): string => walk.bootLog().split('\n').filter((l) => /intent door|lit-set|planes mount|face-intent/.test(l)).slice(-16).join('\n');
     const issued = await walk.cli(word);
     expect(issued.code, `${out(issued)}\n${doorLines()}`).toBe(0);
@@ -326,7 +326,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     type Shown = { outcomes?: Array<{ cause: string; signer: string; winner: boolean; result: Record<string, unknown> }> };
     let shown: Shown = {};
     for (let look = 0; look < 90; look++) {
-      const show = await walk.cli(["intent", "show", "--face", "1", "--json"]);
+      const show = await walk.cli(["intent", "show", "face=1", "--json"]);
       shown = show.code === 0 ? JSON.parse(show.stdout.trim().split("\n").at(-1)!) as Shown : {};
       if ((shown.outcomes ?? []).some((o) => o.cause === id)) break;
       await new Promise((r) => setTimeout(r, 1000));
@@ -336,7 +336,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(answered[0]!.result).toMatchObject({ status: "done" });
     expect(typeof answered[0]!.result["text"], JSON.stringify(answered[0])).toBe("string");
     // The worn face's plane carries no word of it.
-    const worn = await walk.cli(["intent", "show", "--face", "0", "--json"]);
+    const worn = await walk.cli(["intent", "show", "face=0", "--json"]);
     expect(worn.code, out(worn)).toBe(0);
     expect(worn.stdout, "the sibling's votum never reaches the worn face's plane").not.toContain(id);
     // IDEMPOTENT BY INTENT: the same word names the same votum, and a later pass lands no second outcome.
@@ -344,7 +344,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(again.code, out(again)).toBe(0);
     expect(again.stdout.trim().split("\n").at(-1)!.trim()).toBe(id);
     await new Promise((r) => setTimeout(r, 3000));
-    const after = await walk.cli(["intent", "show", "--face", "1", "--json"]);
+    const after = await walk.cli(["intent", "show", "face=1", "--json"]);
     const outcomes = (JSON.parse(after.stdout.trim().split("\n").at(-1)!) as Shown).outcomes ?? [];
     expect(outcomes.filter((o) => o.cause === id)).toHaveLength(1);
   }, 180_000);
@@ -378,7 +378,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const faceBagOf = (r: CliResult): string => ((data(r)["layers"] ?? []) as Array<{ bag: string }>).map((l) => l.bag).find((b) => /\/bags\/daemon-/.test(b)) ?? "";
     const wornBagOf = async (instance: LarInstance): Promise<string> => {
       for (let look = 0; look < 90; look++) {
-        const status = await instance.cli(["wiki", "status", "--recipe", "default", "--json"]);
+        const status = await instance.cli(["wiki", "status", "recipe=default", "--json"]);
         if (status.code === 0 && faceBagOf(status) === siblingBag) return siblingBag;
         await new Promise((r) => setTimeout(r, 1000));
       }

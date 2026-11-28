@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.cabal.feeds"
 
 ! realm.cabal.feeds ~ the offering that keeps a realm alive
 
-`lares cabal feed --realm <id>` rolls the acting face's own maintenance-feed slot in the realm; a face feeds, never a device, and feeding twice rolls twice, so the clock measures how hard each hand feeds. Two members feeding at once never clobber each other or move the admission lease.
+`lares cabal feed realm=<id>` rolls the acting face's own maintenance-feed slot in the realm; a face feeds, never a device, and feeding twice rolls twice, so the clock measures how hard each hand feeds. Two members feeding at once never clobber each other or move the admission lease.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;x7dWtZrvM8lwxDLW4wkSqnelvMfRc7Onp7R5XIWF0Jo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DY9ScEa8V4hnxR1Drmk5oEJUhvE0G0Euhq6QXVUygxg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

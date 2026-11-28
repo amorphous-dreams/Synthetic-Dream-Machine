@@ -109,7 +109,7 @@ describe("lares nexus seal roll", () => {
       // Each signer types what it heard: the rule, and the other chair's seat fingerprint.
       const aSeat = (JSON.parse(readFileSync(c1, "utf8"))["chairs"] as Array<{ seat: string }>)[0]!.seat;
       const bSeat = (JSON.parse(readFileSync(c2, "utf8"))["chairs"] as Array<{ seat: string }>).find((c) => c.seat !== aSeat)!.seat;
-      expect((await roll(["sign", c2], { out: c3 })).out["error"]["message"]).toMatch(/--heard-threshold <n> --heard/);
+      expect((await roll(["sign", c2], { out: c3 })).out["error"]["message"]).toMatch(/heard-threshold=<n> heard=/);
       expect((await roll(["sign", c2], { out: c3, "heard-threshold": "2", heard: seatFingerprint(bSeat) })).out["error"]["message"]).toMatch(/type every other chair's seat fingerprint/);
       const bSigned = await roll(["sign", c2], { out: c3, "heard-threshold": "2", heard: seatFingerprint(aSeat) });
       expect(bSigned.code, JSON.stringify(bSigned.out)).toBe(0);
@@ -153,9 +153,9 @@ describe("lares nexus seal roll", () => {
       const msg = (r: { out: Record<string, any> }): string => r.out["error"]?.["message"] ?? "ran";
       at(A);
       const seats = listSeatKeys().length;
-      expect(msg(await roll(["open"], { threshold: "2", "cold-key": aCode, out: c1 }))).toMatch(/--nexus/);
-      expect(msg(await roll(["open"], { nexus: aid, "cold-key": aCode, out: c1 }))).toMatch(/--threshold/);
-      expect(msg(await roll(["open"], { nexus: aid, threshold: "2", "cold-key": aCode }))).toMatch(/--out/);
+      expect(msg(await roll(["open"], { threshold: "2", "cold-key": aCode, out: c1 }))).toMatch(/nexus=<aid>/);
+      expect(msg(await roll(["open"], { nexus: aid, "cold-key": aCode, out: c1 }))).toMatch(/threshold=<n>/);
+      expect(msg(await roll(["open"], { nexus: aid, threshold: "2", "cold-key": aCode }))).toMatch(/out=/);
       expect(msg(await roll(["open"], { nexus: aid, threshold: "2", out: c1 }))).toMatch(/cold-key|terminal/);
       expect(msg(await roll(["open"], { nexus: aid, threshold: "2", "cold-key": `${aCode},${aCode}`, out: c1 }))).toMatch(/one/);
       expect(existsSync(c1)).toBe(false);
@@ -164,10 +164,10 @@ describe("lares nexus seal roll", () => {
       const opened = await roll(["open"], { nexus: aid, threshold: "2", "cold-key": aCode, out: c1 });
       expect(opened.code, JSON.stringify(opened.out)).toBe(0);
       at(B);
-      expect(msg(await roll(["join", c1], { "cold-key": bCode, out: c1 }))).toMatch(/--out names the input/);
-      expect(msg(await roll(["join", c1], { "cold-key": bCode }))).toMatch(/--out/);
-      expect(msg(await roll(["sign", c1], { out: c1 }))).toMatch(/--out names the input/);
-      expect(msg(await roll(["sign", c1]))).toMatch(/--out/);
+      expect(msg(await roll(["join", c1], { "cold-key": bCode, out: c1 }))).toMatch(/out= names the input/);
+      expect(msg(await roll(["join", c1], { "cold-key": bCode }))).toMatch(/out=/);
+      expect(msg(await roll(["sign", c1], { out: c1 }))).toMatch(/out= names the input/);
+      expect(msg(await roll(["sign", c1]))).toMatch(/out=/);
       writeFileSync(join(courier, "offer.json"), JSON.stringify({ kind: "another" }));
       for (const step of ["join", "sign", "file"]) {
         expect(msg(await roll([step, join(courier, "offer.json")], { "cold-key": bCode, out: c2 }))).toMatch(/no roll circle/);
@@ -187,7 +187,7 @@ describe("lares nexus seal roll", () => {
       writeFileSync(p1, "{}");
       expect((await anchor({ out: join(courier, "no-such-dir", "p.json") })).out["error"]["message"]).toMatch(/its directory does not exist/);
       expect((await anchor({ out: courier })).out["error"]["message"]).toMatch(/names a directory/);
-      expect((await anchor({ from: p1, out: p1 })).out["error"]["message"]).toMatch(/--out names the partial you carried/);
+      expect((await anchor({ from: p1, out: p1 })).out["error"]["message"]).toMatch(/out= names the partial you carried/);
       expect((await anchor({ from: join(courier, "absent.json") })).out["error"]["message"]).toMatch(/cannot read .* as a partial file/);
       // The edge opener checks its --out the same way, before any act runs.
       const edge = (options: Record<string, string>) => run(nexus(["anchor"], options, { edge: true }));

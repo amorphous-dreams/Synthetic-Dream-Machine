@@ -4,12 +4,12 @@
  * become the building blocks a FLOW composes. New capability arrives as a new flow, never another raw verb.
  *
  *   lares flow                                            # list the flow-set (crystal · rhythm · couple)
- *   lares flow crystal --signal two-stratum.ndjson --names a,b   # run a flow against an explicit signal
+ *   lares flow crystal signal=two-stratum.ndjson names=a,b   # run a flow against an explicit signal
  *
  * Bare `lares flow` lists the seeds IN-PROCESS (they ship in @lararium/mesh — no daemon needed). A named run
  * reads the NDJSON signal matrix and routes to the daemon `flow` verb, which runs each cap-step by hull (the
- * daemon is the one seat that reaches both). The signal rides `--signal` (mirrors `mismatch`); the
- * auto-extraction from a poured `--target` sensorium stays owed — `targets` ride as provenance only.
+ * daemon is the one seat that reaches both). The signal rides `signal=` (mirrors `mismatch`); the
+ * auto-extraction from a poured `target=` sensorium stays owed — `targets` ride as provenance only.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/flow
  */
@@ -58,13 +58,13 @@ export async function cmdFlowRun(args: ParsedArgs): Promise<number> {
           console.log(`  ${f.petname.padEnd(9)} [${f.arity.padEnd(4)}] ${f.summary}`);
           console.log(`  ${" ".repeat(9)}        cap-stack: ${capLine(f)}`);
         }
-        console.log("\n  run:  lares flow <petname> --signal <ndjson> [--names a,b,c] [--target <uri>]");
+        console.log("\n  run:  lares flow <petname> signal=<ndjson> [names=a,b,c] [target=<uri>]");
       },
     });
     return 0;
   }
 
-  // Run mode — the signal rides `--signal`; auto-extraction from a poured target stands OWED.
+  // Run mode — the signal rides `signal=`; auto-extraction from a poured target stands OWED.
   const signal = args.options["signal"];
   const rows = typeof signal === "string" && signal.length > 0 ? readSignalMatrix(signal) : [];
   const namesOpt = args.options["names"];
@@ -92,7 +92,7 @@ export async function cmdFlowRun(args: ParsedArgs): Promise<number> {
     // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
     const f = verbFailure(err);
     failCode = f.code;
-    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand --foreground` (the runner reaches both hulls through it)." : f.hint;
+    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand foreground=true` (the runner reaches both hulls through it)." : f.hint;
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(hint !== undefined ? { hint } : {}) },

@@ -1,5 +1,5 @@
 /**
- * The settle word, the gesture's half: `lares ingest --apply` names each carrier whose records it moved,
+ * The settle word, the gesture's half: `lares ingest apply=true` names each carrier whose records it moved,
  * with the hash its records render, and asks the vessel to say when the projection those records cause
  * has run (`settle`, `@lararium/node` `shore-verb.ts`). The run then ends where a scan that follows reads
  * what the projection left, and no caller naps for it.

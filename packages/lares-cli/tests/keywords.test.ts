@@ -28,10 +28,10 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { BURNED_FLAGS, KeywordUsage, isKeywordLine, positionalCure, readKeywords, type KeywordLine } from "../src/keywords.js";
-import { COMMANDS, dispatch, keywordArgv } from "../src/bin/lares.js";
+import { COMMANDS, dispatch, keywordArgv, doorTakes } from "../src/bin/lares.js";
 import { MU_CARRY_ORDER, MU_CARRIES, APERTURE_RANKS } from "@lararium/tw5";
 
-const DOORS = { names: COMMANDS.map((c) => c.name), accepts: (d: string): readonly string[] => COMMANDS.find((c) => c.name === d)?.accepts ?? [] };
+const DOORS = { names: COMMANDS.map((c) => c.name), takes: doorTakes };
 const read = (...tokens: string[]): KeywordLine => readKeywords(tokens, DOORS);
 const refusal = (...tokens: string[]): KeywordUsage => {
   try { read(...tokens); } catch (err) { if (err instanceof KeywordUsage) return err; throw err; }
@@ -77,17 +77,17 @@ describe("one door, keyword params: key=value keywords in any order, exactly one
 
   test("RED: a door the command table runs takes its act keyword's value as its sub-verb words, its shaping keys as its flags, with= whole", () => {
     expect(read("rite=kukulu")).toEqual({ kind: "door", door: "rite", argv: ["rite", "kukulu"], set: {}, notes: [] });
-    expect(read("lei=show", "rite=kukulu", "branch=develop")).toMatchObject({ kind: "door", door: "lei", argv: ["lei", "show", "--rite=kukulu", "--branch=develop"] });
+    expect(read("lei=show", "rite=kukulu", "branch=develop")).toMatchObject({ kind: "door", door: "lei", argv: ["lei", "show", "rite=kukulu", "branch=develop"] });
     expect(read("bag=show")).toMatchObject({ kind: "door", door: "bag", argv: ["bag", "show"] });
-    expect(read("vessel=stand", "restart=true", "with=--page")).toMatchObject({ argv: ["vessel", "stand", "--restart", "--page"] });
+    expect(read("vessel=stand", "restart=true", "with=req-1 x")).toMatchObject({ argv: ["vessel", "stand", "restart=true", "req-1", "x"] });
     expect(read("meme=offer show")).toMatchObject({ argv: ["meme", "offer", "show"] });
   });
 
-  test("RED: a door folds the dials its code walks: the Pentacle asks --dry-run, the Sword alone --json, Rest nothing; any other carry refuses until its carrier lands", () => {
-    expect(read("bag=sweep", "mu=_0")).toMatchObject({ argv: ["bag", "sweep", "--dry-run"] });
-    expect(read("bag=sweep", "mu=_!")).toMatchObject({ argv: ["bag", "sweep", "--dry-run"] });
-    expect(read("bag=sweep", "mu=overview")).toMatchObject({ argv: ["bag", "sweep", "--dry-run"] });
-    expect(read("bag=show", "mu=!")).toMatchObject({ argv: ["bag", "show", "--json"] });
+  test("RED: a door folds the dials its code walks: the Pentacle asks dry-run=true, the Sword alone json=true, Rest nothing; any other carry refuses until its carrier lands", () => {
+    expect(read("bag=sweep", "mu=_0")).toMatchObject({ argv: ["bag", "sweep", "dry-run=true"] });
+    expect(read("bag=sweep", "mu=_!")).toMatchObject({ argv: ["bag", "sweep", "dry-run=true"] });
+    expect(read("bag=sweep", "mu=overview")).toMatchObject({ argv: ["bag", "sweep", "dry-run=true"] });
+    expect(read("bag=show", "mu=!")).toMatchObject({ argv: ["bag", "show", "json=true"] });
     expect(read("bag=show", "mu=00")).toMatchObject({ argv: ["bag", "show"] });
     expect(refusal("rite=kukulu", "mu=_!").code).toBe("mu-cell-empty");
     expect(refusal("bag=show", "mu=*?").code).toBe("mu-cell-empty");
@@ -95,7 +95,7 @@ describe("one door, keyword params: key=value keywords in any order, exactly one
   });
 
   test("RED: a door folds aperture where it reads a range (arc and theme ask --verbose), and names it testimony where it reads none", () => {
-    expect(read("vessel=read", "aperture=arc")).toMatchObject({ argv: ["vessel", "read", "--verbose"], notes: [] });
+    expect(read("vessel=read", "aperture=arc")).toMatchObject({ argv: ["vessel", "read", "verbose=true"], notes: [] });
     const rite = read("rite=kukulu", "aperture=arc");
     expect(rite).toMatchObject({ argv: ["rite", "kukulu"] });
     expect(rite.kind === "door" ? rite.notes.join(" ") : "").toContain("aperture=16/arc rides as testimony");

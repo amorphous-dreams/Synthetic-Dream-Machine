@@ -23,7 +23,7 @@ describe("the vessel door's canon act answers as `lay`", () => {
     expect(await dispatch(["vessel", "lay", "--help"])).toBe(0);
     const text = out.join("\n");
     expect(text).toMatch(/^usage: lares vessel lay/m);
-    expect(text).toContain("--lift-kahua");
+    expect(text).toContain("lift-kahua=");
   });
 
   test("the vessel door lists `lay` among its sub-doors, and the founding rite composes found · stand · lay", async () => {

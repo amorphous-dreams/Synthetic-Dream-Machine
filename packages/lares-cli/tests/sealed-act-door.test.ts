@@ -282,7 +282,7 @@ describe("a command beside a standing vessel", () => {
     await stage();
     for (const unlocked of [true, false]) {
       const vessel = await standVessel({ unlocked });
-      const r = await run(["persona", "new", "0", "--name", "a-synthetic-face", "--split-root"]);
+      const r = await run(["persona", "new", "0", "name=a-synthetic-face", "split-root=true"]);
       expect(r.code).not.toBe(0);
       expect(r.out + r.err).toContain("never rides a standing vessel");
       expect(r.out + r.err).not.toMatch(/recorded-code|escrow-carrier/);          // no share printed
@@ -469,8 +469,8 @@ describe("a command beside a standing vessel", () => {
       return {};
     } });
     const state = await run(["host", "--json"]);
-    const roll = await run(["host", "roll", "--nexus", AID, "--cap", "5", "--json"]);
-    const invite = await run(["host", "invite", "--relay", "ws://a-synthetic-hearth/ws", "--json"]);
+    const roll = await run(["host", "roll", `nexus=${AID}`, "cap=5", "--json"]);
+    const invite = await run(["host", "invite", "relay=ws://a-synthetic-hearth/ws", "--json"]);
     for (const r of [state, roll, invite]) expect(r.code, r.out + r.err).toBe(0);
     const frames = actFrames(vessel.frames);
     for (const frame of frames) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);   // no verb, requester or request id

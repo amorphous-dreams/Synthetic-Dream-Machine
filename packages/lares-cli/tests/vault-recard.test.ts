@@ -1,5 +1,5 @@
 /**
- * `lares vault recard --face N` — what the operator reads once a recard lands, and the usage refusal.
+ * `lares vault recard face=N` — what the operator reads once a recard lands, and the usage refusal.
  *
  *   V1  a recard names what it kept (the identity), what it cannot recover (a peer's seal to a lost prekey, a reminted
  *       Document's content) and the runnable acts that follow.
@@ -14,7 +14,7 @@ describe("the recard's answer", () => {
     expect(text).toContain("face h4 recarded: it lit again under its own identity");
     expect(text).toContain("ContentKeyNotHeld");
     expect(text).toContain("may still arrive by sync");
-    expect(text).toContain("lares bag share <bag> --read <this face>");
+    expect(text).toContain("lares bag share <bag> read=<this face>");
     expect(text).toContain("lares vault status");
   });
   test("V2 no handle-index refuses as usage, naming the roster", async () => {

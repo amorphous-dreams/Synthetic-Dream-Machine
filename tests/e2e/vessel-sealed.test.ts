@@ -112,7 +112,7 @@ const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["get", `title=${URI}`,
  */
 async function foundWithRootSplit(found: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
   await foundStagedHearth(found, root, "staged");
-  const face = await found(["persona", "new", "0", "--name", "staged", "--split-root"]);
+  const face = await found(["persona", "new", "0", "name=staged", "split-root=true"]);
   if (face.code !== 0) throw new Error(`staged face-founding with a root split failed (${face.code}):\n${face.stderr.slice(-800)}`);
 }
 

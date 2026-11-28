@@ -276,7 +276,7 @@ function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
   const paste = document.getElementById("admit-paste") as HTMLTextAreaElement | null;
   const apply = document.getElementById("admit-apply") as HTMLButtonElement | null;
   keyEl.textContent = verifyingKeyHex;
-  cmdEl.textContent = "lares fleet join offer --out offer.json";
+  cmdEl.textContent = "lares fleet join offer out=offer.json";
 
   // Copy where the platform grants a clipboard; SELECT where it does not (an insecure origin, an older
   // browser). A selected span is a thumb away from the OS copy affordance, so the path never dead-ends.
@@ -615,7 +615,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
   // ── /leaf-fleet ──
   if (relayUrl) {
     console.log(`[vessel] this leaf's key: ${did}`);
-    console.log("[vessel] to join a face's fleet: on the root holder, offer the face (a browser's fleet door, or a node's `lares fleet join offer --out offer.json`), then paste the offer here");
+    console.log("[vessel] to join a face's fleet: on the root holder, offer the face (a browser's fleet door, or a node's `lares fleet join offer out=offer.json`), then paste the offer here");
   }
   void readFloor(vessel.readFloor);           // the vessel stands, so it reads and verifies the hearth's floor
   // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.

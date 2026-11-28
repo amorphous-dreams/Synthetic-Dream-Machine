@@ -81,7 +81,7 @@ describe("RED unlock-under-pulama-asks-nothing (the command)", () => {
   });
 
   it("an unlit pūlama names the hand that lights it; an unreachable one names the raise; a route flag changes nothing; none asks a route", async () => {
-    for (const [waits, hint, flags] of [["pulama-locked", /pulama light/, []], ["pulama-unreachable", /pulama up/, ["--passphrase"]], ["pulama-locked", /pulama light/, ["--all", "--face", "0"]]] as const) {
+    for (const [waits, hint, flags] of [["pulama-locked", /pulama light/, []], ["pulama-unreachable", /pulama up/, ["passphrase=true"]], ["pulama-locked", /pulama light/, ["all=true", "face=0"]]] as const) {
       frames.length = 0; out.length = 0;
       door = (frame) => frame["op"] === "custody" ? custody({ session: false, waits }) : { op: "unlock", reading: "pulama-waits", held: false, standing: "herm", pulama: { session: false, waits } };
       expect(await run("unlock", ...flags)).toBe(1);
@@ -146,7 +146,7 @@ describe("RED unlock-under-pulama-asks-nothing (the command)", () => {
 
   it("CONTROL: a vessel that holds its own custody still gathers the route and sends it", async () => {
     door = (frame) => frame["op"] === "custody" ? custody() : { op: "unlock", reading: "no-slot-opens", attemptsLeft: 2, standing: "herm" };
-    expect(await run("unlock", "--passphrase")).toBe(1);
+    expect(await run("unlock", "passphrase=true")).toBe(1);
     expect(prompts).toBeGreaterThan(0);
     expect(frames).toHaveLength(2);
     expect(frames[1]).toMatchObject({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "a-route-nobody-should-be-asked-for" }] });
@@ -170,7 +170,7 @@ describe("RED unlock-refuses-on-unread-probe (the custody door reads no answer)"
   it("unlock-refuses-on-unread-probe-under-a-pulama: the host env names LARES_PULAMA=1, a route flag changes nothing", async () => {
     process.env["LARES_PULAMA"] = "1";
     door = () => null;
-    expect(await run("unlock", "--passphrase")).toBe(1);
+    expect(await run("unlock", "passphrase=true")).toBe(1);
     expect(prompts).toBe(0);
     expect(frames).toEqual([{ op: "custody" }]);
     expect(answer().error?.code).toBe("custody-probe-unread");
@@ -188,7 +188,7 @@ describe("RED unlock-refuses-on-unread-probe (the custody door reads no answer)"
   it("CONTROL unlock-unread-probe-without-a-pulama-still-prompts: no pūlama named anywhere (the file's last line turns it off), the route gets gathered as before", async () => {
     surfaceEnvFile("LARES_PULAMA=1\nLARES_PULAMA=0\n");
     door = () => null;
-    expect(await run("unlock", "--passphrase")).toBe(1);
+    expect(await run("unlock", "passphrase=true")).toBe(1);
     expect(prompts).toBeGreaterThan(0);
     expect(frames[0]).toEqual({ op: "custody" });
     expect(frames[1]).toMatchObject({ op: "unlock", credentials: [{ kind: "passphrase" }] });

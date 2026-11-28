@@ -119,7 +119,7 @@ const CARD_CUSTODIANS = { r: "recorded-code", e: "escrow-peer", c: "custodian", 
 export type CardCustodian = (typeof CARD_CUSTODIANS)[keyof typeof CARD_CUSTODIANS];
 
 /**
- * The cards of a root split, for `vault restore --cards`: for each card, the custodian it came from and its code,
+ * The cards of a root split, for `vault restore cards=true`: for each card, the custodian it came from and its code,
  * read hidden; a blank custodian ends the list. Refuses with no TTY. The codes leave this function in the returned
  * array alone, which the caller hands to the card reader and drops.
  */
@@ -196,7 +196,7 @@ export async function gatherBundleRoute(verb: string): Promise<SlotSpec[]> {
 }
 
 /**
- * For `vault unbind --rotate`: the spec of a slot that STAYS, re-read from the human so the new S key can re-bind it.
+ * For `vault unbind rotate=true`: the spec of a slot that STAYS, re-read from the human so the new S key can re-bind it.
  * A passphrase pin re-reads the passphrase; a paper pin re-reads its sheets (`confirmHeldPaper`). The caller proves
  * each spec opens its slot BEFORE any byte moves, so a typo never rotates a vessel into a lockout.
  */

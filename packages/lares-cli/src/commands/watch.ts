@@ -1,13 +1,13 @@
 /**
- * lares ingest --watch — the disk→records gesture, fired on a settle instead of an
+ * lares ingest watch=true — the disk→records gesture, fired on a settle instead of an
  * operator keystroke.
  *
- *   lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]
+ *   lares ingest watch=true source=<dir> to=<bagUri> [apply=true] [debounce=ms]
  *
  * A nalu-builder for the disk peer. Disk events are HINTS (Confluence); the watcher
  * coalesces a settle-window into ONE wave — one scan, one INGEST verb, one
  * projection — never per-file dribbles. Default posture previews (logs what a
- * wave WOULD carry); --apply submits each wave through the island's Confluence gate.
+ * wave WOULD carry); apply=true submits each wave through the island's Confluence gate.
  *
  * Settle, by the Confluence law: a buffered path drains only after the events quiet
  * (trailing debounce) AND the scan's own hash gate confirms a real change — a
@@ -88,12 +88,12 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   if (apply) {
     try { did = await vesselDid(); } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      emit(args, { ok: false, error: msg, human: () => console.error(`lares ingest --watch: ${msg}`) });
+      emit(args, { ok: false, error: msg, human: () => console.error(`lares ingest watch=true: ${msg}`) });
       return 3;
     }
     if (!(await udsAlive())) {
       const msg = `no lares daemon at ${udsSocketPath()}`;
-      emit(args, { ok: false, error: msg, human: () => { console.error(`lares ingest --watch: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); } });
+      emit(args, { ok: false, error: msg, human: () => { console.error(`lares ingest watch=true: ${msg}`); console.error("  Start the daemon with `lares vessel stand foreground=true` and try again."); } });
       return 3;
     }
   }
@@ -241,7 +241,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: msg, human: () => console.error(`lares ingest --watch: cannot watch "${source}": ${msg}`) });
+    emit(args, { ok: false, error: msg, human: () => console.error(`lares ingest watch=true: cannot watch "${source}": ${msg}`) });
     return 3;
   }
 
@@ -253,7 +253,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     console.error(`    Events will not arrive; a periodic full scan stays the only truth here.`);
   }
 
-  console.log(`lares ingest --watch: ${apply ? "LIVE" : "preview"} · source "${source}" → ${toBag} · settle ${debounceMs}ms${cookieLive ? " · backend live" : " · BACKEND DEAD"}`);
+  console.log(`lares ingest watch=true: ${apply ? "LIVE" : "preview"} · source "${source}" → ${toBag} · settle ${debounceMs}ms${cookieLive ? " · backend live" : " · BACKEND DEAD"}`);
   console.log("  watching… (Ctrl-C to stop)");
 
   // ── lifetime — hold until interrupted, drain a final wave on the way out ──
@@ -269,7 +269,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   // THE FINAL WAVE: what the settle window still held drains before the watcher stops.
   await seat.flush();
 
-  console.log(`\nlares ingest --watch: stopped after ${waveNo} wave(s).`);
+  console.log(`\nlares ingest watch=true: stopped after ${waveNo} wave(s).`);
   // WHAT STAYS OWED ENDS THE WATCHER NON-ZERO. A carrier a later wave landed left the set, and so did a
   // deletion a later wave applied; what remains never reached the records, and the exit says so beside the
   // lines each wave already printed.

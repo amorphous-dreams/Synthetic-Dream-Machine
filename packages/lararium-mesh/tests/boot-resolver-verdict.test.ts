@@ -58,8 +58,8 @@ describe("a boot fault names the condition it observed", () => {
     const v = bootFaultVerdict({ reason: "terminal", label: PLANE_LABELS.daemon, url: "automerge:abc" });
     expect(v.message).toMatch(/vessel read vessel/);
     expect(v.message).toMatch(/restore a known-good carrier/);
-    expect(v.message).toMatch(/vessel lay --apply --yes/);
-    expect(v.message).toMatch(/lares vessel found --root <fresh-root>/);
+    expect(v.message).toMatch(/vessel lay apply=true --yes/);
+    expect(v.message).toMatch(/lares vessel found root=<fresh-root>/);
   });
 
   test("both verdicts name the doc, so the operator knows WHICH plane refused", () => {

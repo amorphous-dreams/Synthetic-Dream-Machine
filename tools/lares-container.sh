@@ -39,7 +39,7 @@
 #   lares-container.sh vault lock                the standing vessel drops its key and stands at the floor
 #   lares-container.sh rite hoala             THE WAKING (`lares rite hoala`, hoʻāla): read where the house stands and walk only
 #                                                what that asks, keeper first (below); it builds no image and moves no checkout
-#   lares-container.sh lei kui --rite hoala --returns <n> [--yes]
+#   lares-container.sh lei kui rite=hoala returns=<n> [--yes]
 #                                                string a HOʻĀLA LEI on this terminal (the pūlama reads the route): each host
 #                                                restart then relights the keeper with no route, one counted return each;
 #                                                `lei unstring --rite hoala` ends it at once, `lei show --rite hoala` reads it
@@ -92,7 +92,7 @@
 # CLI process per call), and the shim restarts the vessel itself when the report reads `restand` (a face lit after boot). The
 # exit code stays the verb's own. Each island owns its own contract: the image owns what its CLI reports, and this shim owns
 # only reading it, so an image that reports nothing (one older than the report) gets one reading after the verb
-# (`vessel stand --observe --json`) and a skew between shim and image breaks no call. `vessel stop` stops the container.
+# (`vessel stand observe=true --json`) and a skew between shim and image breaks no call. `vessel stop` stops the container.
 # One lararium per HUMAN: nothing here names a face.
 #
 # A STOP NEVER DROPS CONTENT. A stopped container holds no memory to count, so `down` asks the standing vessel first
@@ -178,7 +178,7 @@ for class in $HOUSE_CLASSES; do
   case "$env_real" in "$house_real/$class"|"$house_real/$class"/*) die "the env file $ENV_FILE sits inside LARES_HOUSE's $class bind — keep it outside every bind" ;; esac
 done
 
-# THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
+# THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep if-due=true` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
 # host's lares door, else the checkout's own bin under the host's node. A keep that refuses leaves the house's
 # `run/keep-owed` mark, which outlives this invocation (a Ctrl+C, a later run), and a keep that keeps clears it.
@@ -195,12 +195,12 @@ keep_run() {
     umask "$kr_umask"
     ( umask 077; exec tee -- "$kr_log" < "$kr_fifo" >&2 ) &
     kr_tee=$!
-    "$@" rite keep --if-due --json 2>"$kr_fifo"; kr_rc=$?
+    "$@" rite keep if-due=true --json 2>"$kr_fifo"; kr_rc=$?
     wait "$kr_tee" 2>/dev/null; rm -f -- "$kr_fifo"
     return "$kr_rc"
   fi
   umask "$kr_umask"
-  "$@" rite keep --if-due --json
+  "$@" rite keep if-due=true --json
 }
 keep_before_down() {
   KEEP_SAID="no keep workspace named"
@@ -211,14 +211,14 @@ keep_before_down() {
   else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
   # A LOCKED VESSEL CUTS NO KEEP, AND SAYS SO: the keep reads the house through the vessel's key, so over a shut key it would
   # only refuse (`vessel-locked`, `flush-unavailable`). The down names the skip in one line and goes on to its census, which reads
-  # what a stop would drop; the next keep (`rite keep --if-due`, at the next down or by hand) keeps a house that moved.
+  # what a stop would drop; the next keep (`rite keep if-due=true`, at the next down or by hand) keeps a house that moved.
   if key_shut; then
     KEEP_SAID="skipped: the vessel stands locked, and a locked vessel cuts no keep"
     printf '%s\n' 'lares-container: the keep skips a locked vessel (it reads the house through the vessel'"'"'s key); the census below names what a stop would drop, and `lares rite keep` keeps a house that moved once it stands unlocked' >&2
     return 0
   fi
   # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
-  printf '%s\n' 'lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop' >&2
+  printf '%s\n' 'lares-container: keeping first (rite keep if-due=true): a house that moved cuts and pushes its keep before the stop' >&2
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
   # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
   if kb_out=$(keep_run "$@"); then
@@ -243,7 +243,7 @@ elif isinstance(w, str) and w.strip():
     print("kept")' 2>/dev/null) || { kb_rc=$?; kb_read=""; }
     # ANY ANSWER THAT READS AS NO REAL KEEP WRITES THE MARK (a first down holds none yet), so the next raise keeps again.
     case "$kb_read" in
-      kept) KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)" ;;
+      kept) KEEP_SAID="kept (rite keep if-due=true)"; rm -f -- "$(keep_owed_mark)" ;;
       none) KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed" ;;
       *) if [ "$kb_rc" -eq 127 ]; then KEEP_SAID="python3 answers nowhere on this host, so the keep's answer reads unread; the keep stays owed"; printf 'lares-container: %s\n' "$KEEP_SAID" >&2
          else KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed"; fi ;;
@@ -284,7 +284,7 @@ running_vessel() {
 # The CLI's own reading of the standing vessel against its state on disk. It runs without a TTY: the answer is JSON
 # for this script, never a prompt.
 observe_output=""
-observe_standing() { observe_output=$(compose exec -T lares node "$CLI" vessel stand --observe --json); }
+observe_standing() { observe_output=$(compose exec -T lares node "$CLI" vessel stand observe=true --json); }
 # An answer counts only when it names a verdict this shim knows; an empty or unreadable answer names none.
 verdict_known() {
   printf '%s\n' "$observe_output" | grep -Eq '"standing"[[:space:]]*:[[:space:]]*\{[^}]*"act"[[:space:]]*:[[:space:]]*"(attach|restand)"'
@@ -305,7 +305,7 @@ key_shut() {
 }
 
 # THE FACE TO WEAR AGAIN. The mount is the composition's own state and never survives a restart, so the shim keeps the
-# face the operator last wore through it (`vault unlock --face N`) in the house's config (`config/last-worn-face`, a reset
+# face the operator last wore through it (`vault unlock face=N`) in the house's config (`config/last-worn-face`, a reset
 # keeps it): after a stand or a restart it opens every face the credential opens and wears that one again.
 # AN EMPTY MEMORY NAMES NO FACE. A file that reads empty (or absent, or no ordinal) answers empty, and the shim wears
 # nothing: a `wear` writes the pūlama's `face.worn`, which it wears again after every restart, so a guessed face 0 would
@@ -346,8 +346,7 @@ remember_worn_face() { # the argv of a `vault unlock` that landed
   face=""
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      --face) face=${2:-}; shift ;;
-      --face=*) face=${1#--face=} ;;
+      face=*) face=${1#face=} ;;
     esac
     shift
   done
@@ -392,7 +391,7 @@ unlock_or_name() {
     # UNDER A PŪLAMA THE ROUTE GOES TO THE PŪLAMA ALONE. The vessel's own unlock asks nothing there (it redials the
     # pūlama), so it runs detached from this terminal: an image that prompts anyway reads no keystroke.
     # shellcheck disable=SC2046
-    if waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null; then
+    if waited_exec $(pass_env) -T lares node "$CLI" vault unlock all=true </dev/null; then
       wear_after_unlock
       return 0
     fi
@@ -400,7 +399,7 @@ unlock_or_name() {
     # and where this run lit it, the vessel dials once more. A silent keeper spends no try: no route rode the dial.
     if keeper_light && [ -n "$KL_BY" ]; then
       # shellcheck disable=SC2046
-      if waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null; then wear_after_unlock; return 0; fi
+      if waited_exec $(pass_env) -T lares node "$CLI" vault unlock all=true </dev/null; then wear_after_unlock; return 0; fi
     fi
     printf '%s\n' 'lares-container: the vessel stands at the floor, unserved by the pūlama; `lares rite hoala` reads why (the keeper, the image, the vessel) and walks what each asks. By hand: read it with `lares-container.sh pulama status`, light it with `lares-container.sh pulama light`, admit the image that stands with `lares-container.sh pulama admit`, or raise a served vessel with `lares rite kukulu`' >&2
     return 0
@@ -409,16 +408,16 @@ unlock_or_name() {
   if [ -n "$HAVE_TTY" ]; then
     printf 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens%s)\n' "$then_wear" >&2
     # shellcheck disable=SC2046
-    if ! waited_exec $(pass_env) lares node "$CLI" vault unlock --all; then
-      if [ -n "$wear" ]; then printf 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all`, then `lares-container.sh wear %s`\n' "$wear" >&2
-      else printf '%s\n' 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all`' >&2; fi
+    if ! waited_exec $(pass_env) lares node "$CLI" vault unlock all=true; then
+      if [ -n "$wear" ]; then printf 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock all=true`, then `lares-container.sh wear %s`\n' "$wear" >&2
+      else printf '%s\n' 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock all=true`' >&2; fi
     else
       wear_after_unlock
     fi
   elif [ -n "$wear" ]; then
-    printf 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock --all, then lares-container.sh wear %s (every face the credential opens, then wear h%s; another face: wear N)\n' "$wear" "$wear" >&2
+    printf 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock all=true, then lares-container.sh wear %s (every face the credential opens, then wear h%s; another face: wear N)\n' "$wear" "$wear" >&2
   else
-    printf '%s\n' 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock --all (every face the credential opens; no face rests remembered, so the vessel mounts its own; another face: wear N)' >&2
+    printf '%s\n' 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock all=true (every face the credential opens; no face rests remembered, so the vessel mounts its own; another face: wear N)' >&2
   fi
 }
 
@@ -495,52 +494,27 @@ route_cli() {
   fi
   case "${1:-} ${2:-}" in "spirit ah"|"spirit hooili"|"spirit residue"|"spirit handback") stream_door=yes ;; esac
   if [ -n "$stream_door" ]; then
-    stream_n=0 stream_kind="" stream_empty="" stream_want=""
-    # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
+    stream_n=0 stream_kind="" stream_empty=""
+    # One pass names the text sources: a `file=` or `append=` param, each a token of its own; a token past `--` rides untouched.
     for stream_arg do
-      if [ -n "$stream_want" ]; then
-        case "$stream_want" in
-          --fields|--note|--reason|--text) stream_want=""; continue ;;
-          *) case "$stream_arg" in --*) stream_want="" ;;
-          *)
-            case "$stream_want" in
-              --file|--append) stream_n=$((stream_n + 1)); stream_kind=$stream_want; [ -n "$stream_arg" ] || stream_empty=yes ;;
-            esac
-            stream_want=""; continue ;; esac ;;
-        esac
-      fi
       case "$stream_arg" in
         --) break ;;
-        --file|--append) stream_want=$stream_arg ;;
-        --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--streams|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        file=*|append=*) stream_n=$((stream_n + 1)); stream_kind="${stream_arg%%=*}="; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
       esac
     done
-    if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
+    if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: file= or append=, once\n' >&2; return 2; fi
     if [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
-    # Every spirit verb streams its one named source: `--file` (the whole text) and `--append` (words at the end).
+    # Every spirit verb streams its one named source: `file=` (the whole text) and `append=` (words at the end).
     if [ "$stream_n" -eq 1 ]; then
-      stream_count=$# stream_want="" stream_end="" stream_i=0
+      stream_count=$# stream_end="" stream_i=0
       while [ "$stream_i" -lt "$stream_count" ]; do
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
-        if [ -z "$stream_end" ] && [ -n "$stream_want" ]; then
-          case "$stream_want" in
-            --fields|--note|--reason|--text) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
-            *) case "$stream_arg" in --*) stream_want="" ;;
-            *)
-              case "$stream_want" in
-                --file|--append) [ "$stream_arg" = - ] || stream_file=$stream_arg; stream_arg=- ;;
-              esac
-              stream_want=""; set -- "$@" "$stream_arg"; continue ;; esac ;;
-          esac
-        fi
         if [ -z "$stream_end" ]; then
           case "$stream_arg" in
             --) stream_end=yes ;;
-            --file=*|--append=*)
+            file=*|append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--streams|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
@@ -636,7 +610,7 @@ host_read() { # $1 = why docker reaches no CLI
     [ -n "$hr_row" ] || continue
     printf 'held in quarantine: %s (%s)\n' "${hr_row%%=*}" "${hr_row#*=}"
   done
-  printf '%s\n' 'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand'"'"'s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
+  printf '%s\n' 'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand'"'"'s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [keep=true|fresh=true]` ends a quarantine hold'
 }
 
 # `vessel read`: inside the container where docker reaches one, on the host where it reaches none. A fallen engine answers
@@ -898,7 +872,7 @@ waited_run() { run_waited run --profile offline run --rm --name "$RUN_NAME" "$@"
 verb=$1; shift
 
 # A WORKSPACE (cabal-realm#/the-workbench): an operator-configured directory a private wiki's workbench mirror rests in,
-# bound read-write at `/lar/workspaces/<name>` (a wiki's share row names it: `lares wiki share <wiki> --workspace <name>`).
+# bound read-write at `/lar/workspaces/<name>` (a wiki's share row names it: `lares wiki share <wiki> workspace=<name>`).
 # They come from `--workspace <name>=<dir>` on `up` and from LARES_WORKSPACES (the environment or the env file: `;`-separated
 # `<name>=<dir>` pairs, so they stand on every up). A workspace inside LARES_HOUSE/hearth refuses by name: a re-founding
 # clears the hearth. The checkout and LARES_WORKSPACE bind like any directory (founding road rank 4j: the checkout counts as
@@ -959,7 +933,7 @@ stand_pulama() {
   # mounted: the pūlama compares nothing, and the founding record reads at boot, inside the vessel) and prints the whole
   # frame on one stdout line; rebuild chatter rides stderr. A read that prints no frame falls back to the bare digest,
   # so a seed read never blocks a stand.
-  frame=$(docker run --rm -e LAR_ROOT=/lar "$image" node "$CLI" vessel floor seed --genesis /app/genesis --image "$digest" 2>/dev/null | tail -n 1) || frame=""
+  frame=$(docker run --rm -e LAR_ROOT=/lar "$image" node "$CLI" vessel floor seed genesis=/app/genesis image="$digest" 2>/dev/null | tail -n 1) || frame=""
   case "$frame" in '{'*) report=$frame ;; *) report=$digest ;; esac
   sp_svc=$(pulama_svc)
   compose --profile pulama exec -T "$sp_svc" node "$PULAMA_MAIN" image "$report" || die "the pūlama refused the image report for $digest; nothing raised"
@@ -1203,7 +1177,7 @@ prune_rev_tags() {
 # already inside a held run (a kukulu run under tools/floor-run.mjs) runs on: tools/floor-lock.mjs reads an ancestor's lock
 # off the kernel's table. With no host node to read the table or the headroom, it takes its run lock unread. After each build
 # the build CACHE prunes (`docker builder prune --all`): cache only, never an image, so the kept revision tags still back
-# `lares rite kukulu --rollback`.
+# `lares rite kukulu rollback=true`.
 FLOOR_TAKEN=""
 FLOOR_RUN=""
 floor_take() {
@@ -1565,7 +1539,7 @@ print_reading() {
 # THE KUKULU LEI on a branch, read in the standing vessel as the rite's leiStands reads it, printed as one word: `yes` (a return
 # left), `returns-spent`, or the cause it stands not (`absent`, ...); nothing where the vessel answers no reading.
 kukulu_lei_word() { # $1 = the branch
-  compose exec -T lares node "$CLI" lei show --rite kukulu --branch "$1" --json </dev/null 2>/dev/null | node -e '
+  compose exec -T lares node "$CLI" lei show rite=kukulu branch="$1" --json </dev/null 2>/dev/null | node -e '
       let s = ""; process.stdin.on("data", (d) => { s += d; }).on("end", () => {
         let o; try { o = JSON.parse(s.trim().split("\n").at(-1) ?? "").data; } catch { return; }
         if (!o || typeof o !== "object") return;
@@ -1598,12 +1572,12 @@ ai_restand_gate() { # $1 = the verb as typed
   if [ "$ag_lei" = yes ]; then return 0; fi
   case "$ag_lei" in
     # A LEI UNREAD NAMES ITS READ, never a string: the vessel held the read behind another act, and a lei may stand there whole.
-    '') die "$1 refused to an AI seat: the kukulu lei on $ag_branch answered no reading, so nothing licenses it yet; read it with \`lares lei show --rite kukulu --branch $ag_branch\`, then run \`$1\` again (nothing ran)" ;;
+    '') die "$1 refused to an AI seat: the kukulu lei on $ag_branch answered no reading, so nothing licenses it yet; read it with \`lares lei show rite=kukulu branch=$ag_branch\`, then run \`$1\` again (nothing ran)" ;;
     returns-spent) ag_why="the kukulu lei on $ag_branch stands with no return left" ;;
     *) ag_why="no standing kukulu lei on $ag_branch ($ag_lei)" ;;
   esac
   # shellcheck disable=SC2016
-  die "$1 refused to an AI seat: $ag_why; a hand strings one: lares lei kui --rite kukulu --branch $ag_branch --returns <n> --all (nothing ran)"
+  die "$1 refused to an AI seat: $ag_why; a hand strings one: lares lei kui rite=kukulu branch=$ag_branch returns=<n> all=true (nothing ran)"
 }
 # THE KŪKULU READING (course pulama-unblur): before any rite, one line says whether the next `lares rite kukulu` runs alone or
 # needs a hand, read off the sync the rite reads first, the closure of the head it would build (tools/pulama-closure.mjs over a
@@ -1708,7 +1682,7 @@ kukulu_reading() {
   kr_lei_ok=""; kr_lei_gone=""
   case "$kr_lei" in yes) kr_lei_ok=yes ;; ''|returns-spent) ;; *) kr_lei_gone=yes ;; esac
   # shellcheck disable=SC2016
-  kr_lei_unread='reads unknown: the kukulu lei answered no reading (read it with `lares lei show --rite kukulu`)'
+  kr_lei_unread='reads unknown: the kukulu lei answered no reading (read it with `lares lei show rite=kukulu`)'
   kr_offered=$kr_keeper; kr_by_lei=""
   if [ "$kr_pulama" = moved ] && [ "$kr_keeper" = lei ] && [ "$kr_lit" = yes ] && [ -n "$kr_lei_ok" ]; then kr_by_lei=yes; kr_keeper=vests
   elif [ "$kr_keeper" = lei ] || { [ "$kr_keeper" = vests ] && [ -n "$kr_lei_gone" ]; }; then kr_keeper=""; fi
@@ -1747,7 +1721,7 @@ keep_after_raise() {
   if run_census && printf '%s\n' "$census_out" | grep -q '^census: clean'; then
     printf '%s\n' "lares-container: the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now" >&2
     keep_before_down
-    if [ "$KEEP_SAID" = "kept (rite keep --if-due)" ]; then KEEP_SAID="kept after the raise (rite keep --if-due)"; fi
+    if [ "$KEEP_SAID" = "kept (rite keep if-due=true)" ]; then KEEP_SAID="kept after the raise (rite keep if-due=true)"; fi
   else
     # shellcheck disable=SC2016
     KEEP_SAID='deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean'
@@ -1804,7 +1778,7 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
     kl_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
     [ -n "$kl_lit" ] || kl_unread=yes
     for kl_face in $kl_lit; do
-      kl_n=$(compose exec -T lares node "$CLI" intent show --face "$kl_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
+      kl_n=$(compose exec -T lares node "$CLI" intent show face="$kl_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
       if [ -z "$kl_n" ]; then kl_unread=yes; elif [ -z "$kl_most" ] || [ "$kl_n" -gt "$kl_most" ]; then kl_most=$kl_n; fi
     done
   else kl_unread=yes; fi
@@ -1963,7 +1937,7 @@ keeper_settle() {
 # reports the keeper's closure first (the lei licenses the keeper code it was strung under, and a keeper whose code moved takes
 # the hand's light). It answers 0 lit; else KL_WHY names why the lei lit nothing. No clock rides it: the lei counts returns.
 KL_BY=""; KL_WHY=""; KL_LEFT=""
-HOALA_LEI_STRING='lares lei kui --rite hoala --returns <n>'
+HOALA_LEI_STRING='lares lei kui rite=hoala returns=<n>'
 keeper_wake_by_lei() {
   kb_svc=$(pulama_svc)
   kb_id=$(svc_running "$kb_svc") || kb_id=""
@@ -2007,7 +1981,7 @@ keeper_wake_or_rollback() {
   if keeper_wake_by_lei; then
     if [ -n "$kw_moved" ] && [ "$KL_BY" = lei ]; then
       KL_PRIOR=$kw_lei
-      printf 'lares-container: the keeper woke under its NEW code closure %s by the lei; the prior closure %s stays the rollback (its image keeps its revision tag: `lares rite kukulu --rollback`)\n' "$(printf '%s' "$kw_now" | cut -c1-19)" "$(printf '%s' "$kw_lei" | cut -c1-19)" >&2
+      printf 'lares-container: the keeper woke under its NEW code closure %s by the lei; the prior closure %s stays the rollback (its image keeps its revision tag: `lares rite kukulu rollback=true`)\n' "$(printf '%s' "$kw_now" | cut -c1-19)" "$(printf '%s' "$kw_lei" | cut -c1-19)" >&2
     fi
     return 0
   fi
@@ -2176,7 +2150,7 @@ hoala_verb() {
           case "$KL_BY" in
             lei)
               if [ -n "$KL_ROLLED" ]; then rs_note_found "the new keeper code failing its waking"; rs_note_did "stepped the keeper back to the prior closure on $KL_ROLLED and lit it there by the hoʻāla lei ($KL_LEFT return(s) left)"
-              elif [ -n "$KL_PRIOR" ]; then rs_note_found "the keeper's code moved"; rs_note_did "lit the keeper under its new code by the hoʻāla lei ($KL_LEFT return(s) left; rollback: the prior closure $(printf '%s' "$KL_PRIOR" | cut -c1-19) stays tagged, \`lares rite kukulu --rollback\`)"
+              elif [ -n "$KL_PRIOR" ]; then rs_note_found "the keeper's code moved"; rs_note_did "lit the keeper under its new code by the hoʻāla lei ($KL_LEFT return(s) left; rollback: the prior closure $(printf '%s' "$KL_PRIOR" | cut -c1-19) stays tagged, \`lares rite kukulu rollback=true\`)"
               else rs_note_did "lit the keeper by the hoʻāla lei ($KL_LEFT return(s) left)"; fi ;;
             hand) rs_note_did "lit the keeper by your route" ;;
             *) rs_note_did "the keeper stands lit" ;;
@@ -2222,14 +2196,14 @@ hoala_verb() {
     if [ -z "$PULAMA_MODE" ] && [ -n "$rs_stood" ]; then hoala_stop "the vessel stands at the locked floor: its unlock opened nothing (above), or no terminal stood to ask on; run \`lares rite hoala\` on a terminal (\`lares vault status\` reads the tries left)"; fi
     if [ -n "$PULAMA_MODE" ]; then
       # shellcheck disable=SC2046
-      if waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null; then rs_note_did "opened the vessel by the keeper's dial"
+      if waited_exec $(pass_env) -T lares node "$CLI" vault unlock all=true </dev/null; then rs_note_did "opened the vessel by the keeper's dial"
       else
         # A FRESH BOOT, ONCE: a vessel that stays shut under a lit keeper serving its image restarts and dials again.
         hoala_seat_gate "restart the vessel"
         printf '%s\n' 'lares-container: hoala: the vessel stayed shut under a lit keeper; it restarts once (a fresh boot) and dials again' >&2
         compose restart lares >&2 && up_with_workspaces >&2 || hoala_stop "the vessel did not answer healthy after its restart: read \`lares-container.sh logs\`"
         # shellcheck disable=SC2046
-        waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null || hoala_stop "the keeper stands lit and the vessel stays at the locked floor after a fresh boot; the line above names what the keeper waits on (\`lares pulama status\` reads it; an image it never admitted takes \`lares pulama admit\` or \`lares rite kukulu\`)"
+        waited_exec $(pass_env) -T lares node "$CLI" vault unlock all=true </dev/null || hoala_stop "the keeper stands lit and the vessel stays at the locked floor after a fresh boot; the line above names what the keeper waits on (\`lares pulama status\` reads it; an image it never admitted takes \`lares pulama admit\` or \`lares rite kukulu\`)"
         rs_note_did "restarted the vessel and opened it by the keeper's dial"
       fi
     else
@@ -2243,7 +2217,7 @@ hoala_verb() {
       fi
       [ -n "$HAVE_TTY" ] && [ "$HOST_CHAIN" = hand ] || hoala_stop "the vessel stands at the locked floor, and its unlock reads a hand's route on a terminal: run \`lares rite hoala\` on one"
       # shellcheck disable=SC2046
-      waited_exec $(pass_env) lares node "$CLI" vault unlock --all || hoala_stop "the vessel stays at the locked floor (above); \`lares vault status\` reads the tries left"
+      waited_exec $(pass_env) lares node "$CLI" vault unlock all=true || hoala_stop "the vessel stays at the locked floor (above); \`lares vault status\` reads the tries left"
       rs_note_did "opened the vessel by your route"
     fi
   fi
@@ -2289,7 +2263,7 @@ stand_house() {
     if [ -z "$s_light" ] && [ -n "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest" && ! key_held; then s_admit=yes; fi
     if [ -z "$HAVE_TTY" ]; then
       [ -z "$s_light" ] || die "rebuild stops before anything moves: $s_why, and its light reads your route on a terminal; $HAND_LINE"
-      [ -z "$s_admit" ] || [ -n "$ps_hoala" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)"
+      [ -z "$s_admit" ] || [ -n "$ps_hoala" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui rite=kukulu branch=<name> returns=<n> all=true)"
     fi
   fi
   # THE VEST RUNS BEFORE THE DOWN: a red pair, or a crash, leaves the vessel standing on the lit fire, and nothing moved.
@@ -2349,12 +2323,12 @@ stand_house() {
     if [ -n "$s_admit" ]; then
       [ -n "$HAVE_TTY" ] || die "the pūlama has not admitted this image, no kūkulu offer carries it and no standing lei covers the admit ($IA_LEI_WHY); its admit reads your route on a terminal: $HAND_LINE"
       printf '%s\n' 'lares-container: rebuild: the pūlama admits the image; it reads your route on this terminal' >&2
-      compose --profile pulama exec "$(pulama_svc)" node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock --all\`"
+      compose --profile pulama exec "$(pulama_svc)" node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock all=true\`"
     fi
     if [ -n "$s_stays" ]; then unlock_or_name
     else
       # shellcheck disable=SC2046
-      waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null || die "the vessel did not open (above); read it with \`tools/lares-container.sh pulama status\`, then \`tools/lares-container.sh vault unlock --all\`"
+      waited_exec $(pass_env) -T lares node "$CLI" vault unlock all=true </dev/null || die "the vessel did not open (above); read it with \`tools/lares-container.sh pulama status\`, then \`tools/lares-container.sh vault unlock all=true\`"
       if none_worn; then wear_last_face; fi
     fi
   elif [ -n "$s_stays" ]; then unlock_or_name; fi
@@ -2396,7 +2370,7 @@ keep_owed_verb() {
   # face last worn, else face 0, the keep's face.
   ko_face=$(last_worn_face); [ -n "$ko_face" ] || ko_face=0
   ko_read=ok
-  if ko_raw=$(compose exec -T lares node "$CLI" rite receipts --rite kukulu --face "$ko_face" --json </dev/null 2>/dev/null); then ko_debt=$(printf '%s' "$ko_raw" | tr -d ' \t\r\n'); else ko_debt=""; ko_read=refused; fi
+  if ko_raw=$(compose exec -T lares node "$CLI" rite receipts rite=kukulu face="$ko_face" --json </dev/null 2>/dev/null); then ko_debt=$(printf '%s' "$ko_raw" | tr -d ' \t\r\n'); else ko_debt=""; ko_read=refused; fi
   case "$ko_debt" in
     *'"pending":[]'*) ;;
     *)
@@ -2481,14 +2455,14 @@ case "$verb" in
           *) printf '%s\n' 'lares-container: name-successor: the re-check skipped by your word' >&2 ;;
         esac
         # THE DEVICE COUNT rides the commit's own body (the co-sign fails closed): the standing vessel reads each lit face's signed
-        # admission fold (`lares intent show --face N`), and the most any face holds goes in. A vessel down, or a face unread, sends
+        # admission fold (`lares intent show face=N`), and the most any face holds goes in. A vessel down, or a face unread, sends
         # none, and the vest then refuses until a commit carries a count.
         kc_most=""; kc_unread=""
         if run_census --json >/dev/null 2>&1; then
           kc_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
           [ -n "$kc_lit" ] || kc_unread=yes
           for kc_face in $kc_lit; do
-            kc_n=$(compose exec -T lares node "$CLI" intent show --face "$kc_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
+            kc_n=$(compose exec -T lares node "$CLI" intent show face="$kc_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
             if [ -z "$kc_n" ]; then kc_unread=yes; elif [ -z "$kc_most" ] || [ "$kc_n" -gt "$kc_most" ]; then kc_most=$kc_n; fi
           done
         else kc_unread=yes; fi
@@ -2513,11 +2487,11 @@ case "$verb" in
           kc_nonce=$(cat "$kc_held")
           kc_faces=""
           for kc_face in $kc_lit; do
-            kc_one=$(compose exec -T lares node "$CLI" intent keeper-cosign "$kc_d" --prev "$kc_prev" --nonce "$kc_nonce" --face "$kc_face" </dev/null 2>"$HOUSE/cache/keeper-cosign.err") || {
+            kc_one=$(compose exec -T lares node "$CLI" intent keeper-cosign "$kc_d" prev="$kc_prev" nonce="$kc_nonce" face="$kc_face" </dev/null 2>"$HOUSE/cache/keeper-cosign.err") || {
               kc_why=$(tr '\n' ' ' < "$HOUSE/cache/keeper-cosign.err"); rm -f "$HOUSE/cache/keeper-cosign.err"
               case "$kc_why" in
-                *ward-awaiting-cosign*) die "pulama name-successor: face h$kc_face asks a second device to co-sign the vest (${kc_why##*ward-awaiting-cosign: }); approve it on another device of the face (its ward dialog, or \`lares intent answer <ask> --face $kc_face --executor <this vessel's atom>\` on a node), then run \`lares pulama name-successor\` again (no successor named)" ;;
-                *) die "pulama name-successor: the co-sign of face h$kc_face refused ($kc_why); no successor named: read it with \`lares intent show --face $kc_face\`, or light the successor by hand: \`lares rite kukulu\`" ;;
+                *ward-awaiting-cosign*) die "pulama name-successor: face h$kc_face asks a second device to co-sign the vest (${kc_why##*ward-awaiting-cosign: }); approve it on another device of the face (its ward dialog, or \`lares intent answer <ask> face=$kc_face executor=<this vessel's atom>\` on a node), then run \`lares pulama name-successor\` again (no successor named)" ;;
+                *) die "pulama name-successor: the co-sign of face h$kc_face refused ($kc_why); no successor named: read it with \`lares intent show face=$kc_face\`, or light the successor by hand: \`lares rite kukulu\`" ;;
               esac
             }
             kc_faces="${kc_faces:+$kc_faces,}$kc_one"
@@ -2570,7 +2544,7 @@ case "$verb" in
         compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" rehive "$2" ;;
       recard)
         # recard proves a stale face's OWN route (its light on the vessel refused FaceHoldsNoPrekeySecret) on a real terminal inside
-        # the pūlama, which holds its key; one grant rests, and `lares vault recard --face N` at the vessel spends it and arms the light.
+        # the pūlama, which holds its key; one grant rests, and `lares vault recard face=N` at the vessel spends it and arms the light.
         [ "$#" -eq 2 ] || die "pulama recard takes one face ordinal (a number)"
         case "$2" in ''|*[!0-9]*) die "pulama recard takes one face ordinal (a number)" ;; esac
         # shellcheck disable=SC2046
@@ -2664,10 +2638,10 @@ case "$verb" in
   found)
     ensure_house
     # shellcheck disable=SC2046
-    waited_run $(pass_env) $(tty_flag) offline vessel found --skip-build --root /lar --genesis /app/genesis "$@" ;;
+    waited_run $(pass_env) $(tty_flag) offline vessel found --skip-build root=/lar genesis=/app/genesis "$@" ;;
   vessel)
     observing=""
-    for arg in "$@"; do if [ "$arg" = --observe ]; then observing=yes; fi; done
+    for arg in "$@"; do if [ "$arg" = observe=true ]; then observing=yes; fi; done
     case "${1:-}" in
       stand)
         [ -n "$observing" ] || ai_restand_gate "vessel stand"
@@ -2711,35 +2685,33 @@ case "$verb" in
     # object it prints, from its opening brace at the line's start to the end, joined onto one line. A signing that answers
     # no record lands nothing. Without a pūlama, every lei act routes as before.
     #
-    # THE HOʻĀLA LEI (`--rite hoala`) rides the keeper's own records, never the vessel's swarm: the keeper holds the keys it seals.
+    # THE HOʻĀLA LEI (`rite=hoala`) rides the keeper's own records, never the vessel's swarm: the keeper holds the keys it seals.
     # Its stringing and unstringing belong to a HAND on a terminal (a seat spends a return through the start path alone, and
     # strings, unstrings and reads none); `show` reads counts through the keeper's status, never a key.
-    lei_rite=""; lei_returns=""; lei_yes=""; lei_prev=""
+    lei_rite=""; lei_returns=""; lei_yes=""
     for lei_arg in "$@"; do
-      case "$lei_prev" in --rite) lei_rite=$lei_arg ;; --returns) lei_returns=$lei_arg ;; esac
-      case "$lei_arg" in --rite=*) lei_rite=${lei_arg#--rite=} ;; --returns=*) lei_returns=${lei_arg#--returns=} ;; --yes) lei_yes=--yes ;; esac
-      lei_prev=$lei_arg
+      case "$lei_arg" in rite=*) lei_rite=${lei_arg#rite=} ;; returns=*) lei_returns=${lei_arg#returns=} ;; --yes|yes=true) lei_yes=--yes ;; esac
     done
     if [ "$lei_rite" = hoala ]; then
       [ -n "$PULAMA_MODE" ] || die "a hoʻāla lei wakes a pūlama, and this house holds its own custody (LARES_PULAMA unset): its vessel unlocks by your route at each waking (\`lares rite hoala\` on a terminal); nothing strung"
-      [ "$HOST_CHAIN" = hand ] || die "lei ${1:-} --rite hoala refused hand-act-only: an AI seat strings, unstrings and reads no hoʻāla lei; it spends a return through the start path alone (\`lares rite hoala\`). A hand runs \`lares lei ${1:-kui} --rite hoala\` at their own terminal (nothing moved)"
+      [ "$HOST_CHAIN" = hand ] || die "lei ${1:-} rite=hoala refused hand-act-only: an AI seat strings, unstrings and reads no hoʻāla lei; it spends a return through the start path alone (\`lares rite hoala\`). A hand runs \`lares lei ${1:-kui} rite=hoala\` at their own terminal (nothing moved)"
       case "${1:-}" in
         show)
-          command -v node >/dev/null 2>&1 || die "lei show --rite hoala reads the keeper's status with the host's node, and none answers here; read it raw: lares pulama status"
+          command -v node >/dev/null 2>&1 || die "lei show rite=hoala reads the keeper's status with the host's node, and none answers here; read it raw: lares pulama status"
           compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>{let a={};try{a=JSON.parse(s)}catch{}const l=a.hoala;process.stdout.write(JSON.stringify({ok:true,data:{rite:"hoala",lit:a.lit===true,lei:l?{standing:l.left>0,cid:l.lei,returns:l.returns,returnsLeft:l.left,closure:l.closure,faces:l.faces,verified:l.verified===true}:{standing:false,why:"hoala-lei-absent"}}})+"\n")})'
           exit $? ;;
         unstring)
-          [ -n "$HAVE_TTY" ] || die "lei unstring --rite hoala is a hand's act on a terminal; run it on one (nothing moved)"
+          [ -n "$HAVE_TTY" ] || die "lei unstring rite=hoala is a hand's act on a terminal; run it on one (nothing moved)"
           compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" hoala-unstring </dev/null
           exit $? ;;
         kui)
-          [ -n "$HAVE_TTY" ] || die "lei kui --rite hoala reads your route on a terminal; run it on one (nothing strung)"
+          [ -n "$HAVE_TTY" ] || die "lei kui rite=hoala reads your route on a terminal; run it on one (nothing strung)"
           printf '%s' "$lei_returns" | grep -Eq '^[1-9][0-9]{0,3}$' || die "a hoʻāla lei names its returns, a count of at least one: $HOALA_LEI_STRING (nothing strung)"
           hl_id=$(svc_running "$(pulama_svc)") || hl_id=""
           hl_closure=$(closure_label container "$hl_id")
           [ -z "$hl_closure" ] || compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" closure "$hl_closure" </dev/null >/dev/null 2>&1 || true
           # THE CUSTODY IT MOVES, said before the route reads: what rests, where, and who could use it.
-          printf '%s\n' 'lares-container: a hoʻāla lei rests the keys this keeper holds on THIS machine, sealed, in two halves: the slot in the house (pulama/state), its key in the keeper'"'"'s own Docker volume. Whoever reads BOTH (Docker as you plus the house directory, or the raw disk) opens the house with no route while a return stands. `lares lei unstring --rite hoala` destroys both at once.' >&2
+          printf '%s\n' 'lares-container: a hoʻāla lei rests the keys this keeper holds on THIS machine, sealed, in two halves: the slot in the house (pulama/state), its key in the keeper'"'"'s own Docker volume. Whoever reads BOTH (Docker as you plus the house directory, or the raw disk) opens the house with no route while a return stands. `lares lei unstring rite=hoala` destroys both at once.' >&2
           # shellcheck disable=SC2086
           compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" hoala-string "$lei_returns" $lei_yes
           exit $? ;;
@@ -2765,49 +2737,49 @@ case "$verb" in
     route_cli "$verb" "$@" ;;
   kahua)
     # A KAHUA HAND ACT UNDER A PŪLAMA, in the lei pattern: the vessel holds no face root, so `kahua lift|withdraw|carry …` reads
-    # the terms in the vessel (`--terms`: every gate, the preview and the digest typed back on THIS terminal, then ONE line naming
+    # the terms in the vessel (`terms=true`: every gate, the preview and the digest typed back on THIS terminal, then ONE line naming
     # the face, the record's kind and the one unsigned act), the pūlama checks it, reads the route on this terminal and its face
-    # root signs that one record (`sign`), and the vessel lands it (`--land`), building the act afresh and landing it only over a
+    # root signs that one record (`sign`), and the vessel lands it (`land=`), building the act afresh and landing it only over a
     # byte-equal body. Neither vessel step asks a passphrase. Without a pūlama, or for any other kahua act, it routes as before.
     if [ -n "$PULAMA_MODE" ] && { [ "${1:-}" = lift ] || [ "${1:-}" = withdraw ] || [ "${1:-}" = carry ]; }; then
       kh_hand=""
-      for kh_arg do case "$kh_arg" in --terms|--land|--land=*) kh_hand=yes ;; esac; done
+      for kh_arg do case "$kh_arg" in terms=*|land=*) kh_hand=yes ;; esac; done
       if [ -z "$kh_hand" ]; then
         [ -n "$HAVE_TTY" ] || die "kahua $1 under a pūlama reads its route on a terminal; run it on one (nothing signed)"
         # The terms read rides a pty (the preview and its typed-back digest read here); the terms line is the last `{"face":` line.
         # shellcheck disable=SC2046
-        terms=$(compose exec --no-TTY=false $(pass_env) lares node "$CLI" kahua "$@" --terms | tee /dev/stderr | tr -d '\r' | awk '/^\{"face":/ { line = $0 } END { if (line != "") print line }')
+        terms=$(compose exec --no-TTY=false $(pass_env) lares node "$CLI" kahua "$@" terms=true | tee /dev/stderr | tr -d '\r' | awk '/^\{"face":/ { line = $0 } END { if (line != "") print line }')
         [ -n "$terms" ] || die "the vessel named nothing for the pūlama to sign (its answer above); nothing signed"
         answer=$(compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" sign "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
         [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
         # shellcheck disable=SC2046
-        waited_exec $(pass_env) -T lares node "$CLI" kahua "$@" --land "$answer" </dev/null
+        waited_exec $(pass_env) -T lares node "$CLI" kahua "$@" land="$answer" </dev/null
         exit $?
       fi
     fi
     route_cli "$verb" "$@" ;;
   nexus)
     # THE OFFERING'S SIGNATURE UNDER A PŪLAMA, in the lei pattern: the vessel holds no face root, so `nexus publish plugins …
-    # --apply` reads the terms in the vessel (the face and the closed descriptor its root signs: `--terms`), the pūlama reads
+    # apply=true` reads the terms in the vessel (the face and the closed descriptor its root signs: `terms=true`), the pūlama reads
     # the route on THIS terminal and its face root signs that one descriptor (`publish`), and the vessel lands the signed
-    # offering over the same source (`--land`). The answer is the last object the signing prints, joined onto one line; a
-    # signing that answers no offering lands nothing. Without a pūlama, or without --apply, every nexus act routes as before.
+    # offering over the same source (`land=`). The answer is the last object the signing prints, joined onto one line; a
+    # signing that answers no offering lands nothing. Without a pūlama, or without apply=true, every nexus act routes as before.
     if [ -n "$PULAMA_MODE" ] && [ "${1:-}" = publish ] && [ "${2:-}" = plugins ]; then
       np_apply=""
-      for np_arg do [ "$np_arg" = --apply ] && np_apply=yes; done
+      for np_arg do [ "$np_arg" = apply=true ] && np_apply=yes; done
       if [ -n "$np_apply" ]; then
         [ -n "$HAVE_TTY" ] || die "nexus publish under a pūlama reads its route on a terminal; run it on one (nothing signed)"
         np_count=$#; np_i=0
         while [ "$np_i" -lt "$np_count" ]; do
           np_arg=$1; shift; np_i=$((np_i + 1))
-          [ "$np_arg" = --apply ] || set -- "$@" "$np_arg"
+          [ "$np_arg" = apply=true ] || set -- "$@" "$np_arg"
         done
         # shellcheck disable=SC2046
-        terms=$(compose exec $(pass_env) -T lares node "$CLI" nexus "$@" --terms </dev/null) || exit $?
+        terms=$(compose exec $(pass_env) -T lares node "$CLI" nexus "$@" terms=true </dev/null) || exit $?
         answer=$(compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" publish "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
         [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
         # shellcheck disable=SC2046
-        waited_exec $(pass_env) -T lares node "$CLI" nexus "$@" --land "$answer" </dev/null
+        waited_exec $(pass_env) -T lares node "$CLI" nexus "$@" land="$answer" </dev/null
         exit $?
       fi
     fi
@@ -2823,11 +2795,11 @@ case "$verb" in
     # operator wears, which the shim keeps for the next stand.
     if route_cli "$verb" "$@"; then rc=0; else rc=$?; fi
     if [ "$rc" -eq 0 ]; then
-      for arg in "$@"; do case "$arg" in ''|*[!0-9]*) ;; *) remember_worn_face --face "$arg"; break ;; esac; done
+      for arg in "$@"; do case "$arg" in ''|*[!0-9]*) ;; *) remember_worn_face "face=$arg"; break ;; esac; done
     fi
     exit "$rc" ;;
   vault)
-    # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
+    # A `vault unlock face=N` that landed names the face the operator wears: the shim keeps it for the next stand.
     # Under a pūlama the unlock runs detached from this terminal: the route goes to the pūlama (pulama light), never
     # into a vessel's prompt.
     if [ -n "$PULAMA_MODE" ] && [ "${1:-}" = unlock ]; then

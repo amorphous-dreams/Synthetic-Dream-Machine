@@ -1,7 +1,7 @@
 law: projected artifact — hand edits do not survive re-projection
-projected-by: weave (lares meme project --to md · meme-project)
+projected-by: weave (lares meme project to=md · meme-project)
 source: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing
-source-check: ni:///sha-256;jsBpuO24nnddRXA_zAnqGGhcUjQiiVkTtNdgERZKf_o
+source-check: ni:///sha-256;Jm8CjEZ0VpYK6joisu0xkhIpkCJ0--lSKqvdZo-C1iA
 title: lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing
 tongue: en
 type: text/markdown

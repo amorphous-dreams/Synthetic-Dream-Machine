@@ -123,7 +123,7 @@ describe("the lay feeds every disk-sourced holding through CREATE then INGEST", 
       for (const flags of [{ apply: true }, { apply: true, workbench: true }]) {
         calls.length = 0; errors.length = 0;
         expect(await cmdLay({ command: "vessel", positional: ["lay"], options: {}, flags } as ParsedArgs)).toBe(2);
-        expect(errors.join("\n")).toContain(`lares vessel lay ${"workbench" in flags ? "--workbench " : ""}--apply --yes`);
+        expect(errors.join("\n")).toContain(`lares vessel lay ${"workbench" in flags ? "workbench=true " : ""}apply=true --yes`);
         expect(calls).toEqual([]);
       }
     } finally { console.error = error; process.stdin.isTTY = ttys[0] as boolean; process.stdout.isTTY = ttys[1] as boolean; }
@@ -213,8 +213,8 @@ describe("the lay answers a shore flood once", () => {
       { bagId: "lar:///ha.ka.ba/wikis/daemon-x/working", uri: "d" },
     ];
     expect(pendingRemovalLines(rows, ["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/crossroads"])).toEqual([
-      "lay: 1 pending removal(s) in lar:///ha.ka.ba/bags/crossroads: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads` (or `restore --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads`)",
-      "lay: 3 pending removal(s) in lar:///ha.ka.ba/bags/sdm: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 3 --bag lar:///ha.ka.ba/bags/sdm` (or `restore --all --count 3 --bag lar:///ha.ka.ba/bags/sdm`)",
+      "lay: 1 pending removal(s) in lar:///ha.ka.ba/bags/crossroads: the files left disk and nothing tombstoned; answer once with `lares shore remove all=true count=1 bag=lar:///ha.ka.ba/bags/crossroads` (or `restore all=true count=1 bag=lar:///ha.ka.ba/bags/crossroads`)",
+      "lay: 3 pending removal(s) in lar:///ha.ka.ba/bags/sdm: the files left disk and nothing tombstoned; answer once with `lares shore remove all=true count=3 bag=lar:///ha.ka.ba/bags/sdm` (or `restore all=true count=3 bag=lar:///ha.ka.ba/bags/sdm`)",
     ]);
   });
 });

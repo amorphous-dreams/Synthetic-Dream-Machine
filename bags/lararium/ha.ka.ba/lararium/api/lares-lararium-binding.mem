@@ -114,7 +114,7 @@ The CLI's `connectAdminVessel`+`submitVerb` (Repo + sync) becomes `invokeLocal`
 * ''The daemon's own WS relay keeps the Ed25519 gate'' — peer-cred doesn't cross
   machines; never an unauthenticated TCP bind (the `tcp://0.0.0.0:2375` anti-pattern).
   The CLI carries no second transport to fall back to: no socket → `DaemonUnreachable`,
-  which counsels `lares vessel stand --foreground` rather than quietly standing a replica.
+  which counsels `lares vessel stand foreground=true` rather than quietly standing a replica.
 * ''Windows:'' named pipe (or localhost) behind the one client abstraction; the
   Ed25519 proof keeps auth uniform across platforms.
 
@@ -173,6 +173,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CKj0o8kdOG1DpThkx5LFo8DfYNPzNt8RfDxU6Xr8v3Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tqlyng8-aPhP7eB4VTm2k-AmNMiRnL43-KEY2omKZiM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

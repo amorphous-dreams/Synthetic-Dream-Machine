@@ -52,8 +52,8 @@ written   = "2026-11-14"
 |---|---|---|---|
 | `wiki-filter {recipe, filter, fields?, after?, limit?, maxBytes?}` | `lares get filter='<filter>' [fields=a,b] [limit=N] [max-bytes=N] [after=<cursor>] [all=true]` | `wiki_filter` | `{recipe, filter, titles \| rows, total, next, asOf, withheld?}` |
 | `tiddler-get {recipe, title, slot?, fields?, text?, maxBytes?}` | `lares get title=<title> [slot='#/name'] [fields=a,b] [aperture=measure]` | `tiddler_get` | `{recipe, title, tiddler: {fields, hash, textHash, bag, position, family?, omitted?} \| null}` |
-| `wiki-render {recipe, title \| text, type?, form?, after?, maxBytes?}` | `lares wiki render <title> \| --text '<span>' [--form text\|html]` | `wiki_render` | `{recipe, title, form, text, bytes, truncated, next}` |
-| `tiddler-put {recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create?}` | `lares put title=<title> [fields='<json>'] [unset=a,b] [tag-add=<list>] [tag-remove=<list>] [text=<words> \| file=<path>] [base <hash>] [--create]` | `tiddler_put` | `{recipe, title, decision: put\|noop\|conflict\|exists, bag, created, changed, hash, textHash, position, family?}` |
+| `wiki-render {recipe, title \| text, type?, form?, after?, maxBytes?}` | `lares wiki render <title> \| text='<span>' [form=text\|html]` | `wiki_render` | `{recipe, title, form, text, bytes, truncated, next}` |
+| `tiddler-put {recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create?}` | `lares put title=<title> [fields='<json>'] [unset=a,b] [tag-add=<list>] [tag-remove=<list>] [text=<words> \| file=<path>] [base <hash>] [create=true]` | `tiddler_put` | `{recipe, title, decision: put\|noop\|conflict\|exists, bag, created, changed, hash, textHash, position, family?}` |
 | `tiddler-delete {recipe, title, base?, family?, mode?}` | `lares delete title=<title> [base=<hash>] [family=true] [mode=kapae\|reveal]` | `tiddler_delete` | `{recipe, title, decision: removed\|absent\|conflict\|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence?}` |
 | `wiki-status {recipe}` | `lares wiki status` | `wiki_status` | `{recipe, working, layers: [{bag, mounted, read, write, working?, why?}]}` |
 
@@ -610,6 +610,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;weGAFLADoGa6z8nLVhJntAA-4WXHYRqsJgQnEgTvx2g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qaE572KuUIwEiAAI3EfOE4WJsa0eWlCaAQ3DjRv0ABY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

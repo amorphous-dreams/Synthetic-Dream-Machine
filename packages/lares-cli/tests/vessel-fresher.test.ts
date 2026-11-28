@@ -1,5 +1,5 @@
 /**
- * vessel-fresher — `lares vessel fresher --bag <slug>` lists each working copy that shadows a fresher canon record, with the
+ * vessel-fresher — `lares vessel fresher bag=<slug>` lists each working copy that shadows a fresher canon record, with the
  * copy's base hash beside the canon hash standing now, every page of the daemon's `fresher-canon` read; a refusal answers by
  * name and lists nothing.
  */

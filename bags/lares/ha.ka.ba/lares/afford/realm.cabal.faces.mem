@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.cabal.faces"
 
 ! realm.cabal.faces ~ the acting face's key in a realm: the nym a voucher names
 
-`lares cabal face --realm <id>` stands the acting face (`--face N`, else the one face standing open; several refuse by name) at the Nexus the realm stands under and prints its key there, the joiner nym a voucher names. `--nexus <aid>` names the Nexus at the vessel's first act in the realm.
+`lares cabal face realm=<id>` stands the acting face (`--face N`, else the one face standing open; several refuse by name) at the Nexus the realm stands under and prints its key there, the joiner nym a voucher names. `--nexus <aid>` names the Nexus at the vessel's first act in the realm.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nf9tl_hSSVoNTcLosF_4379BS3GgGp_suEhsuKBsqk0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DXHyITDdMR1eYoTqB_wXJIKPanjYEbEzsHrLXtty_JU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -393,7 +393,7 @@ export function landsUnderAHand(context: { readonly asker?: string }): boolean {
 export function handOverCure(slug: string, refusal: string, ownerLine: string, memberIndex?: number): string {
   if (refusal === "no-head-held") return `the owner face's holder here holds no key of the workbench's head (another device of the face, or a version this holder never counted, wrote it): land the share from the device whose holder wrote under that head (\`lares wiki share ${slug}\`)`;
   if (refusal === "fresh-base-unavailable") return `open the wiki under the realm's owner face so its live working document stands (\`lares wiki switch ${slug}\`), then land the share again (\`lares wiki share ${slug}\`)`;
-  if (refusal === "wrap-failed" || refusal === "reader-unreached") return `the owner's hive holds no contact card it can wrap for that member: light the member face (\`lares vault unlock --face ${memberIndex ?? "N"}\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  if (refusal === "wrap-failed" || refusal === "reader-unreached") return `the owner's hive holds no contact card it can wrap for that member: light the member face (\`lares vault unlock face=${memberIndex ?? "N"}\`), then land the share again (\`lares wiki share ${slug}\`)`;
   return ownerLine;
 }
 

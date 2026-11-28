@@ -43,7 +43,7 @@ describe("posture-plan — a dropped flag names itself", () => {
   it("★ `--page` REFUSES beside every acting posture, by name — a dropped warning let the page seem to stand ★", () => {
     for (const acting of ["restart", "foreground", "with-web"]) {
       const p = posturePlan(["page", acting]);
-      expect(p.refuse).toMatch(/--page rides the bare stand alone/);
+      expect(p.refuse).toMatch(/page=true rides the bare stand alone/);
       expect(p.refuse).toMatch(new RegExp(acting));
     }
   });

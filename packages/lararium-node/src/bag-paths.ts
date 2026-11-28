@@ -242,7 +242,7 @@ const segmentFold = (segment: string): string => segment.normalize("NFC").toLowe
  * (`others`: the segments of the OTHER faces; the same segment collides too, since no two faces share a root).
  */
 export function faceSegmentRefusal(petname: string | null | undefined, others: readonly string[] = []): { readonly code: FaceSegmentCode; readonly why: string } | null {
-  if (typeof petname !== "string" || petname.length === 0) return { code: "face-segment-empty", why: "a face with no pet name makes no folder: name it (`lares persona new <N> --name <label>`)" };
+  if (typeof petname !== "string" || petname.length === 0) return { code: "face-segment-empty", why: "a face with no pet name makes no folder: name it (`lares persona new <N> name=<label>`)" };
   const name = petname.normalize("NFC");
   const shown = JSON.stringify(name);
   if (/[/\\]/.test(name)) return { code: "face-segment-separator", why: `the pet name ${shown} holds a path separator, so it names no single folder` };
@@ -495,7 +495,7 @@ export function bagsFileToUri(instanceRoot: string, filePath: string): string | 
  * `wikis/{slug}/<full-uri-path>.mem`; the first segment under wikis/ names the
  * WIKI SLUG (the write-layer instance), never the carrier name. The derived
  * records home to the working layer (the editing plane), not the named bag —
- * the ingest caller carries that designation in `--to`. Symmetric with the
+ * the ingest caller carries that designation in `to=`. Symmetric with the
  * disk-projector's working projection: strip wikis/ + the @{slug} leaf, read
  * the interior whole.
  */

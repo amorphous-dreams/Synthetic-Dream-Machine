@@ -203,7 +203,7 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 <<~ has entity=`Cap` name=`kahuli-grammar` params=`verb/RATCHET subject/this hearth's grammarCid holder/the operator's OWN hand, at the receiving hearth does/recompute the region · verify the sig against the offeror's published Handle · THEN bake and bind ratchets/YES — this is the ratchet reaches/this hearth and the peers that follow it`>>
 
-''The proposed spelling'': `lares nexus kahuli grammar --from <offering-cid> --apply`. The CLI accepts no such command. The read-only `--from` contract and its relationship to the generic PluginOffering gift remain operator-held; any future `--apply` payload stays a separate receiver-held action rather than an offer-side effect.
+''The proposed spelling'': `lares nexus kahuli grammar from=<offering-cid> apply=true`. The CLI accepts no such command. The read-only `--from` contract and its relationship to the generic PluginOffering gift remain operator-held; any future `--apply` payload stays a separate receiver-held action rather than an offer-side effect.
 
 ''The three motions, in order, all fail-closed:''
 
@@ -435,12 +435,12 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 
 !!! The release wiring
 
-`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, a slug whose bag declares a tier under `public` in its own `meta.mem` leaves the manifest (`dropped`; the public floor carries public bags alone, `floorCarriesTier`), and the blobs stage before the manifest answers. ''A thin snapshot refuses'': a slug whose live records count under half its prior snapshot's (`floorCutReadsThin`; a prior under 16 records weighs nothing), or whose prior snapshot the CAS cannot answer for the weighing, refuses the whole cut `floor-cut-thin` by slug with both counts, and nothing stages; `--thin <slug[,slug]>` carries the steward's word that the bag shrank on purpose. A canon document seeded while another document answered its doors holds none or a handful of records, and a lawful release sheds a few memes of hundreds, so half parts the two. `lares nexus release <manifest-file> --cut` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID. The cut and the retire find the canon documents through the catalog the store door holds (the standing vessel's own handle, or the `catalog-url` pointer beside a store a direct act opens) and the genesis floor through the oracle island at its deterministic address; the bootstrap names neither. The seed keeps the canon document the one the doors read: its CREATE names every disk-sourced holding but the board house canon, and an island that never seated that bag (the holding landed under the canon source after the vessel booted) refuses `house-canon-unseated` and mints nothing, so no catalog entry ever holds records the realm's document lacks.
+`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, a slug whose bag declares a tier under `public` in its own `meta.mem` leaves the manifest (`dropped`; the public floor carries public bags alone, `floorCarriesTier`), and the blobs stage before the manifest answers. ''A thin snapshot refuses'': a slug whose live records count under half its prior snapshot's (`floorCutReadsThin`; a prior under 16 records weighs nothing), or whose prior snapshot the CAS cannot answer for the weighing, refuses the whole cut `floor-cut-thin` by slug with both counts, and nothing stages; `--thin <slug[,slug]>` carries the steward's word that the bag shrank on purpose. A canon document seeded while another document answered its doors holds none or a handful of records, and a lawful release sheds a few memes of hundreds, so half parts the two. `lares nexus release <manifest-file> cut=true` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID. The cut and the retire find the canon documents through the catalog the store door holds (the standing vessel's own handle, or the `catalog-url` pointer beside a store a direct act opens) and the genesis floor through the oracle island at its deterministic address; the bootstrap names neither. The seed keeps the canon document the one the doors read: its CREATE names every disk-sourced holding but the board house canon, and an island that never seated that bag (the holding landed under the canon source after the vessel booted) refuses `house-canon-unseated` and mints nothing, so no catalog entry ever holds records the realm's document lacks.
 
 !!! The surfaces — one door, both hosts
 
 * ''Shared seam'': `@lararium/mesh` `canon-offer` holds every decision; the daemon island registers `offer-make` · `offer-list` · `offer-show` · `offer-promote` (`@lararium/tw5` `canon-offer-verbs`) on node and browser alike. Only the Nexus binding forks: the shore's charter (node), else the Nexus the call names (a browser page, whose island reads no charter).
-* ''CLI'': `lares meme offer <uri…> --bag <slug>` · `offer show [<cid>] [--bag] [--all]` · `offer promote <cid> [--over-fresher]` — under the meme door, the one-screen help holding.
+* ''CLI'': `lares meme offer <uri…> bag=<slug>` · `offer show [<cid>] [--bag] [--all]` · `offer promote <cid> [--over-fresher]` — under the meme door, the one-screen help holding.
 * ''MCP'': `act(address="lar:///realm.offer.signs")` · `act(address="lar:///realm.offer.shows")`. The promotion holds no seat act: the steward's hand alone lands canon (the kahua lift's shape).
 
 !!! Moʻolelo — the forks this door decided (each overrulable)
@@ -515,6 +515,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WP8VTTqekAY-d1BMEQFkbum8cLLJgaUkjwMP5XAdLHU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y1lvLOiPf1x6GC8ykmYN8UrvoJ2wp4KXeAbMIJlewDE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -2,7 +2,7 @@
  * face-card-restore — THE ROOT-CARD READER: the split-root cards re-land one face's lineage and root, and open no memory.
  *
  * ── WHAT THE CARDS HOLD ─────────────────────────────────────────────────────────────────────────
- * `lares persona new --split-root` splits the face's persona root 2-of-3 {device, recorded-code, escrow-peer}. The
+ * `lares persona new split-root=true` splits the face's persona root 2-of-3 {device, recorded-code, escrow-peer}. The
  * person carries the recorded code and the escrow carrier off the device; the device share seals into the lost
  * vessel's home and dies with it. A custodian-card split names its three cards the same way (mine → device,
  * custodian-A → custodian, custodian-B → escrow-peer). A code spells only the share's point and its checksum: it names
@@ -27,9 +27,9 @@
  * ── PAPER RESTORES A ROOT, NEVER MEMORY ─────────────────────────────────────────────────────────
  * The memory section of the built body holds no entry, sealed to a public key whose secret half this reader never
  * keeps. Content keys stay random and wrap under the vessel key or a bundle's own key; no key the root derives opens
- * memory. A person recovers memory through a bundle (`lares vault restore <file> --memory`).
+ * memory. A person recovers memory through a bundle (`lares vault restore <file> memory=true`).
  *
- * Node-main only: a worker never imports this module. The door `lares vault restore --cards` reads each card on a
+ * Node-main only: a worker never imports this module. The door `lares vault restore cards=true` reads each card on a
  * terminal by the custody prompt's law, builds the body in the person's own process, and hands it to the vessel
  * sealed under a fresh key, through the same `bundle.restore` act a bundle rides.
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore

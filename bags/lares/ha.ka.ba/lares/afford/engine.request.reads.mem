@@ -61,7 +61,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[engine.request.reads request/<requestId>]] ~ name the request id`>>
-<<has entity=`refusal` name=`daemon-unreachable` params=`~ no daemon answers; lares vessel stand --foreground`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`~ no daemon answers; lares vessel stand foreground=true`>>
 <<has entity=`refusal` name=`cancel-lost` params=`~ the request ran before the cancel landed`>>
 <<has entity=`refusal` name=`verb-error` params=`~ the vessel answered a fault`>>
 ```
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ABOrl8_kg78EVOM7Psv_dDhY6Qf4GPBANeiduthcx5I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2gDmmWKXoWdTmmV8BYtT2hb1QsAgwfg8VGqvxSpGKTI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

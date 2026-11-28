@@ -99,10 +99,10 @@ function asAttestation(value: unknown): HandleAttestation | null {
 }
 
 /**
- * `lares handle verify-attestation <statement | @file | -> [--card <file>]` — the RECOGNISER's door.
+ * `lares handle verify-attestation <statement | @file | -> [card=<file>]` — the RECOGNISER's door.
  *
  * THE CHAIN-VERIFY HALF, AND ONLY THAT HALF. The chain the statement claims under comes from the reader's own
- * side: a carried card (`--card`), else the local handle-book (what this vessel already recognises). Nothing
+ * side: a carried card (`card=`), else the local handle-book (what this vessel already recognises). Nothing
  * dials out, nothing consults a board. `verifyAttestation` then answers whether the chain verifies, stands
  * unburned, matches the statement's prefix, seats the head the statement bound, and carries that head key's
  * signature over this exact claim.
@@ -112,7 +112,7 @@ function asAttestation(value: unknown): HandleAttestation | null {
  * this door does not perform and does not imply. The rendering says so on both channels, because a recogniser
  * who reads one for the other holds a guarantee nobody made.
  *
- * FAIL-CLOSED: an unmet Handle with no `--card` refuses NOT-FOUND rather than guessing a chain; a malformed
+ * FAIL-CLOSED: an unmet Handle with no `card=` refuses NOT-FOUND rather than guessing a chain; a malformed
  * statement refuses as usage; a refused verdict exits non-zero so a script branches on it.
  */
 async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
@@ -138,9 +138,9 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
   if (cardPath) {
     let card: { nym?: unknown; chain?: unknown };
     try { card = JSON.parse(readFileSync(cardPath, "utf8")) as { nym?: unknown; chain?: unknown }; }
-    catch (err) { return refuse(args, `cannot read the --card file "${cardPath}": ${err instanceof Error ? err.message : String(err)}`); }
+    catch (err) { return refuse(args, `cannot read the card= file "${cardPath}": ${err instanceof Error ? err.message : String(err)}`); }
     if (!Array.isArray(card.chain) || card.chain.length === 0) {
-      return refuse(args, `the --card file "${cardPath}" carries no handle-KEL chain — a card without its chain proves nothing`);
+      return refuse(args, `the card= file "${cardPath}" carries no handle-KEL chain — a card without its chain proves nothing`);
     }
     if (typeof card.nym === "string" && card.nym !== statement.prefix) {
       return refuse(args, "the carried card names a DIFFERENT Handle than the statement — carry the card of the Handle that signed it");
@@ -157,12 +157,12 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
         error: {
           code: "not-found",
           message: `this vessel has never met ${statement.prefix.slice(0, 24)}… — no chain to verify the statement against`,
-          hint: "carry the Handle's card: `lares handle verify-attestation <statement> --card <card.json>`, or admit it first with `lares circle card <carriage>`",
+          hint: "carry the Handle's card: `lares handle verify-attestation <statement> card=<card.json>`, or admit it first with `lares circle card <carriage>`",
         },
         data: { verdict: "unknown", prefix: statement.prefix, chainSource: "none" },
         human: () => {
           console.error(`lares handle verify-attestation: this vessel has never met ${statement.prefix.slice(0, 24)}….`);
-          console.error("  carry its card (--card <card.json>) or admit it first: lares circle card <carriage>");
+          console.error("  carry its card (card=<card.json>) or admit it first: lares circle card <carriage>");
         },
       });
       return exitFor("not-found");
@@ -216,14 +216,14 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares handle attest --surface <kind> --subject <name> [--return-locator <where>]` — mint a STRUCTURED edge.
+ * `lares handle attest surface=<kind> subject=<name> [return-locator=<where>]` — mint a STRUCTURED edge.
  *
  * ★ TWO FLAGS, NOT A SENTENCE AND NOT A JSON BLOB. ★ A claim asserts that this Handle stands in a NAMED
  * relation to a NAMED foreign subject, readable by a peer sharing none of our context (the operator's
- * ruling). `--surface` names the adapter family's row and therefore WHOSE authority answers the check;
- * `--subject` names the foreign name in that surface's own grammar. The subject rides ONE flag across every
- * surface, so a NEW adapter opens this door by naming a new `--surface` value and adds no flag — the union's
- * "a new adapter is a new MEMBER" law, spoken at the door. `--return-locator` carries where the surface half
+ * ruling). `surface=` names the adapter family's row and therefore WHOSE authority answers the check;
+ * `subject=` names the foreign name in that surface's own grammar. The subject rides ONE flag across every
+ * surface, so a NEW adapter opens this door by naming a new `surface=` value and adds no flag — the union's
+ * "a new adapter is a new MEMBER" law, spoken at the door. `return-locator=` carries where the surface half
  * looks for the leg coming back; absent, the adapter reads its own conventional location.
  *
  * A CLOSED VOCABULARY REFUSES A TYPO LOUDLY. A free-text claim minted an edge no adapter answers and nothing
@@ -232,7 +232,7 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
 async function handleAttest(args: ParsedArgs): Promise<number> {
   const surface = args.options["surface"];
   const subject = args.options["subject"];
-  const spelling = `lares handle attest --surface <${HANDLE_CLAIM_SURFACES.join("|")}> --subject <name> [--return-locator <where>] [--persona <index>]`;
+  const spelling = `lares handle attest surface=<${HANDLE_CLAIM_SURFACES.join("|")}> subject=<name> [return-locator=<where>] [persona=<index>]`;
   if (!surface || !subject) {
     return refuse(args, `attest wants a STRUCTURED claim, never prose: ${spelling}`);
   }

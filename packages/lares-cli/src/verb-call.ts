@@ -25,10 +25,10 @@ export interface RunVerbOptions extends SubmitOptions {
   readonly dataDir?: string;
 }
 
-/** No daemon holds the socket — the operator must `lares vessel stand --foreground`. */
+/** No daemon holds the socket — the operator must `lares vessel stand foreground=true`. */
 export class DaemonUnreachable extends Error {
   constructor(socketPath: string) {
-    super(`no lares daemon at ${socketPath} — start one with \`lares vessel stand --foreground\``);
+    super(`no lares daemon at ${socketPath} — start one with \`lares vessel stand foreground=true\``);
     this.name = "DaemonUnreachable";
   }
 }
@@ -177,14 +177,14 @@ export function verbFailure(err: unknown): VerbFailure {
     };
   }
   if (err instanceof DaemonUnreachable) {
-    return { code: "daemon-unreachable", message: err.message, hint: "Start the daemon with `lares vessel stand --foreground` and try again." };
+    return { code: "daemon-unreachable", message: err.message, hint: "Start the daemon with `lares vessel stand foreground=true` and try again." };
   }
   return { code: "verb-error", message: err instanceof Error ? err.message : String(err) };
 }
 
 /**
  * EACH HAT REACHED BY NAME: run `verb` as face `face` (`h<N>`) on a session of that face, the face the store door's
- * `--face N` names. The session books the face's own signer, so whatever the verb seals, it seals under that face's own
+ * `face=N` names. The session books the face's own signer, so whatever the verb seals, it seals under that face's own
  * chain; the island answers on that face's lane alone. A face the vessel opens no session of (locked, shut, never lit, or
  * outside the vessel) answers `face-not-open`, naming the vessel's own reason, and nothing runs. The answer reads as the
  * one-shot's does.

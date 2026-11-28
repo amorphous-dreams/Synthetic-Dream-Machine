@@ -428,7 +428,7 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
       return { bag, sink: storeMemeSink(store, bag, origin), anchor: false, realmGrant: true };
     }
     // A NAMED WIKI'S INSTANCE SLOT, addressed as a bag. `bag=lar:///ha.ka.ba/wikis/<slug>/working` names the
-    // doc THE ONE slot-doc resolver mints — the same doc `recipe=<slug>` walks and a `LOAD --to` that bag
+    // doc THE ONE slot-doc resolver mints — the same doc `recipe=<slug>` walks and a `LOAD to=` that bag
     // lands in. The three reaches answer it (`storeOfBag`), and `temp` refuses there: it lives in the wiki
     // island alone and no door reaches it.
     const slot = WIKI_SLOT_BAG_RE.exec(bag);
@@ -682,7 +682,7 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     const dialect = optionalStringArg(args, "dialect") ?? undefined;
     const tongue = optionalStringArg(args, "tongue") ?? undefined;
     if (projectTarget !== "md" && (dialect || tongue)) {
-      throw new Error(`meme-project: --dialect/--tongue weave the "md" target alone; got "${projectTarget}"`);
+      throw new Error(`meme-project: dialect=/tongue= weave the "md" target alone; got "${projectTarget}"`);
     }
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { bag, sink, anchor } = await resolveRead(opts, target, origin, ctx.cap);

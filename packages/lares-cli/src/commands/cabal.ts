@@ -3,14 +3,14 @@
  * there, stake standing on a joiner, cross, make the offering that keeps a realm alive, and read who feeds it.
  *
  * ONE KEY ACTS IN A REALM: the key the acting face presents at the Nexus the realm stands under
- * (cabal-realm#/the-steward-signer). A verb names the face that acts (`--face N`); naming none, the one face
- * standing open acts, and several faces standing refuse by name. `--nexus <aid>` names the Nexus at this vessel's first act in a realm; the vessel's
+ * (cabal-realm#/the-steward-signer). A verb names the face that acts (`face=N`); naming none, the one face
+ * standing open acts, and several faces standing refuse by name. `nexus=<aid>` names the Nexus at this vessel's first act in a realm; the vessel's
  * own ledger keeps that word, and every later act answers to it.
  *
- * `face --realm <realm-doc-id>` — stand the acting face (`--face N`, else the one face standing open) in the realm and print its key there: the joiner nym a
+ * `face realm=<realm-doc-id>` — stand the acting face (`face=N`, else the one face standing open) in the realm and print its key there: the joiner nym a
  * voucher names.
  *
- * `vouch <joiner-nym> --realm <realm-doc-id>` — the JOIN axis's write side: the acting face stakes its OWN standing
+ * `vouch <joiner-nym> realm=<realm-doc-id>` — the JOIN axis's write side: the acting face stakes its OWN standing
  * on one joiner, onto the realm's vouch board.
  *
  * THE CONTRAST WITH `nexus contract`. Contracting a vessel into carriage needs the kahu quorum AND the
@@ -22,13 +22,13 @@
  * later. The vouching itself already paid the cost: the voucher's score SPLITS across everyone they
  * vouch for, so each vouch dilutes the hand that made it. That carries the whole payment, and it needs no ledger.
  *
- * `feed --realm <id>` — THE OFFERING. A realm lives by being fed: members roll its maintenance feed,
+ * `feed realm=<id>` — THE OFFERING. A realm lives by being fed: members roll its maintenance feed,
  * one slot per writer, and the clock reads their offerings. The charter quorum advances the separate
  * admission lease. A FACE feeds, never a device, so adding vessels never inflates a standing.
  * Feeding twice rolls twice — the clock measures how hard
  * each hand feeds, so a repeated offering SHOULD register.
  *
- * `clock --realm <id>` — THE CAPTURE-CLOCK, and it surfaces rather than judges. It reports who feeds and how
+ * `clock realm=<id>` — THE CAPTURE-CLOCK, and it surfaces rather than judges. It reports who feeds and how
  * deep, the spread between leaders and trailers, and how many sit at the leading edge — raw numbers, no
  * "captured" verdict. A minority out-feeding a realm becomes VISIBLE while exit still costs little, which is
  * the whole answer available here: sight plus fork-as-exit, never a gate. The gate would become the captured
@@ -81,19 +81,19 @@ class CabalUsageError extends Error {}
 function realmOf(args: ParsedArgs): string {
   const realm = (args.options["realm"] ?? "").trim().toLowerCase();
   if (!/^[0-9a-f]{64}$/.test(realm)) {
-    throw new CabalUsageError("--realm expects a 64-hex cabal-realm doc id");
+    throw new CabalUsageError("realm= expects a 64-hex cabal-realm doc id");
   }
   return realm;
 }
 
-/** The Nexus a first act in a realm names (`--nexus`), absent where the caller named none. */
+/** The Nexus a first act in a realm names (`nexus=`), absent where the caller named none. */
 function nexusOf(args: ParsedArgs): Record<string, string> {
   const raw = args.options["nexus"];
   return typeof raw === "string" && raw.trim().length > 0 ? { nexusAid: raw.trim().toLowerCase() } : {};
 }
 
 /**
- * WHICH FACE ACTS — the key the acting face (`--face N`, else the one face standing open) presents at the Nexus the
+ * WHICH FACE ACTS — the key the acting face (`face=N`, else the one face standing open) presents at the Nexus the
  * realm stands under, read by the vessel's own door and never typed by the caller. `present` stands the face there (an act: a feed, a face named to a voucher);
  * without it the door only reads, and a face that holds no key there refuses by name.
  */
@@ -113,7 +113,7 @@ async function cmdFace(args: ParsedArgs): Promise<number> {
         console.log(face.face);
         console.log(`  realm:  ${face.realm}`);
         console.log(`  nexus:  ${face.nexusAid}  (the Nexus this realm stands under here)`);
-        console.log("  (a voucher names this key: `lares cabal vouch <key> --realm <realm-doc-id>`)");
+        console.log("  (a voucher names this key: `lares cabal vouch <key> realm=<realm-doc-id>`)");
       },
     });
     return 0;
@@ -206,7 +206,7 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
   const joiner = args.positional[1];
   const realm  = args.options["realm"];
   // The words for this door live in the registry alone; the refusal names only what THIS call lacks.
-  if (!joiner || !realm) return usage(args, `vouch wants ${!joiner ? "<joiner-nym>" : "--realm <realm-doc-id>"}`);
+  if (!joiner || !realm) return usage(args, `vouch wants ${!joiner ? "<joiner-nym>" : "realm=<realm-doc-id>"}`);
 
   try {
     const r = (await storeVerb("cabal-vouch", { joiner, realm, ...nexusOf(args), ...faceOption(args) }, CabalVouchError)).output as unknown as CabalVouchResult & { bundle: unknown };
@@ -240,14 +240,14 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
     const capRaw = args.options["cap"];
     const cap = capRaw === undefined ? undefined : Number(capRaw);
     if (cap !== undefined && !Number.isInteger(cap)) {
-      throw new CabalUsageError(`--cap expects an integer out-degree ceiling, got "${capRaw}"`);
+      throw new CabalUsageError(`cap= expects an integer out-degree ceiling, got "${capRaw}"`);
     }
     const bundleArg = args.options["bundle"];
     let bundle: unknown;
     if (bundleArg !== undefined) {
       const text = existsSync(bundleArg) ? readFileSync(bundleArg, "utf8") : bundleArg;
       try { bundle = JSON.parse(text); }
-      catch { throw new CabalUsageError("--bundle expects a JSON file or inline JSON bundle"); }
+      catch { throw new CabalUsageError("bundle= expects a JSON file or inline JSON bundle"); }
     }
 
     const v = (await storeVerb("cabal-join", {

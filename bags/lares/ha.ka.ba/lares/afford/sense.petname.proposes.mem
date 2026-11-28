@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.petname.proposes"
 
 ! sense.petname.proposes ~ a pet name proposed, awaiting acceptance
 
-`lares sensorium propose-name <sensorium> <subject> <label…> --projection <handle> [--evidence ref,ref]` records a proposed pet name with the projection that proposes it and its evidence refs; `accept-name` lands it.
+`lares sensorium propose-name <sensorium> <subject> <label…> projection=<handle> [evidence=ref,ref]` records a proposed pet name with the projection that proposes it and its evidence refs; `accept-name` lands it.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Wd1-qOatYioEt2OLWAWFwVbWKvve35tq88ZB56Tqu4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cxUif2HGjpHI5zxVulEIebuRzLzQHfDoRfi6X0RZvSY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -144,13 +144,13 @@ describe("multi-persona-per-vessel (#63)", () => {
     await generateOrLoadPersonaGroupRoot(1);
     try {
       setMountedFace(undefined);
-      await expect(resolveFace(undefined, { worn: true })).rejects.toThrow(/wears none of them[\s\S]*lares vault unlock --face N/);
+      await expect(resolveFace(undefined, { worn: true })).rejects.toThrow(/wears none of them[\s\S]*lares vault unlock face=N/);
       await expect(resolveFace(undefined, { worn: true })).rejects.toMatchObject({ klass: "none-worn" });   // the log keeps the class
       setMountedFace(1);
       expect(await resolveFace(undefined, { worn: true })).toBe(1);   // the face the operator wears
       expect(await resolveFace(0, { worn: true })).toBe(0);           // a named face that stands open
       await expect(resolveFace(7, { worn: true })).rejects.toBeInstanceOf(FaceNotOpen);
-      await expect(resolveFace(7, { worn: true })).rejects.toThrow(/face-not-open[\s\S]*h7[\s\S]*lares vault unlock --face 7/);
+      await expect(resolveFace(7, { worn: true })).rejects.toThrow(/face-not-open[\s\S]*h7[\s\S]*lares vault unlock face=7/);
       setMountedFace(5);                                              // a mount that stands shut never answers the seat
       await expect(resolveFace(undefined, { worn: true })).rejects.toBeInstanceOf(FaceNotNamed);
       await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed); // CONTROL: a command still names its face
@@ -215,7 +215,7 @@ describe("multi-persona-per-vessel (#63)", () => {
   });
 
   /**
-   * THE UNLOCK MOUNT-SWITCH. `lares vault unlock --face N` names the face the composition mounts; the daemon doc's
+   * THE UNLOCK MOUNT-SWITCH. `lares vault unlock face=N` names the face the composition mounts; the daemon doc's
    * singular pins were written by the FOUNDING face and never move again. So a boot mounting a non-founding face must
    * re-pin from that face's own material, never come up on h0's pins whatever face the unlock named. The switched
    * face's material lives in its OWN anchors, persisted at founding: signer DID, persona-KEL prefix, and the

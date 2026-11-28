@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.transcript.captures"
 
 ! sense.transcript.captures ~ one native source, the hook's own verb
 
-`lares sense capture <transcript|stageDir> --wing <wing>` captures one native source into a wing of the sovereign sensorium through the daemon, `--session-id` naming its session. A `--room` other than the default room refuses, since the override has not landed. A failed stream leaves the source durable for a re-run. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+`lares sense capture <transcript|stageDir> wing=<wing>` captures one native source into a wing of the sovereign sensorium through the daemon, `--session-id` naming its session. A `--room` other than the default room refuses, since the override has not landed. A failed stream leaves the source durable for a re-run. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
 
 <<~/ahu>>
 
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aQahEPWgjYLm8ImGim1sla4LT1k5_hJbfNPi5oClruw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hqTL5kRrj-DfyGe_APxtAY6nmxtzC82sfZG6Dp3puRc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

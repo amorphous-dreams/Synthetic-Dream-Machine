@@ -15,10 +15,11 @@
  *                     the carrier's live `#/takes`.
  *
  * The call door's act keywords route through the carriers' cli skin rows like any spelling (the VM resolves `get` by `title`
- * or `filter`). A door the command table still runs by position takes its act keyword's value as its sub-verb words, and its
- * shaping keywords as its own flags, the dials folded where its code walks them: a Pentacle carry (`_0` `_?` `_!`) asks
- * `--dry-run`, the Sword alone (`!0`) the machine answer (`--json`), Rest (`00`) nothing; any other carry refuses
- * `mu-cell-empty` until the door takes a carrier ([10 + 23]). `with=` carries a door's own words through whole (`with=--keep`).
+ * or `filter`). A door the command table runs by position takes its act keyword's value as its sub-verb words, and its
+ * shaping keywords as its own params (`face=2` rides as `face=2`), the dials folded where its carriers take them: a Pentacle
+ * carry (`_0` `_?` `_!`) asks `dry-run=true`, the Sword alone (`!0`) the machine answer (`json=true`), Rest (`00`) nothing;
+ * any other carry refuses `mu-cell-empty` until the door takes a carrier ([10 + 23]). `with=` carries a door's own positional
+ * words through whole (`with='<id> <path>'`).
  *
  * THE FLAG ZOO BURNS INTO THE DIALS: a keyword line carries no `--flag`. `--dry-run` reads `mu=_0` · `--json` and `--quiet`
  * read `mu=!0` · `--meme` and `--skinny` read `aperture=measure` · `--all` and `--grain` read `aperture=arc`; any other flag
@@ -29,7 +30,9 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/affordance
  */
 import { isMuFault, muWordsOf, readMu, readAperture, isApertureFault, reachesWhole } from "@lararium/tw5";
-import { PARAM_TOKEN } from "./parse-args.js";
+import { BURNED_FLAGS, PARAM_TOKEN } from "./parse-args.js";
+
+export { BURNED_FLAGS };
 
 /** The call door's act keywords, each to the param its value fills (`act` names the address itself). */
 export const CALL_KEYS: Readonly<Record<string, string | null>> = Object.freeze({ get: "title", put: "title", delete: "title", rename: "title", filter: "filter", act: null });
@@ -46,11 +49,6 @@ export const CONTAINER_KEYS: readonly string[] = ["recipe", "bag", "realm", "fac
 /** Every shaping keyword the law names; a carrier's own params ride beside them. */
 export const SHAPING_KEYS: readonly string[] = [...DIAL_KEYS, ...SET_KEYS, "recipe", "face", "slot", "by", "base", "file", "append", "replace", "with"];
 
-/** The flags that burned into the dials, each to the key=value it reads as. */
-export const BURNED_FLAGS: Readonly<Record<string, string>> = Object.freeze({
-  "dry-run": "mu=_0", json: "mu=!0", quiet: "mu=!0", meme: "aperture=measure", skinny: "aperture=measure", all: "aperture=arc", grain: "aperture=arc",
-});
-
 /** A keyword line the grammar refuses: its code, the words, and the keyword line that cures it. */
 export class KeywordUsage extends Error {
   constructor(readonly code: string, message: string, readonly cure: string | null = null) {
@@ -65,10 +63,10 @@ export type KeywordLine =
   | { readonly kind: "call"; readonly verb: string; readonly params: Readonly<Record<string, string>>; readonly set: Readonly<Record<string, string>> }
   | { readonly kind: "door"; readonly door: string; readonly argv: readonly string[]; readonly set: Readonly<Record<string, string>>; readonly notes: readonly string[] };
 
-/** What the keyword reader takes from the command table: each door's name and the flag names its handlers read. */
+/** What the keyword reader takes from the command table: each door's name and the params its carriers take (`#/takes`). */
 export interface KeywordDoors {
   readonly names: readonly string[];
-  readonly accepts: (door: string) => readonly string[];
+  readonly takes: (door: string) => readonly string[];
 }
 
 /** True where a command line is a keyword line: its first token names a keyword (`lares rite=kukulu`, `lares mu=_0`). */
@@ -127,10 +125,10 @@ function actKeywordsOf(keys: readonly string[], doors: KeywordDoors): string[] {
   const calls = keys.filter((k) => k in CALL_KEYS);
   const doorKeys = keys.filter((k) => !(k in CALL_KEYS) && doors.names.includes(k) && !CONTAINER_KEYS.includes(k) && !SHAPING_KEYS.includes(k));
   const acts = [...calls, ...doorKeys];
-  // A DOOR WORD THAT NAMES ANOTHER DOOR'S FLAG (`lares lei=show rite=kukulu`: the lei door reads `--rite`) shapes that door: where
-  // exactly one door's own flags cover every other door word on the line, that door takes the act. An act keyword of the call door never absorbs one.
+  // A DOOR WORD THAT NAMES ANOTHER DOOR'S PARAM (`lares lei=show rite=kukulu`: the lei door takes `rite=`) shapes that door: where
+  // exactly one door's own params cover every other door word on the line, that door takes the act. An act keyword of the call door never absorbs one.
   if (calls.length === 0 && doorKeys.length > 1) {
-    const owners = doorKeys.filter((d) => doorKeys.every((o) => o === d || doors.accepts(d).includes(o)));
+    const owners = doorKeys.filter((d) => doorKeys.every((o) => o === d || doors.takes(d).includes(o)));
     if (owners.length === 1) return owners;
   }
   // A container word alone (no other act keyword) names its own door: `lares bag=show` runs the bag door.
@@ -186,9 +184,9 @@ export function readKeywords(tokens: readonly string[], doors: KeywordDoors): Ke
   return doorLine(act, value, pairs, doors, set);
 }
 
-/** A door the command table runs by position: its act keyword's value as its sub-verb words, the dials folded, the rest as its flags. */
+/** A door the command table runs by position: its act keyword's value as its sub-verb words, the dials folded, the rest as its params. */
 function doorLine(door: string, value: string, pairs: ReadonlyArray<readonly [string, string]>, doors: KeywordDoors, set: Record<string, string>): KeywordLine {
-  const accepts = doors.accepts(door);
+  const takes = doors.takes(door);
   const argv: string[] = [door, ...value.split(/\s+/).filter(Boolean)];
   const notes: string[] = [];
   const line = keywordLine([[door, value]]);
@@ -200,24 +198,22 @@ function doorLine(door: string, value: string, pairs: ReadonlyArray<readonly [st
       if (isMuFault(read)) throw new KeywordUsage(read.reason, read.message, read.cure === null ? line : `${line} mu=${read.cure}`);
       if (read.carry === "00") continue;
       if (read.carry === "_0" || read.carry === "_?" || read.carry === "_!") {
-        if (!accepts.includes("dry-run")) throw new KeywordUsage("mu-cell-empty", `the ${door} door walks no dry path yet, so a ${read.carry} call lands nothing; its carrier lands the preview ([10 + 23]), and the plain line lands the act`, line);
-        argv.push("--dry-run");
+        if (!takes.includes("dry-run")) throw new KeywordUsage("mu-cell-empty", `the ${door} door walks no dry path yet, so a ${read.carry} call lands nothing; its carrier lands the preview ([10 + 23]), and the plain line lands the act`, line);
+        argv.push("dry-run=true");
         continue;
       }
-      if (read.carry === "!0") { argv.push("--json"); continue; }
-      throw new KeywordUsage("mu-cell-empty", `the ${door} door takes no carrier yet, so it reads ${read.carry} (${muWordsOf(read.carry)}) on no cell: by its own code it walks _0 (--dry-run, where it walks one) and !0 (its machine answer) alone, until its carrier lands ([10 + 23])`, line);
+      if (read.carry === "!0") { argv.push("json=true"); continue; }
+      throw new KeywordUsage("mu-cell-empty", `the ${door} door takes no carrier yet, so it reads ${read.carry} (${muWordsOf(read.carry)}) on no cell: by its own code it walks _0 (dry-run=true, where it walks one) and !0 (its machine answer) alone, until its carrier lands ([10 + 23])`, line);
     }
     if (k === "aperture") {
       const read = readAperture(v);
       if (isApertureFault(read)) throw new KeywordUsage(read.reason, read.message, read.cure === null ? line : `${line} aperture=${read.cure}`);
-      if (reachesWhole(read.rank) && accepts.includes("verbose")) argv.push("--verbose");
+      if (reachesWhole(read.rank) && takes.includes("verbose")) argv.push("verbose=true");
       else notes.push(`aperture=${read.n}/${read.rank} rides as testimony: the ${door} door reads no range until its carrier lands ([10 + 23])`);
       continue;
     }
     if (k === "with") { argv.push(...v.split(/\s+/).filter(Boolean)); continue; }
-    if (v === "true") argv.push(`--${k}`);
-    else if (v === "false") argv.push(`--no-${k}`);
-    else argv.push(`--${k}=${v}`);
+    argv.push(`${k}=${v}`);
   }
   return { kind: "door", door, argv, set, notes };
 }

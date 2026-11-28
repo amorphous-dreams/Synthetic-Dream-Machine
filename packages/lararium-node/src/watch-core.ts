@@ -1,7 +1,7 @@
 /**
  * watch-core — THE DRAIN, ONE SEAT (face-pools #/lanes W1, W2). Disk events carry HINTS (Confluence): the seat coalesces a
  * settle window into ONE wave, runs one wave at a time, and queues exactly one rerun for hints that land mid-wave. The
- * CLI's `lares ingest --watch` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
+ * CLI's `lares ingest watch=true` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
  *
  * THE VESSEL'S HOST (`armFacePoolWatch`) watches one face root, `projections/faces/<pet name>/`, and its planes alone:
  * `wikis/daemon/`, `bags/daemon/`, `bags/kahua/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `personal/`, `recovery/`. It
@@ -353,7 +353,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
 /**
  * A SHARED WIKI'S WORKBENCH SERVES AS A POOL (cabal-realm#/the-workbench). A wiki's workbench mirror rests in ONE folder whichever
  * face wears: `<projections>/realms/<realm pet name>/wikis/<slug>/` in the realm that holds it, or the workspace its share row names (`<root>/workspaces/<name>`, bound by
- * the host shim: `--workspace <name>=<dir>`, `LARES_WORKSPACES`). The vessel holds the face pool's seat over that folder: the whole
+ * the host shim: `workspace=<name>=<dir>`, `LARES_WORKSPACES`). The vessel holds the face pool's seat over that folder: the whole
  * folder watched, each settle an unattended INGEST wave in the wiki's own working layer, the commit seam at each sitting's close.
  *
  * THE SEAT FOUNDS NO HISTORY. The folder's history rests in the ONE tree of the entity root holding it: a realm wiki folder's realm

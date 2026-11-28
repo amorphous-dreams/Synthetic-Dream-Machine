@@ -114,12 +114,12 @@ describe("store rows on a running vessel", () => {
   });
 
   it("RED: a dark face's rite-land refuses in the vessel's own words, which name the recard that cures it", async () => {
-    answerOf = () => { throw new SessionRefused("face-not-open", false, "face-not-open: h2 served by custody, dark here: its light refused (FaceHoldsNoPrekeySecret: it holds none); recard it at your own terminal: lares vault recard --face 2; no act ran"); };
+    answerOf = () => { throw new SessionRefused("face-not-open", false, "face-not-open: h2 served by custody, dark here: its light refused (FaceHoldsNoPrekeySecret: it holds none); recard it at your own terminal: lares vault recard face=2; no act ran"); };
     const err = await storeVerb("rite-land", { tessera: "t", head: "h", face: 2 }).catch((e: unknown) => e);
     const failure = storeFailure(err);
     expect(failure.code).toBe("face-not-open");
     expect(failure.message).toContain("FaceHoldsNoPrekeySecret");
-    expect(failure.message).toContain("lares vault recard --face 2");
+    expect(failure.message).toContain("lares vault recard face=2");
   });
 
   it("CONTROL: a row of the place rides the maintenance frame, and with no vessel standing every row runs here", async () => {

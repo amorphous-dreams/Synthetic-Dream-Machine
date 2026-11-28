@@ -10,9 +10,9 @@
  * returns a plan a caller can print — so the drop becomes a sentence instead of a silence.
  *
  * ── THE TWO REFUSALS ─────────────────────────────────────────────────────────────────────────────
- * `--observe` vows the run has no effects, and harnesses, hooks and the wake report lean on that
+ * `observe=` vows the run has no effects, and harnesses, hooks and the wake report lean on that
  * vow. Dropped, it does not degrade — it INVERTS, booting the daemon the caller asked about. So it
- * refuses beside an acting posture. `--page` refuses the same way: it asks the bare stand to light the page, no acting
+ * refuses beside an acting posture. `page=true` refuses the same way: it asks the bare stand to light the page, no acting
  * posture reads it, and a warning would let the person believe the page stands. Every other drop warns and stands, because a person who typed
  * one extra flag wants their vessel up more than they want a wall.
  *
@@ -66,14 +66,14 @@ export function posturePlan(named: readonly string[]): PosturePlan {
   const reads = new Set(READS[posture]);
   const dropped = named.filter((n) => KNOWN.includes(n) && !reads.has(n) && !POSTURES.includes(n as Posture));
 
-  // THE VOW, CHECKED BEFORE THE WARNING. An acting posture that swallowed `--observe` would perform
+  // THE VOW, CHECKED BEFORE THE WARNING. An acting posture that swallowed `observe=` would perform
   // the very act the caller asked it to withhold, and report success for it.
   const refuse = posture !== "report" && present.has("observe")
-    ? `--observe withholds every act, and \`--${posture}\` performs one — the two cannot ride together. `
-      + "Drop one: `lares vessel stand --observe` reports what stands and touches nothing."
+    ? `observe= withholds every act, and \`${posture}=true\` performs one — the two cannot ride together. `
+      + "Drop one: `lares vessel stand observe=true` reports what stands and touches nothing."
     : posture !== "report" && present.has("page")
-      ? `--page rides the bare stand alone: \`--${posture}\` never lights it. `
-        + "Drop one: `lares vessel stand --page` stands the vessel and lights the page."
+      ? `page=true rides the bare stand alone: \`${posture}=true\` never lights it. `
+        + "Drop one: `lares vessel stand page=true` stands the vessel and lights the page."
       : null;
 
   return { posture, shadowed, dropped, refuse };
@@ -83,10 +83,10 @@ export function posturePlan(named: readonly string[]): PosturePlan {
 export function posturePlanNotice(plan: PosturePlan): string[] {
   const out: string[] = [];
   if (plan.shadowed.length > 0) {
-    out.push(`standing --${plan.posture}; --${plan.shadowed.join(" --")} ${plan.shadowed.length > 1 ? "sit" : "sits"} beneath it`);
+    out.push(`standing ${plan.posture}=true; ${plan.shadowed.map((n) => `${n}=true`).join(" ")} ${plan.shadowed.length > 1 ? "sit" : "sits"} beneath it`);
   }
   if (plan.dropped.length > 0) {
-    out.push(`--${plan.dropped.join(" --")} ${plan.dropped.length > 1 ? "reach" : "reaches"} nothing under --${plan.posture}`
+    out.push(`${plan.dropped.map((n) => `${n}=true`).join(" ")} ${plan.dropped.length > 1 ? "reach" : "reaches"} nothing under ${plan.posture}=true`
       + " — the bare `lares vessel stand` carries them");
   }
   return out;

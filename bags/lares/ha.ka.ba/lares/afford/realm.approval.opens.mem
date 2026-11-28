@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.approval.opens"
 
 ! realm.approval.opens ~ an approval opens over exact bytes
 
-`lares nexus approve open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>` reads the file's exact bytes, signs an approval of their hash with the seats held in this vault, prints the statement digest, and writes the approval file (public material alone).
+`lares nexus approve open <file> purpose=<p> surface=<s> [class=ordinary|high-impact] [nexus=<aid>] out=<approval>` reads the file's exact bytes, signs an approval of their hash with the seats held in this vault, prints the statement digest, and writes the approval file (public material alone).
 
 <<~/ahu>>
 
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bWX80w-0q2q3umYYqpH6wQ-pXYiuCFJ3VAYiHf93Ke8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MRrUl5y8vvQwdPDVr6csdcbhWjLCbDixUN2bP-Hum2Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

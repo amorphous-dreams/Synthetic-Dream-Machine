@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.keeper.cosigns"
 
 ! face.keeper.cosigns ~ keeper-cosign ~ the keeper vest's co-sign
 
-`lares intent keeper-cosign <sha256:D> --prev <chain head|none> --nonce <64 hex>` issues (or reads back) the face's ward co-sign over one keeper commit and prints the carried co-sign as JSON; the host shim gathers each lit face's into the successor.
+`lares intent keeper-cosign <sha256:D> prev=<chain head|none> nonce=<64 hex>` issues (or reads back) the face's ward co-sign over one keeper commit and prints the carried co-sign as JSON; the host shim gathers each lit face's into the successor.
 
 <<~/ahu>>
 
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oE4pP6t3REhTPdYpkdHxAbBqiJwBkvUoHuBjHNeMQSA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KoLNW72uXIzJ4OnEXF_PFEry-ZsXDHaJjUOFmBGEwQU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -216,7 +216,7 @@ describe("RED rite-land-reads-the-begun-half", () => {
     const f = await fixture();
     await f.kui("kukulu", { reach: "wide", returns: 2 });
     const one = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
-    await expect(landRite(f.wiki, { tessera: one.tessera, head: HEAD2, image: D1 }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-land-differs", message: expect.stringMatching(/lares rite land --tessera/) });
+    await expect(landRite(f.wiki, { tessera: one.tessera, head: HEAD2, image: D1 }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-land-differs", message: expect.stringMatching(/lares rite land tessera=/) });
     await expect(landRite(f.wiki, { tessera: one.tessera, head: HEAD, image: D2 }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-land-differs" });
     expect(f.rows.has(swarmTesseraTitle(one.tessera, "host"))).toBe(false);
     const landed = await landRite(f.wiki, { tessera: one.tessera }, f.trust, GROUP, f.vessel);

@@ -2514,11 +2514,11 @@ export class LarDiskProjector {
         // named for the mechanism that actually stood down — never as a disk-ward refusal.
         // THE ALERT NAMES BOTH DOORS: the one that lands the disk's words and the one that lands the
         // records', each under this standoff's own key, so a person who reads the alert alone can settle it.
-        const doors = `Take the disk's words: \`lares shore take-disk ${tiddlerUri} --key ${standoff}\`. Take the records' words: \`lares shore take-records ${tiddlerUri} --key ${standoff}\`. Or save in the wiki until both say the same`;
+        const doors = `Take the disk's words: \`lares shore take-disk ${tiddlerUri} key=${standoff}\`. Take the records' words: \`lares shore take-records ${tiddlerUri} key=${standoff}\`. Or save in the wiki until both say the same`;
         const reason = another
           ? `the file at ${candidate} mirrors another document's record of ${tiddlerUri} (another face's workbench serves this bag over the same mirror), and this document's records say something else; nothing writes, so that file stays whole. ${doors}`
           : decision.reason === "records-behind-base"
-          ? `the records fell behind their last agreement with the file at ${candidate} (${decision.reason}): the document read back without the write that agreement saw (a save that never rested, or a document that failed to load), so its older render writes nothing over the file's newer words. Land the file's words whole: \`lares shore keep-disk ${tiddlerUri} --key ${standoff}\`. Take the records' older words: \`lares shore take-records ${tiddlerUri} --key ${standoff}\``
+          ? `the records fell behind their last agreement with the file at ${candidate} (${decision.reason}): the document read back without the write that agreement saw (a save that never rested, or a document that failed to load), so its older render writes nothing over the file's newer words. Land the file's words whole: \`lares shore keep-disk ${tiddlerUri} key=${standoff}\`. Take the records' older words: \`lares shore take-records ${tiddlerUri} key=${standoff}\``
           : decision.reason === "no-base"
           ? `the file at ${candidate} and the records say different things, and no base names a last agreement (${decision.reason}); nothing writes. ${doors}`
           : `the file at ${candidate} and the records both moved past their last agreement (${decision.reason}); nothing writes, so neither edit drowns. ${doors}`;

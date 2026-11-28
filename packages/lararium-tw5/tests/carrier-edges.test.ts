@@ -74,7 +74,7 @@ describe("carrier-edges — every address a carrier points at", () => {
    * THE CORPUS, AS A CEILING RATHER THAN A FLOOR. Some edges here name no carrier — a corpus writes
    * toward addresses before it stands them, and an aspirational pointer is not a fault. The number
    * below is the count that stands today, held as a ceiling so a rename that breaks edges raises it.
-   * `lares meme check --edges` takes the reading either side of a move.
+   * `lares meme check edges=true` takes the reading either side of a move.
    *
    * ''Lower this whenever it can go lower.'' A ceiling left slack absorbs the next break in silence.
    *
@@ -84,7 +84,7 @@ describe("carrier-edges — every address a carrier points at", () => {
    * A rise is only allowed to be absorbed here for the second reason, and only with the cause named;
    * absorbing the first one silently is how a ceiling stops measuring anything.
    *
-   * TWO READERS, ONE CORPUS WHEN THEY AGREE: `lares meme check --edges $(git ls-files 'bags/*.mem')`
+   * TWO READERS, ONE CORPUS WHEN THEY AGREE: `lares meme check edges=$(git ls-files 'bags/*.mem')`
    * reads over `bags/` alone; this test walks `carrierFiles` — every declared carrier, tiddlers and
    * memory included — and can read higher when a tiddler outside `bags/` carries edges the CLI never
    * sees. The ceiling here is THIS reader's number, lowered to match the CLI's whenever nothing
@@ -107,14 +107,14 @@ describe("carrier-edges — every address a carrier points at", () => {
     // that moves by a deliberate act: 143 edges across 72 carriers when the road left canon.
     expect(workbench.length, "a canon link into the founding road grew — name it, or write the road's name as prose").toBeLessThanOrEqual(143);
     // A CEILING ONLY EVER LOWERS, and it lowers by the same measurement either side of a change:
-    // `lares meme check --edges` before and after. A broken edge gets repaired, never absorbed.
+    // `lares meme check edges=true` before and after. A broken edge gets repaired, never absorbed.
     //
     // Every remaining forward reference stands written down on purpose — `node/genesis-island.mem`
     // names `lares/api/pono/carrier-gradient` (the law lives in `carrier-files.ts`), and
     // `live-equivocation.mem` names `elyncia/characters/primary-characters/telarus`,
     // `lararium/mesh/ahi-ka` and `lares/api/pono/recovery-registration`, carriers nobody has written
     // yet. A FORWARD REFERENCE IS INTENT RECORDED AHEAD OF ITS CARRIER.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(121);
+    expect(dangling.length, "an edge broke — run `lares meme check edges=true` to name it").toBeLessThanOrEqual(121);
   });
 
   test("the workbench class reads the founding road alone, never a neighbour that shares its letters", () => {

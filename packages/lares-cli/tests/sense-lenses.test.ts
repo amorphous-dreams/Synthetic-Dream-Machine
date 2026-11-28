@@ -45,7 +45,7 @@ describe("sense analyze --lens: one door, the lens chooses", () => {
   });
 
   test("an unknown lens refuses loudly and lists the lenses", async () => {
-    const r = await door(["sense", "analyze", "--lens", "zz-no-such-lens", "--json"]);
+    const r = await door(["sense", "analyze", "lens=zz-no-such-lens", "--json"]);
     expect(r.code).toBe(2);
     const message = String((json(r.out)["error"] as Record<string, unknown>)["message"]);
     expect(message).toContain("zz-no-such-lens");
@@ -53,14 +53,14 @@ describe("sense analyze --lens: one door, the lens chooses", () => {
   });
 
   test("a TS-native lens answers and echoes the lens it applied", async () => {
-    const r = await door(["sense", "analyze", "--lens", "cohere", "--json"]);
+    const r = await door(["sense", "analyze", "lens=cohere", "--json"]);
     expect(r.code).toBe(0);
     expect((json(r.out)["data"] as Record<string, unknown>)["lens"]).toBe("cohere");
   });
 
   test("the canon house name flows to its plain lens (CONTROL: same lens, same echo)", async () => {
-    const plain = await door(["sense", "analyze", "--lens", "couple", "--json"]);
-    const house = await door(["sense", "analyze", "--lens", "ki", "--json"]);
+    const plain = await door(["sense", "analyze", "lens=couple", "--json"]);
+    const house = await door(["sense", "analyze", "lens=ki", "--json"]);
     expect(plain.code).toBe(0);
     expect(house.code).toBe(0);
     expect((json(plain.out)["data"] as Record<string, unknown>)["lens"]).toBe("couple");
@@ -68,9 +68,9 @@ describe("sense analyze --lens: one door, the lens chooses", () => {
   });
 
   test("a signal lens without --signal refuses and still names its lens", async () => {
-    const r = await door(["sense", "analyze", "--lens", "forecast", "--json"]);
+    const r = await door(["sense", "analyze", "lens=forecast", "--json"]);
     expect(r.code).toBe(2);
-    expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("--lens forecast");
+    expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("lens=forecast");
   });
 });
 
@@ -101,42 +101,42 @@ describe("roster reads at two grains", () => {
   });
 });
 
-describe("a fold refuses by name every flag its path does not read — at the door, through pathAccepts", () => {
+describe("a fold refuses by name every param its path does not read — at the door, before the fold runs", () => {
   const atTheDoor = (r: { code: number; err: string }, flag: string): void => {
     expect(r.code).toBe(2);
-    expect(r.err).toContain(`unknown flag ${flag} for \`lares sense\``);
+    expect(r.err).toContain(`unknown param ${flag}= for \`lares sense\``);
   };
 
   test.each([
-    [["--lens", "couple", "--signal", "x.ndjson"], "--signal"],
-    [["--lens", "changes", "--repour"], "--repour"],
-    [["--lens", "rhythm", "--spectral"], "--spectral"],
-    [["--lens", "forecast", "--signal", "x.ndjson", "--names", "a,b"], "--names"],
-    [["--lens", "square", "--wing", "w"], "--wing"],
+    [["lens=couple", "signal=x.ndjson"], "signal"],
+    [["lens=changes", "repour=true"], "repour"],
+    [["lens=rhythm", "spectral=true"], "spectral"],
+    [["lens=forecast", "signal=x.ndjson", "names=a,b"], "names"],
+    [["lens=square", "wing=w"], "wing"],
   ])("`sense analyze %j` refuses naming %s", async (tail, flag) => {
     atTheDoor(await door(["sense", "analyze", ...tail, "--no-json"]), flag);
   });
 
   test("a sensorium name leading the verb narrows the same path", async () => {
-    atTheDoor(await door(["sense", "other", "analyze", "--lens", "couple", "--spectral", "--no-json"]), "--spectral");
+    atTheDoor(await door(["sense", "other", "analyze", "lens=couple", "spectral=true", "--no-json"]), "spectral");
   });
 
   test("pour --bulk refuses a flag no pour leg it walks reads", async () => {
-    atTheDoor(await door(["sense", "pour", "--bulk", "--dry-run", "--no-json"]), "--dry-run");
+    atTheDoor(await door(["sense", "pour", "bulk=true", "dry-run=true", "--no-json"]), "dry-run");
   });
 
   test("roster refuses a flag the roster never reads", async () => {
-    atTheDoor(await door(["sense", "roster", "memory", "--lens", "content", "--no-json"]), "--lens");
+    atTheDoor(await door(["sense", "roster", "memory", "lens=content", "--no-json"]), "lens");
   });
 
   test("CONTROL: a lens's own flags pass the door", async () => {
-    const r = await door(["sense", "analyze", "--lens", "forecast", "--json"]);
-    expect(r.err).not.toContain("unknown flag");
+    const r = await door(["sense", "analyze", "lens=forecast", "--json"]);
+    expect(r.err).not.toContain("unknown param");
   });
 });
 
 describe("pour walks one leg at a time", () => {
-  test.each([[["--all", "--bulk"]], [["--bulk", "--writeback"]], [["--all", "--writeback"]]])(
+  test.each([[["all=true", "bulk=true"]], [["bulk=true", "writeback=true"]], [["all=true", "writeback=true"]]])(
     "`sense pour %j` refuses naming both legs", async (legs) => {
       const r = await door(["sense", "pour", ...legs, "--json"]);
       expect(r.code).toBe(2);
@@ -152,7 +152,7 @@ describe("the help says what each lens reads", () => {
     const lines = helpLines("sense analyze");
     for (const lens of ["lead", "forecast", "mismatch"]) {
       const line = lines.find((l) => l.trimStart().startsWith(`${lens} `));
-      expect(line, `the ${lens} line`).toContain("--signal");
+      expect(line, `the ${lens} line`).toContain("signal=");
     }
     const summary = COMMANDS.find((c) => c.name === "sense")!.summary;
     expect([...lines, summary].join("\n")).not.toMatch(/every (read )?instrument over a poured sensorium/i);

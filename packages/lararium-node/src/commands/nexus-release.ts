@@ -5,7 +5,7 @@
  *
  * THE STEWARD IS A SEAT HELD HERE. The first seat of the charter this vessel holds a key for seals the body under the
  * release domain; the AUTHORITY is the approval, which a person opened and carried between vaults beforehand
- * (`lares nexus approve open|sign <manifest-file> --purpose floor-release --surface floor-release --class high-impact`).
+ * (`lares nexus approve open|sign <manifest-file> purpose=floor-release surface=floor-release class=high-impact`).
  * The door verifies the whole release exactly as a reader will, and lands it only where it counts: a short approval
  * lands nothing and the door says how many seats it still wants.
  *

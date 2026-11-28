@@ -90,7 +90,6 @@ export function unfoldRank(aperture: string | null | undefined): UnfoldRank | nu
  */
 export const shellWord = (word: string): string => (/^[A-Za-z0-9_./:@%+=,-]+$/.test(word) ? word : `'${word.replace(/'/g, `'\\''`)}'`);
 
-const faceFlag = (face: string | null | undefined): string => (face && FACE.test(face) ? ` --face ${face}` : "");
 /** The call's own face param: `face=N` rides a call as any other param. */
 const faceParam = (face: string | null | undefined): string => (face && FACE.test(face) ? ` face=${face}` : "");
 /** The command that reads one slot of a carrier whole. */
@@ -100,21 +99,19 @@ export const wholeCommand = (uri: string, face?: string | null): string => `lare
 /** The command that reads one plain record. */
 export const recordCommand = (uri: string, face?: string | null): string => `lares get title=${shellWord(uri)} recipe=default${faceParam(face)}`;
 /** The command that renders a card through the template its text transcludes. */
-export const cardRenderCommand = (card: string, face?: string | null): string => `lares wiki render ${shellWord(card)} --recipe default${faceFlag(face)} --form text`;
+export const cardRenderCommand = (card: string, face?: string | null): string => `lares wiki render ${shellWord(card)} recipe=default${faceParam(face)} form=text`;
 
 /**
  * THE INSTANCE KEEPS NAMING ITS OWN FACE (plan/companion-context #/4): every command a wake hands back binds to the face that
- * answered it, so a turn of the mount leaves the instance's next call home. `--face <N>` joins each `lares spirit <verb> <pet>`
- * after its pet and each `--recipe default` that names no face yet, and `face=<N>` joins each call's `recipe=default` that
- * names none; a null face leaves the text as it stands.
+ * answered it, so a turn of the mount leaves the instance's next call home. `face=<N>` joins each `lares spirit <verb> <pet>`
+ * after its pet and each `recipe=default` that names no face yet; a null face leaves the text as it stands.
  */
 export function faceBound(text: string, face: number | null): string {
   if (face === null) return text;
-  const flag = ` --face ${face}`;
+  const param = ` face=${face}`;
   return text
-    .replace(/(\blares spirit (?:om|ah|hum|hooili|residue|otakiage) [a-z0-9][a-z0-9-]{0,62})(?![a-z0-9-])(?! --face)/g, `$1${flag}`)
-    .replace(/(--recipe default)(?![\w-])(?! --face)/g, `$1${flag}`)
-    .replace(/(\brecipe=default)(?![\w-])(?! face=)/g, `$1 face=${face}`);
+    .replace(/(\blares spirit (?:om|ah|hum|hooili|residue|otakiage) [a-z0-9][a-z0-9-]{0,62})(?![a-z0-9-])(?! face=)/g, `$1${param}`)
+    .replace(/(\brecipe=default)(?![\w-])(?! face=)/g, `$1${param}`);
 }
 
 // ── THE CALL ───────────────────────────────────────────────────────────────────────────────────────────────────────

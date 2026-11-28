@@ -212,7 +212,7 @@ describe("RED rite-offer-binds-its-vouch-to-the-lei", () => {
     await s.begin();
     const unstrung = await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(lei) }, s.hand);
     await s.wiki.write(swarmLeiUnstrungTitle(swarmActCid(lei)), JSON.stringify(unstrung));
-    await expect(s.offer()).rejects.toMatchObject({ code: "swarm-lei-unstrung", message: expect.stringMatching(/lares lei kui --rite kukulu --branch main/) });
+    await expect(s.offer()).rejects.toMatchObject({ code: "swarm-lei-unstrung", message: expect.stringMatching(/lares lei kui rite=kukulu branch=main/) });
     expect(existsSync(s.path)).toBe(false);
     const t = await stand();
     await t.string({ reach: "wide", returns: 2 });
@@ -247,7 +247,7 @@ describe("RED rite-offer-binds-its-vouch-to-the-lei", () => {
     await s.begin(IMAGE2);
     await s.offer(IMAGE2);
     const resting = readFileSync(s.path, "utf8");
-    await expect(s.offer(IMAGE2, { base: stale })).rejects.toMatchObject({ code: "conflict", message: expect.stringMatching(/lares rite receipts --rite kukulu/) });
+    await expect(s.offer(IMAGE2, { base: stale })).rejects.toMatchObject({ code: "conflict", message: expect.stringMatching(/lares rite receipts rite=kukulu/) });
     await expect(s.offer(IMAGE2, { base: null })).rejects.toMatchObject({ code: "conflict" });
     expect(readFileSync(s.path, "utf8")).toBe(resting);
     await s.offer(IMAGE2, { base: kukuluOfferBase(s.path) });

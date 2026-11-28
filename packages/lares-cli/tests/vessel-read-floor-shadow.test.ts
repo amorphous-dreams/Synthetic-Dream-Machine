@@ -24,7 +24,7 @@ async function readJson(root: string): Promise<{ data: Record<string, unknown> }
   const stdoutWrite = process.stdout.write;
   process.stdout.write = ((chunk: unknown) => { output += String(chunk); return true; }) as typeof process.stdout.write;
   try {
-    expect(await dispatch(["vessel", "read", "--root", root, "--json", "--skip-build"])).toBe(0);
+    expect(await dispatch(["vessel", "read", `root=${root}`, "--json", "--skip-build"])).toBe(0);
   } finally {
     process.stdout.write = stdoutWrite;
   }
@@ -74,7 +74,7 @@ describe("vessel read answers a pipe in prose (quiet-pipe)", () => {
     let raw = "";
     process.stdout.write = ((chunk: unknown) => { raw += String(chunk); return true; }) as typeof process.stdout.write;
     try {
-      expect(await dispatch(["vessel", "read", "--root", root, "--skip-build"])).toBe(0);
+      expect(await dispatch(["vessel", "read", `root=${root}`, "--skip-build"])).toBe(0);
     } finally {
       process.stdout.write = stdoutWrite;
     }

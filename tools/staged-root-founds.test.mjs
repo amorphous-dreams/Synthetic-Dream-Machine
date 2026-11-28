@@ -30,7 +30,7 @@ test("a scratch root founds on the build's shipped genesis with no hand copy, an
     };
     stageDoor(unseeded);
     // A declared genesis dir holding no seed never falls back to the shipped one, so the refusal stays reachable.
-    const refusal = run(unseeded, ["vessel", "found", "--root", unseeded, "--skip-build"], { LAR_GENESIS: join(unseeded, "no-genesis") });
+    const refusal = run(unseeded, ["vessel", "found", `root=${unseeded}`, "--skip-build"], { LAR_GENESIS: join(unseeded, "no-genesis") });
     assert.notEqual(refusal.status, 0);
     assert.match(refusal.stderr, /genesis engine CID reads absent/);
 
@@ -38,11 +38,11 @@ test("a scratch root founds on the build's shipped genesis with no hand copy, an
     assert.ok(existsSync(join(repo, "genesis", "seed.json")));
     assert.ok(!existsSync(join(root, "genesis", "seed.json")), "the staged root holds no seed of its own");
 
-    const found = run(root, ["vessel", "found", "--root", root, "--skip-build"]);
+    const found = run(root, ["vessel", "found", `root=${root}`, "--skip-build"]);
     assert.equal(found.status, 0, found.stderr);
     assert.match(found.stdout + found.stderr, /genesis: shipped seed [0-9a-f]{64} at /);
 
-    const read = run(root, ["vessel", "read", "--root", root, "--skip-build", "--json"]);
+    const read = run(root, ["vessel", "read", `root=${root}`, "--skip-build", "--json"]);
     assert.equal(read.status, 0, read.stderr);
     assert.equal(JSON.parse(read.stdout).data.bootstrap, "present");
   } finally {

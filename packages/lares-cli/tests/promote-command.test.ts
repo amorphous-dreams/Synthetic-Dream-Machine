@@ -30,9 +30,9 @@ describe("lares trust", () => {
   });
 
   test("RED: list, prepare, commit and drop reach their rows with the wiki, digest and reason, and print the row's answer as JSON", async () => {
-    expect(await promote("list", "--wiki", "garden", "--face", "1")).toBe(0);
-    expect(await promote("prepare", D, "--why", "opens the field-notes macro")).toBe(0);
-    expect(await promote("commit", D, "--wiki", "garden")).toBe(0);
+    expect(await promote("list", "wiki=garden", "face=1")).toBe(0);
+    expect(await promote("prepare", D, "why=opens the field-notes macro")).toBe(0);
+    expect(await promote("commit", D, "wiki=garden")).toBe(0);
     expect(await promote("drop", D)).toBe(0);
     expect(seam.calls).toEqual([
       ["promote-list", { wiki: "garden", face: 1 }],
@@ -44,12 +44,12 @@ describe("lares trust", () => {
   });
 
   test("RED: orphan names `--keep` or `--drop`; CONTROL: neither, both, a malformed digest, a missing reason refuse (1) and a bare or unknown act is a usage refusal (2), all before the door", async () => {
-    expect(await promote("orphan", D, "--keep")).toBe(0);
-    expect(await promote("orphan", D, "--drop")).toBe(0);
+    expect(await promote("orphan", D, "keep=true")).toBe(0);
+    expect(await promote("orphan", D, "drop=true")).toBe(0);
     expect(seam.calls).toEqual([["promote-orphan", { digest: D, decision: "keep" }], ["promote-orphan", { digest: D, decision: "drop" }]]);
     seam.calls = [];
     expect(await promote("orphan", D)).toBe(1);
-    expect(await promote("orphan", D, "--keep", "--drop")).toBe(1);
+    expect(await promote("orphan", D, "keep=true", "drop=true")).toBe(1);
     expect(await promote("commit", "nope")).toBe(1);
     expect(await promote("prepare", D)).toBe(1);
     expect(await promote()).toBe(2);
@@ -66,9 +66,9 @@ describe("lares kapae", () => {
   });
 
   test("RED: raise, lower and flag reach their rows with the wiki, digest and reason; CONTROL: a flag without a reason, a bad digest refuse (1) and a bare or unknown act is a usage refusal (2), all before the door", async () => {
-    expect(await kapae("raise", D, "--wiki", "garden")).toBe(0);
+    expect(await kapae("raise", D, "wiki=garden")).toBe(0);
     expect(await kapae("lower", D)).toBe(0);
-    expect(await kapae("flag", D, "--why", "the macro leaks the field notes")).toBe(0);
+    expect(await kapae("flag", D, "why=the macro leaks the field notes")).toBe(0);
     expect(seam.calls).toEqual([
       ["kapae-raise", { digest: D, wiki: "garden" }],
       ["kapae-lower", { digest: D }],
@@ -92,9 +92,9 @@ test("each moved door names its replacement whatever flags ride the call", async
   const { dispatch } = await import("../src/bin/lares.js");
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   for (const [args, replacement] of [
-    [["promote", "list", "--unexpected"], "lares trust"],
-    [["nexus", "promote", "open", "--unexpected"], "lares nexus approve"],
-    [["sense", "promote", "memory", "--unexpected"], "lares sense harden"],
+    [["promote", "list", "unexpected=true"], "lares trust"],
+    [["nexus", "promote", "open", "unexpected=true"], "lares nexus approve"],
+    [["sense", "promote", "memory", "unexpected=true"], "lares sense harden"],
   ] as const) {
     expect(await dispatch(args)).toBe(2);
     expect(err.mock.calls.at(-1)?.join(" ")).toContain(replacement);
@@ -108,8 +108,8 @@ test("trust dispatches the existing wire verb and narrowed paths refuse unrelate
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   expect(await dispatch(["trust", "list"])).toBe(0);
   expect(seam.calls.at(-1)?.[0]).toBe("promote-list");
-  expect(await dispatch(["nexus", "approve", "check", "a", "b", "--purpose", "x"])).toBe(2);
-  expect(await dispatch(["sense", "harden", "x", "--wing", "x"])).toBe(2);
-  expect(err.mock.calls.flat().join(" ")).toContain("unknown flag");
+  expect(await dispatch(["nexus", "approve", "check", "a", "b", "purpose=x"])).toBe(2);
+  expect(await dispatch(["sense", "harden", "x", "wing=x"])).toBe(2);
+  expect(err.mock.calls.flat().join(" ")).toContain("unknown param");
   err.mockRestore();
 });

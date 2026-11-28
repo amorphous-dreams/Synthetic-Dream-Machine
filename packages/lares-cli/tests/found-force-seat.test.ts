@@ -65,7 +65,7 @@ describe("vessel found --force over a founded hearth — the operator's hand alo
     setFoundingHand(AI);
     expect(await found(true)).toBe(1);
     expect(said.join("\n")).toMatch(/refused: hand-act-only/);
-    expect(said.join("\n")).toMatch(/lares vessel found --force/);
+    expect(said.join("\n")).toMatch(/lares vessel found force=true/);
     expect(said.join("\n")).toMatch(/own terminal/);
     expect(hashes(larDataDir())).toEqual(store);
     expect(hashes(larIdentityDir())).toEqual(identity);
@@ -88,7 +88,7 @@ describe("vessel found --force over a founded hearth — the operator's hand alo
     expect(await found(true)).toBe(1);
     expect(said.join("\n")).toMatch(/refused: hand-unattested/);
     expect(said.join("\n")).not.toMatch(/hand-act-only/);
-    expect(said.join("\n")).toMatch(/lares vessel found --force/);
+    expect(said.join("\n")).toMatch(/lares vessel found force=true/);
     expect(said.join("\n")).toMatch(/whose processes the host can read/);
     expect(hashes(larDataDir())).toEqual(store);
   });

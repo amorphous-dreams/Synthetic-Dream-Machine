@@ -35,14 +35,14 @@ describe("containerArgs", () => {
     for (const options of [{ recipe: "lares", realm: "a".repeat(64) }, { realm: "a".repeat(64) }]) {
       const err = refusal(() => containerArgs(args(options), "meme project"));
       expect(err).toMatchObject({ code: "no-container" });
-      expect(err.message).toContain("--realm names a BAG's realm");
+      expect(err.message).toContain("realm= names a BAG's realm");
     }
   });
 
   test("the same named refusal rejects two containers", () => {
     const err = refusal(() => containerArgs(args({ recipe: "lares", bag: "sdm" }), "meme project"));
     expect(err).toMatchObject({ code: "no-container" });
-    expect(err.message).toBe("lares meme project: no-container — name one of --recipe <slug> or --bag <slug>, never both.");
+    expect(err.message).toBe("lares meme project: no-container — name one of recipe=<slug> or bag=<slug>, never both.");
   });
 });
 

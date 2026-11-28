@@ -32,7 +32,7 @@ The hands room covers how a person, a session and an agent act in the house. Fou
 * ''The binding.'' A socket or port binds the owner epoch, the session id, the generation, a verified face reference (the face's proof subject) and a fixed hand profile. A copied socket refuses `unbound-session`, a wrong face `wrong-face` and a stale generation `stale-generation`.
 * ''The receipt.'' A durable outcome rests under the face's proof subject plus the input digest. `requestedBy` reads as display text and leaves the digest. A later session of the same face reads the receipt; another face reads `unknown`.
 * ''The working layer.'' Every wiki but the daemon's rests its working layer in the wiki's realm workbench, one CRDT per (realm, wiki), and an unshared wiki stands as a private cabal of one (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>). The daemon wiki keeps its face-private device slot.
-* ''The switch.'' A session switches its own face in place through the five-step fence (`session:switch`); no vessel selector persists, and `persona wear` stands no more. A command names the face it acts as (`--face N`), or resolves the one face standing open; the composition mounts one face in its daemon island, the daemon mount: the face the unlock names (`lares vault unlock --all --face N`), else, where several faces stand served and none stands named, face 0 or the lowest served face. No session sets the mount, so "worn" names a session's act alone. The AI seat acts inside the lent set (`seat-hand.ts`, `face-not-lent`), a chore asked under a lent face other than the mount refuses `chore-face-not-mounted` (`chore-face.ts`), and no operator command reads the mount (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>).
+* ''The switch.'' A session switches its own face in place through the five-step fence (`session:switch`); no vessel selector persists, and `persona wear` stands no more. A command names the face it acts as (`--face N`), or resolves the one face standing open; the composition mounts one face in its daemon island, the daemon mount: the face the unlock names (`lares vault unlock all=true face=N`), else, where several faces stand served and none stands named, face 0 or the lowest served face. No session sets the mount, so "worn" names a session's act alone. The AI seat acts inside the lent set (`seat-hand.ts`, `face-not-lent`), a chore asked under a lent face other than the mount refuses `chore-face-not-mounted` (`chore-face.ts`), and no operator command reads the mount (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>).
 
 <<~/ahu>>
 
@@ -105,6 +105,6 @@ The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qiimxpJnKEFYGzQCKHu1srhT1jKZlrw26vYwmbwzzlI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;77OYVpa0Y46hko2GAwmPU6TfNQAAsensNhsjz-502B4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

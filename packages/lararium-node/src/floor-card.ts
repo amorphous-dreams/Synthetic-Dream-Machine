@@ -26,7 +26,7 @@ import { type FloorShadowTally } from "@lararium/mesh/floor-shadow";
 export const FLOOR_WORDS = ["disk lag", "working ahead", "canon floor drift", "seed offer", "shadow tally"] as const;
 export type FloorWord = (typeof FLOOR_WORDS)[number];
 
-/** `--grain` names: `lag` carries the disk lag and working ahead; each other grain carries its one drift. */
+/** `grain=` names: `lag` carries the disk lag and working ahead; each other grain carries its one drift. */
 export const FLOOR_GRAINS = ["canon", "seed", "shadow", "lag", "all"] as const;
 export type FloorGrain = (typeof FLOOR_GRAINS)[number];
 
@@ -78,14 +78,14 @@ const seedRatchet = (r: RatchetDifference): string => `${r.ratchet === "floor" ?
 const named = (items: readonly string[], cap = 6): string => `${items.slice(0, cap).join(", ")}${items.length > cap ? `, … ${items.length - cap} more` : ""}`;
 
 /** The cut writes the manifest file it names (`floor-release.json` is the path it creates), so the line carries no placeholder. */
-export const CANON_NEXT = "lares nexus release floor-release.json --cut";
+export const CANON_NEXT = "lares nexus release floor-release.json cut=true";
 export const SEED_NEXT = "lares vessel floor seed";
 export const SHADOW_NEXT = "lares vessel read";
-export const LAG_NEXT = "lares vessel lay --lag";
-/** The preview first: `lay --apply --yes` relays the operator's approval, so a seat or an AI reads the card and runs only the preview. */
+export const LAG_NEXT = "lares vessel lay lag=true";
+/** The preview first: `lay apply=true --yes` relays the operator's approval, so a seat or an AI reads the card and runs only the preview. */
 export const LAG_PREVIEW = "lares vessel lay";
-export const WORKBENCH_PREVIEW = "lares vessel lay --workbench";
-export const WORKING_NEXT = "lares vessel floor status --grain lag";
+export const WORKBENCH_PREVIEW = "lares vessel lay workbench=true";
+export const WORKING_NEXT = "lares vessel floor status grain=lag";
 
 /** Read the five drifts into their five rows, in the house's fixed order. */
 export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
@@ -118,7 +118,7 @@ export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
     const unread = d.unread.length > 0 ? `; live canon reads no document for ${d.unread.join(", ")}, so those slugs stay unread` : "";
     rows.push({ word: "canon floor drift", grain: "canon", state: d.count > 0 ? "drifts" : d.unread.length > 0 ? "unread" : "level", count: d.count, carriers: d.carriers, heads: [`floor ${d.manifest}`],
       detail: d.count > 0 ? `${d.count} carrier(s) of live canon stand ahead of the floor this vessel serves${unread}` : d.unread.length > 0 ? `the carriers that read stand level${unread}` : "the floor this vessel serves carries every live canon carrier",
-      next: d.count > 0 ? CANON_NEXT : "lares vessel floor status --grain canon", act: d.count > 0 ? "cure" : "read" });
+      next: d.count > 0 ? CANON_NEXT : "lares vessel floor status grain=canon", act: d.count > 0 ? "cure" : "read" });
   }
 
   // seed offer
@@ -192,7 +192,7 @@ export function floorCardFor(rows: readonly FloorDriftRow[], who: { readonly ves
     state === "level" ? "Every drift this vessel reads stands level." : `This card names each drift by its own word, the carriers it reads, the heads it read, and the exact next \`lares\` line. A new cause re-arms it; a level reading voids its row.`,
     ...(standing.length > 0 ? ["", "|!word |!state |!count |!carriers |!heads |!detail |!next |",
       ...standing.map((r) => `|${r.word} |${r.state} |${r.count ?? "-"} |${cell(named(r.carriers, 12))} |${cell(r.heads.join(", "))} |${cell(r.detail)} |${r.act} with \`${cell(r.next)}\` |`)] : []),
-    "", "Not yet counted: working ahead (no door counts a wiki's working-layer edits ahead of canon).", "", "Read it again: `lares vessel floor status` (`--grain canon|seed|shadow|lag|all`).", "",
+    "", "Not yet counted: working ahead (no door counts a wiki's working-layer edits ahead of canon).", "", "Read it again: `lares vessel floor status` (`grain=canon|seed|shadow|lag|all`).", "",
   ].join("\n");
   return {
     title, text, rows: standing,

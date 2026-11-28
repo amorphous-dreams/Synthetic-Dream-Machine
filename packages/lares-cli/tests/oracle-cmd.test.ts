@@ -31,7 +31,7 @@ vi.mock("../src/env.js", async (orig) => ({
 
 import { ORACLE_THROW_STANDS, castFromCoins, castRecord, castText } from "@lararium/mesh/oracle-cast";
 import { cmdOracle, oraclePlan } from "../src/commands/oracle-cmd.js";
-import { COMMANDS } from "../src/bin/lares.js";
+import { COMMANDS, doorTakes } from "../src/bin/lares.js";
 import { helpLines } from "../src/command-help.js";
 import { commandScope } from "../src/host-bridge.js";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -56,7 +56,7 @@ describe("lares oracle cast", () => {
   test("RED: the verb stands in the command table, rides the vessel, and its help names the oracle's limit", () => {
     const row = COMMANDS.find((c) => c.name === "oracle");
     expect(row).toBeDefined();
-    expect(row?.accepts).toEqual(["asking", "bag", "by", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"]);
+    expect([...doorTakes(row!.name)].sort()).toEqual(["asking", "bag", "by", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"]);
     expect(commandScope("oracle")).toBe("vessel");
     expect(row?.summary).toContain(ORACLE_THROW_STANDS);
     expect(helpLines("oracle").join("\n")).toContain(ORACLE_THROW_STANDS);
@@ -80,8 +80,8 @@ describe("lares oracle cast", () => {
     expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which lane?", uncertain: "two leans", observe: "lar:///a/b  spirit/x" }), AT, MINT).args)
       .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which lane?", uncertain: "two leans", observe: ["lar:///a/b", "spirit/x"] });
     const help = helpLines("oracle").join("\n");
-    expect(help).toContain("--uncertain");
-    expect(help).toContain("--observe");
+    expect(help).toContain("uncertain=");
+    expect(help).toContain("observe=");
     expect(help).not.toMatch(/collapse|--unfold/);
     const r = await run(argv(["collapse"], { recipe: "default", uncertain: "u", asking: "q" }));
     expect(r.exit).toBe(2);
@@ -116,10 +116,10 @@ describe("lares oracle cast", () => {
   });
 
   test("a seat's fresh throw answers asks: the line a person runs, and a non-zero exit", async () => {
-    h.reply = { band: "asks", decision: "asks", asks: { who: "a person's hand", answer: "lares oracle cast --recipe default --asking \"q\" --fresh", why: "w" } };
+    h.reply = { band: "asks", decision: "asks", asks: { who: "a person's hand", answer: "lares oracle cast recipe=default asking=\"q\" fresh=true", why: "w" } };
     const r = await run(argv(["cast"], { recipe: "default", asking: "q" }, { fresh: true, json: false }));
     expect(r.exit).toBe(5);
-    expect(r.err).toContain("--fresh");
+    expect(r.err).toContain("fresh=");
     const j = await run(argv(["cast"], { recipe: "default", asking: "q" }, { fresh: true, json: true }));
     expect(JSON.parse(j.out)).toMatchObject({ ok: false, data: { band: "asks" }, error: { code: "asks-a-hand" } });
   });
@@ -209,7 +209,7 @@ describe("lares oracle cast", () => {
     expect(r.exit).toBe(2);
     const out = JSON.parse(r.out);
     expect(out.error.message).toContain("lares vessel stand");
-    expect(out.error.message).toContain("--seed");
+    expect(out.error.message).toContain("seed=");
   });
 
   test("a sleeping vessel honors --seed: the seed's coins, named by its digest", async () => {
@@ -225,7 +225,7 @@ describe("lares oracle cast", () => {
       .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which road?", by: "doa" });
     expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?", by: "e-jing" }), AT, MINT).args)
       .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which road?" });
-    expect(COMMANDS.find((c) => c.name === "oracle")?.accepts).toContain("by");
+    expect(doorTakes("oracle")).toContain("by");
   });
 
   test("RED: a sleeping vessel reads the checkout's shelves: --by doa casts, an unknown kind refuses by name with the shelves that stand", async () => {

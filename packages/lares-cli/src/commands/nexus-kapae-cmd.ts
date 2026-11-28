@@ -30,12 +30,12 @@ import { emit, exitFor } from "../render.js";
 import { partialOutOrRefuse, writePartialFile, type PartialWritten } from "./partial-file.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-const KAPAE_USAGE = "usage: lares nexus kapae <nym> [--reason <text>] [--nexus <aid>]   |   lares nexus kapae --list [--nexus <aid>]";
-const PARTIAL_USAGE = "usage: lares nexus <kapae | un_kapae> <nym> [--nexus <aid>] --out <partial>   |   lares nexus <kapae | un_kapae> --from <partial> [--out <file>]";
+const KAPAE_USAGE = "usage: lares nexus kapae <nym> [reason=<text>] [nexus=<aid>]   |   lares nexus kapae list=true [nexus=<aid>]";
+const PARTIAL_USAGE = "usage: lares nexus <kapae | un_kapae> <nym> [nexus=<aid>] out=<partial>   |   lares nexus <kapae | un_kapae> from=<partial> [out=<file>]";
 const refuseKapae = (msg: string): Error => new NexusKapaeError(msg);
 
 /**
- * `lares nexus kapae <nym> [--reason]` raises a quorum-signed ban; `lares nexus kapae --list` folds the
+ * `lares nexus kapae <nym> [reason=true]` raises a quorum-signed ban; `lares nexus kapae list=true` folds the
  * current Kapae'd set. FAIL CLOSED: a REFUSAL (unseated charter, sub-quorum, malformed nym) renders as a
  * clean error and writes nothing — main gates every hunk, so the writer never lands a sub-quorum entry.
  */
@@ -55,7 +55,7 @@ export async function cmdUnKapae(args: ParsedArgs): Promise<number> {
   if (args.options["from"] !== undefined) return await kapaePartial(args, "un_kapae");
   const nym = args.positional[1];
   if (!nym) {
-    console.error(args.options["out"] !== undefined ? PARTIAL_USAGE : "usage: lares nexus un_kapae <nym> [--nexus <aid>]");
+    console.error(args.options["out"] !== undefined ? PARTIAL_USAGE : "usage: lares nexus un_kapae <nym> [nexus=<aid>]");
     return 2;
   }
   if (args.options["out"] !== undefined) return await kapaeOpen(args, "un_kapae", nym);
@@ -109,9 +109,9 @@ function emitKapaePartial(args: ParsedArgs, action: "kapae" | "un_kapae", step: 
       if (!path) console.log(`  partial (carry this): ${JSON.stringify(r.partial)}`);
       if (l) {
         console.log(`  landed:      act ${l.actCid.slice(0, 16)}… on this vessel's board (${l.kapaedNow ? "nym stands Kapae'd" : "nym NOT Kapae'd (a standing lift or higher entry supersedes)"})`);
-        console.log(`  next:        carry the partial back, so the other vault lands the same act (\`lares nexus ${action} --from <partial>\`)`);
+        console.log(`  next:        carry the partial back, so the other vault lands the same act (\`lares nexus ${action} from=<partial>\`)`);
       } else {
-        console.log(`  next:        carry the partial to the vault that holds another seat (\`lares nexus ${action} --from <partial> --out <file>\`)`);
+        console.log(`  next:        carry the partial to the vault that holds another seat (\`lares nexus ${action} from=<partial> out=<file>\`)`);
       }
     },
   });
@@ -121,7 +121,7 @@ function emitKapaePartial(args: ParsedArgs, action: "kapae" | "un_kapae", step: 
 }
 
 /**
- * THE TWO-VAULT DOOR. `kapae|un_kapae <nym> [--nexus <aid>] --out <file>` signs with every seat of the head roster
+ * THE TWO-VAULT DOOR. `kapae|un_kapae <nym> [nexus=<aid>] out=<file>` signs with every seat of the head roster
  * this vessel holds and writes the act as a PARTIAL file; nothing lands. FAIL CLOSED: a vessel holding the whole
  * quorum, or no seat, opens none.
  */
@@ -132,20 +132,20 @@ async function kapaeOpen(args: ParsedArgs, action: "kapae" | "un_kapae", nym: st
     partialOutOrRefuse(refuseKapae, out);
     const { output } = await storeVerb("nexus-kapae-open", { action, nym, ...(aid ? { aid } : {}) }, NexusKapaeError);
     const r = output as unknown as NexusKapaePartialResult;
-    return emitKapaePartial(args, action, `${action} --out`, r, writePartialFile(out, r.partial));
+    return emitKapaePartial(args, action, `${action} out=`, r, writePartialFile(out, r.partial));
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const failure = storeFailure(err, err instanceof NexusKapaeError ? "refused" : "error");
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action} --out: ${msg}`) });
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action} out=true: ${msg}`) });
     return exitFor(failure.code);
   }
 }
 
 /**
- * `kapae --from <partial> [--out <file>]` takes a partial the other vault wrote. This vessel judges it against its
+ * `kapae from=<partial> [out=<file>]` takes a partial the other vault wrote. This vessel judges it against its
  * OWN charter head and antigen board before any signature: `ready` takes the signature of every seat this vessel
  * holds that has not signed, `complete` lands the act on this vessel's board, and any other verdict refuses by name
- * with nothing signed or landed. `--out` writes the grown partial for the other vault.
+ * with nothing signed or landed. `out=` writes the grown partial for the other vault.
  */
 async function kapaePartial(args: ParsedArgs, action: "kapae" | "un_kapae"): Promise<number> {
   const from = args.options["from"]!;
@@ -157,11 +157,11 @@ async function kapaePartial(args: ParsedArgs, action: "kapae" | "un_kapae"): Pro
     catch { throw new NexusKapaeError(`cannot read ${from} as a partial file`); }
     const { output } = await storeVerb("nexus-kapae-partial", { partial, action }, NexusKapaeError);
     const r = output as unknown as NexusKapaePartialResult;
-    return emitKapaePartial(args, action, `${action} --from`, r, out !== undefined ? writePartialFile(out, r.partial) : null);
+    return emitKapaePartial(args, action, `${action} from=`, r, out !== undefined ? writePartialFile(out, r.partial) : null);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const failure = storeFailure(err, err instanceof NexusKapaeError ? "refused" : "error");
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action} --from: ${msg}`) });
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action} from=true: ${msg}`) });
     return exitFor(failure.code);
   }
 }
@@ -192,7 +192,7 @@ async function kapaeList(args: ParsedArgs): Promise<number> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const failure = storeFailure(err);
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus kapae --list: ${msg}`) });
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus kapae list=true: ${msg}`) });
     return exitFor(failure.code);
   }
 }

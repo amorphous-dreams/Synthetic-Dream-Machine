@@ -20,7 +20,7 @@
  * `<id16>` reads the first 16 hex of the mandate's hash, so a retry finds the mandate and the edge standing and starts no
  * second instance. No clock decides here: order rides the parent links, and a stamp (`launched-at`) annotates alone.
  *
- * THE ONE LINE (`wakeLine`): `wake as <pet>#<n>: lares spirit om <pet> --mandate <uri>@<hash> [--face <N>]`. The launch cap
+ * THE ONE LINE (`wakeLine`): `wake as <pet>#<n>: lares spirit om <pet> mandate=<uri>@<hash> [face=<N>]`. The launch cap
  * (`tools/summon-launch.mjs`) refuses any prompt outside that shape, so a host process starts only pointed at a hash-pinned
  * mandate. `WAKE_LINE` holds the shape; the host tool carries the same pattern, and a weld test in each suite reads the other's
  * (the tool's suite imports this built core, this core's suite runs `wakeLine` through the tool).
@@ -59,7 +59,7 @@ export const REACH_WIDENS = "+" as const;
 /** A reach as a launch carries it: comma-joined `Tool` or `Tool(spec)`; the host launch tool matches the same source. */
 export const ALLOWED_TOOLS = /^[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?(?:,[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?){0,63}$/;
 /** The one line a launch carries, as a pattern: `wakeLine` writes it and the host launch tool matches the same source. */
-export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,128}): lares spirit om ([a-z0-9][a-z0-9-]{0,62}) --mandate (lar:\/\/\/[^\s@]+)@([0-9a-f]{64})(?: --face (0|[1-9][0-9]{0,5}))?$/;
+export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,128}): lares spirit om ([a-z0-9][a-z0-9-]{0,62}) mandate=(lar:\/\/\/[^\s@]+)@([0-9a-f]{64})(?: face=(0|[1-9][0-9]{0,5}))?$/;
 
 /**
  * THE FIELDS A MANDATE'S HASH COVERS, in the order the hash reads them. `reads` (TW5 filters) and `links` (titles) hold one
@@ -203,7 +203,7 @@ export function mandateRead(uri: string, fields: Readonly<Record<string, string>
   if (stored === undefined && seed === undefined) {
     throw new SpiritRefusal("mandate-unknown", `mandate-unknown: no mandate stands at ${uri} under the face that answered; nothing started. List the mandates this face holds: \`lares get filter='[tag[${MANDATE_TAG}]]'\``, 4);
   }
-  const again = `Its offerer lands the mandate again and names the ref that answer prints: \`lares spirit mandate ${fields["pet"] ?? "<pet>"}#${fields["instance"] ?? "<n>"} --file <carrier>\``;
+  const again = `Its offerer lands the mandate again and names the ref that answer prints: \`lares spirit mandate ${fields["pet"] ?? "<pet>"}#${fields["instance"] ?? "<n>"} file=<carrier>\``;
   let hash: string;
   let text: string;
   if (seed !== undefined) {
@@ -230,7 +230,7 @@ export function mandateRead(uri: string, fields: Readonly<Record<string, string>
   }
   const tag = instanceTagOf(`${fields["pet"] ?? ""}#${fields["instance"] ?? ""}`);
   if (tag === null) {
-    throw new SpiritRefusal("mandate-malformed", `mandate-malformed: ${uri} names no instance (\`pet\` and \`instance\` fields); nothing started. Land it again: \`lares spirit mandate <pet>#<n> --file <carrier>\``, 4);
+    throw new SpiritRefusal("mandate-malformed", `mandate-malformed: ${uri} names no instance (\`pet\` and \`instance\` fields); nothing started. Land it again: \`lares spirit mandate <pet>#<n> file=<carrier>\``, 4);
   }
   const face = FACE_INDEX.test(fields["face"] ?? "") ? Number(fields["face"]) : null;
   const lanes = /^[0-9]{1,4}$/.test(fields["lanes"] ?? "") ? Number(fields["lanes"]) : 0;
@@ -246,13 +246,13 @@ export function mandateRead(uri: string, fields: Readonly<Record<string, string>
 /** The mandate names another instance than the line does. */
 export function mandateNames(mandate: SpiritMandate, pet: string, instance: string | null): SpiritRefusal | null {
   if (mandate.pet === pet && (instance === null || mandate.instance === instance)) return null;
-  return new SpiritRefusal("mandate-names-another", `mandate-names-another: ${mandate.uri} summons ${mandate.tag}, and the line names ${pet}${instance === null ? "" : `#${instance}`}; nothing started. Name the instance the mandate names: \`lares spirit summon ${shq(mandate.tag)} --mandate ${refLine(mandate.uri, mandate.hash)}\``, 4);
+  return new SpiritRefusal("mandate-names-another", `mandate-names-another: ${mandate.uri} summons ${mandate.tag}, and the line names ${pet}${instance === null ? "" : `#${instance}`}; nothing started. Name the instance the mandate names: \`lares spirit summon ${shq(mandate.tag)} mandate=${refLine(mandate.uri, mandate.hash)}\``, 4);
 }
 
 /** The mandate echoes one face, and another answered: the instance wakes under the face its mandate names, never re-homed. */
 export function mandateFaceTurned(mandate: SpiritMandate, answered: number | null, line: string): SpiritRefusal | null {
   if (mandate.face === null || answered === null || mandate.face === answered) return null;
-  return new SpiritRefusal("mandate-face-turned", `mandate-face-turned: ${mandate.uri} echoes face h${mandate.face}, and h${answered} answered; nothing started. Name the face: \`${line} --face ${mandate.face}\``, 4);
+  return new SpiritRefusal("mandate-face-turned", `mandate-face-turned: ${mandate.uri} echoes face h${mandate.face}, and h${answered} answered; nothing started. Name the face: \`${line} face=${mandate.face}\``, 4);
 }
 
 /** A mandate's `allowed-tools` split into whether it widens and the rules it names. */
@@ -274,17 +274,17 @@ export function launchReach(mandate: Pick<SpiritMandate, "allowedTools">): strin
 /** The launch cap, the model and the host paths a mandate names, checked before any process starts. */
 export function launchHolds(mandate: SpiritMandate): SpiritRefusal | null {
   if (!(LAUNCH_CAPS as readonly string[]).includes(mandate.launchCap)) {
-    return new SpiritRefusal("launch-cap-unknown", `launch-cap-unknown: ${mandate.uri} names the launch cap "${mandate.launchCap}", and this house holds ${LAUNCH_CAPS.join(", ")}; nothing started. Land the mandate again naming one: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --cap ${DEFAULT_LAUNCH_CAP}\``, 4);
+    return new SpiritRefusal("launch-cap-unknown", `launch-cap-unknown: ${mandate.uri} names the launch cap "${mandate.launchCap}", and this house holds ${LAUNCH_CAPS.join(", ")}; nothing started. Land the mandate again naming one: \`lares spirit mandate ${shq(mandate.tag)} file=<carrier> cap=${DEFAULT_LAUNCH_CAP}\``, 4);
   }
   if (mandate.model !== null && !MODEL_SLUG.test(mandate.model)) {
-    return new SpiritRefusal("mandate-model-malformed", `mandate-model-malformed: ${mandate.uri} names a model no launch cap takes as a slug; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --model <slug>\``, 4);
+    return new SpiritRefusal("mandate-model-malformed", `mandate-model-malformed: ${mandate.uri} names a model no launch cap takes as a slug; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} file=<carrier> model=<slug>\``, 4);
   }
   if (mandate.allowedTools !== null && !ALLOWED_TOOLS.test(reachWords(mandate.allowedTools).rules)) {
-    return new SpiritRefusal("mandate-allowed-tools-malformed", `mandate-allowed-tools-malformed: ${mandate.uri} names allowed tools no launch cap takes as comma-joined rules (\`Tool\` or \`Tool(spec)\`, a leading \`${REACH_WIDENS}\` to widen the guest's reach); nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --allowed-tools 'Bash(lares:*)'\` (or leave the flag out for the guest's reach)`, 4);
+    return new SpiritRefusal("mandate-allowed-tools-malformed", `mandate-allowed-tools-malformed: ${mandate.uri} names allowed tools no launch cap takes as comma-joined rules (\`Tool\` or \`Tool(spec)\`, a leading \`${REACH_WIDENS}\` to widen the guest's reach); nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} file=<carrier> allowed-tools='Bash(lares:*)'\` (or leave the param out for the guest's reach)`, 4);
   }
   for (const [flag, path] of [["workdir", mandate.workdir], ["log", mandate.log]] as const) {
     if (path !== null && !HOST_PATH.test(path)) {
-      return new SpiritRefusal("mandate-path-malformed", `mandate-path-malformed: ${mandate.uri} names a ${flag} no host takes as one absolute path with no blank; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --${flag} /absolute/path\``, 4);
+      return new SpiritRefusal("mandate-path-malformed", `mandate-path-malformed: ${mandate.uri} names a ${flag} no host takes as one absolute path with no blank; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} file=<carrier> ${flag}=/absolute/path\``, 4);
     }
   }
   return null;
@@ -296,15 +296,15 @@ export function launchHolds(mandate: SpiritMandate): SpiritRefusal | null {
  */
 export function summonsGranted(hand: boolean, mandate: SpiritMandate, coordinator: SpiritMandate | null): SpiritRefusal | null {
   if (hand) return null;
-  const line = `lares spirit summon ${shq(mandate.tag)} --mandate ${refLine(mandate.uri, mandate.hash)}`;
+  const line = `lares spirit summon ${shq(mandate.tag)} mandate=${refLine(mandate.uri, mandate.hash)}`;
   if (coordinator === null) {
     return new SpiritRefusal("summons-ungranted", `summons-ungranted: ${mandate.uri} names no coordinator's mandate (offered by ${mandate.offerer || "none"}), and a seat starts a process only under a written grant; nothing started. A person's hand runs the line at a terminal: \`${line}\``, 4);
   }
   if (coordinator.tag !== mandate.offerer) {
-    return new SpiritRefusal("summons-ungranted", `summons-ungranted: ${mandate.uri} names ${mandate.offerer || "no offerer"}, and its parent ${coordinator.uri} holds ${coordinator.tag}; nothing started. The coordinator lands the mandate under its own: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --parent ${refLine(coordinator.uri, coordinator.hash)}\``, 4);
+    return new SpiritRefusal("summons-ungranted", `summons-ungranted: ${mandate.uri} names ${mandate.offerer || "no offerer"}, and its parent ${coordinator.uri} holds ${coordinator.tag}; nothing started. The coordinator lands the mandate under its own: \`lares spirit mandate ${shq(mandate.tag)} file=<carrier> parent=${refLine(coordinator.uri, coordinator.hash)}\``, 4);
   }
   if (!coordinator.grants.includes(SUMMONS_GRANT)) {
-    return new SpiritRefusal("summons-ungranted", `summons-ungranted: ${coordinator.tag}'s mandate ${coordinator.uri} grants no ${SUMMONS_GRANT}, and a seat starts a process only under that written grant; nothing started. A person's hand runs the line at a terminal: \`${line}\` (or lands ${coordinator.tag} a mandate carrying \`--grants ${SUMMONS_GRANT} --lanes <n>\`)`, 4);
+    return new SpiritRefusal("summons-ungranted", `summons-ungranted: ${coordinator.tag}'s mandate ${coordinator.uri} grants no ${SUMMONS_GRANT}, and a seat starts a process only under that written grant; nothing started. A person's hand runs the line at a terminal: \`${line}\` (or lands ${coordinator.tag} a mandate carrying \`grants=${SUMMONS_GRANT} lanes=<n>\`)`, 4);
   }
   return null;
 }
@@ -321,8 +321,8 @@ export function lanesHold(coordinator: SpiritMandate, open: readonly string[], o
   const held = open.filter((title) => title !== own);
   if (held.length < coordinator.lanes) return null;
   const cure = coordinator.lanes === 0
-    ? `${coordinator.tag}'s mandate names no lanes, which reads as zero. A hand lands it a mandate naming a ceiling: \`lares spirit mandate ${shq(coordinator.tag)} --file <carrier> --grants ${SUMMONS_GRANT} --lanes <n>\``
-    : `Wait for a hand-back, which frees its lane: \`lares get filter='${openLanesFilter(coordinator.tag)}'\` lists the arms still out, and each hands back by \`lares spirit handback <pet>#<n> --record <uri>\``;
+    ? `${coordinator.tag}'s mandate names no lanes, which reads as zero. A hand lands it a mandate naming a ceiling: \`lares spirit mandate ${shq(coordinator.tag)} file=<carrier> grants=${SUMMONS_GRANT} lanes=<n>\``
+    : `Wait for a hand-back, which frees its lane: \`lares get filter='${openLanesFilter(coordinator.tag)}'\` lists the arms still out, and each hands back by \`lares spirit handback <pet>#<n> record=<uri>\``;
   return new SpiritRefusal("coordinator-lanes-full", `coordinator-lanes-full: ${coordinator.tag} holds ${held.length} of ${coordinator.lanes} arm lane(s) open; nothing started. ${cure}`, 4);
 }
 
@@ -362,7 +362,7 @@ export function laneUnsettled(coordinator: Pick<InstanceTag, "pet" | "instance" 
 
 /** The one line a launch cap carries: who wakes, and the om that unfolds everything else from the house. */
 export function wakeLine(mandate: SpiritMandate): string {
-  return `wake as ${mandate.tag}: lares spirit om ${mandate.pet} --mandate ${refLine(mandate.uri, mandate.hash)}${mandate.face === null ? "" : ` --face ${mandate.face}`}`;
+  return `wake as ${mandate.tag}: lares spirit om ${mandate.pet} mandate=${refLine(mandate.uri, mandate.hash)}${mandate.face === null ? "" : ` face=${mandate.face}`}`;
 }
 
 /** The edge a summons lands before the launch: who offered, which instance, under which face, echoing which mandate. */
@@ -386,8 +386,8 @@ export function edgeRead(uri: string, fields: Readonly<Record<string, string>>):
 
 /** The call's own face param: `face=N` rides a call as any other param. */
 const faceParam = (face: number | null): string => (face === null ? "" : ` face=${face}`);
-/** A door's face flag: `lares spirit <verb>` keeps its flag table, so `--face N` rides it. */
-const faceFlag = (face: number | null): string => (face === null ? "" : ` --face ${face}`);
+/** A door's face param: `lares spirit <verb>` takes `face=N`. */
+const faceFlag = (face: number | null): string => (face === null ? "" : ` face=${face}`);
 
 /**
  * WHAT A WAKE UNDER A MANDATE HANDS THE INSTANCE AHEAD OF ITS CARD (om → ah → hum): the mandate by ref, the seed's read, each
@@ -408,7 +408,7 @@ export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
     ...(mandate.paths.length === 0 ? [] : [`paths: ${mandate.paths.join(" ")}`]),
     ...(mandate.caps.length === 0 ? [] : [`caps: ${mandate.caps.join(" ")}`]),
     ...(mandate.grants.length === 0 ? [] : [`grants: ${mandate.grants.join(" ")}${mandate.grants.includes(SUMMONS_GRANT) ? ` · ${mandate.lanes} arm lane(s)` : ""}`]),
-    `hand back${mandate.handbackShape === "" ? "" : ` (${mandate.handbackShape})`}: land the record, then free the lane: lares spirit handback ${shq(mandate.tag)} --record <uri>${faceFlag(mandate.face)}`,
+    `hand back${mandate.handbackShape === "" ? "" : ` (${mandate.handbackShape})`}: land the record, then free the lane: lares spirit handback ${shq(mandate.tag)} record=<uri>${faceFlag(mandate.face)}`,
     "",
     words,
   ].join("\n");

@@ -139,8 +139,8 @@ export function cliFor(env: Record<string, string>): (args: readonly string[]) =
 const FOUNDING_VERBS = new Set(["found"]);
 function seedCustodyFor(env: Record<string, string>, args: readonly string[]): void {
   if (args[0] !== "vessel" || !FOUNDING_VERBS.has(args[1] ?? "")) return;
-  const at = args.findIndex((a) => a === "--root" || a.startsWith("--root="));
-  const named = at < 0 ? undefined : args[at]!.includes("=") ? args[at]!.split("=").slice(1).join("=") : args[at + 1];
+  const at = args.findIndex((a) => a.startsWith("root="));
+  const named = at < 0 ? undefined : args[at]!.slice("root=".length);
   const root = named ?? env["LAR_ROOT"] ?? process.env["LAR_ROOT"];
   if (!root) return;
   stageGenesis(root);
@@ -359,7 +359,7 @@ export function kahuaStageDir(root: string): string {
  * face that binds its AID, in one CLI act. Answers the card's code (the stand-in printed it into the JSON answer).
  */
 export async function foundStagedHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string, name: string): Promise<string> {
-  const found = await cli(["vessel", "found", "--hearth", "--name", name, "--root", root, "--skip-build", "--json"]);
+  const found = await cli(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "--skip-build", "--json"]);
   if (found.code !== 0) throw new Error(`staged hearth founding failed (${found.code}):\n${found.stdout.slice(-400)}\n${found.stderr.slice(-800)}`);
   const data = (found.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> };
   const code = data.cards?.[0]?.code ?? "";
@@ -380,14 +380,14 @@ export async function growStagedQuorum(cli: (args: readonly string[]) => Promise
   if (!code) throw new Error(`no staged hearth card stands for ${root}: found it with foundStagedHearth first`);
   let i = 1;
   for (const handle of handles) {
-    const k = await cli(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
+    const k = await cli(["persona", "new", String(i), `name=kahu-${i}`, `handle=${handle}`, "seat=true"]);
     if (k.code !== 0) throw new Error(`kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
     i += 1;
   }
   const chairs = handles.length + 1;
   // The founding face (persona zero, the seed chair's holder) acts the roll: several faces stand open now, and a command
   // acts as the face it names.
-  const roll = await cli(["nexus", "seal", "rotate", "--face", "0", "--cold-key", code, "--threshold", String(Math.floor(chairs / 2) + 1), "--json"]);
+  const roll = await cli(["nexus", "seal", "rotate", "face=0", `cold-key=${code}`, `threshold=${String}`(Math.floor(chairs / 2) + 1), "--json"]);
   if (roll.code !== 0) throw new Error(`seal rotate failed (${roll.code})\n${roll.stdout.slice(-400)}\n${roll.stderr.slice(-800)}`);
   const next = ((roll.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> }).cards?.map((c) => c.code ?? "").filter((c) => c.length > 0) ?? [];
   hearthCards.set(root, next.join(","));
@@ -652,7 +652,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
   };
   const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) };
   const hermFound = async (cli: (a: readonly string[]) => Promise<CliResult>, root: string): Promise<void> => {
-    const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+    const found = await cli(["vessel", "found", `root=${root}`, "--skip-build"]);
     if (found.code !== 0) throw new Error(`herm: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
   };
   const crossing: string[] = [];
@@ -695,7 +695,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         // The carry lands WITH the place's floor pin claim and the KEL rows that fold to its head (W14): the file `carry-for` printed.
         const claimFile = join(herm.root, "floor-pin.json");
         writeFileSync(claimFile, JSON.stringify({ floorPin: cf["floorPin"], placeKel: cf["placeKel"] }), "utf8");
-        const carry = await A.cli(["nexus", "carry", nym, "--carrier", sig, "--floor-pin", claimFile, "--json"]);
+        const carry = await A.cli(["nexus", "carry", nym, `carrier=${sig}`, `floor-pin=${claimFile}`, "--json"]);
         crossing.push(`A nexus carry ${nym.slice(0, 12)}… → ${carry.code}: ${carry.stdout.trim().slice(0, 160)}`);
         if (carry.code !== 0) throw new Error(`fleet: A refused the carrier seal (${carry.code})\n${carry.stderr.slice(-600)}`);
         // `nexus carry` runs as a `nexus-contract` door row against A's standing vessel, which fires the SAME
@@ -709,7 +709,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         crossing.push(`A wiki init ${bookSlug} → ${minted.code}: ${minted.stdout.trim().slice(0, 200)}`);
         if (minted.code !== 0) throw new Error(`fleet: A minted no user book ${bookSlug} (${minted.code})\n${minted.stderr.slice(-600)}`);
         // The book registers at PUBLIC — the tier the carrier leg reads, and the only one it reads.
-        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "--face", "0", "--tier", "public", "--json"]);
+        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "face=0", "tier=public", "--json"]);
         crossing.push(`A nexus realm-bag ${bookSlug} --tier public → ${reg.code}: ${reg.stdout.trim().slice(0, 200)}`);
         if (reg.code !== 0) throw new Error(`fleet: A registered no public book ${bookSlug} (${reg.code})\n${reg.stderr.slice(-600)}`);
       },
@@ -883,9 +883,9 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         const files = { offer: join(rootB, "fleet-offer.json"), request: join(rootB, "fleet-request.json"), answer: join(rootB, "fleet-answer.json") };
         const place = await cliB(["vessel", "found", "--skip-build"]);
         if (place.code !== 0) throw new Error(`B: vessel found (a place) failed (${place.code})\n${place.stderr.slice(-2500)}`);
-        const offer = await cliA(["fleet", "join", "offer", "--face", "0", "--out", files.offer]);
+        const offer = await cliA(["fleet", "join", "offer", "face=0", `out=${files.offer}`]);
         if (offer.code !== 0) throw new Error(`A: fleet join offer failed (${offer.code})\n${offer.stderr.slice(-2500)}`);
-        const request = await cliB(["fleet", "join", "request", files.offer, "--out", files.request]);
+        const request = await cliB(["fleet", "join", "request", files.offer, `out=${files.request}`]);
         if (request.code !== 0) throw new Error(`B: fleet join request failed (${request.code})\n${request.stderr.slice(-2500)}`);
         fleet = files;
       },
@@ -901,8 +901,8 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
     const requestedDoc = (opts.dial ?? "pin+doc") === "pin+doc"
       ? (typeof opts.joinDocUrl === "function" ? await opts.joinDocUrl() : opts.joinDocUrl ?? laresA)
       : null;
-    const answer = await A.cli(["fleet", "join", "answer", files.request, "--face", "0", "--sync-url", `ws://127.0.0.1:${portA}/ws`,
-      ...(requestedDoc ? ["--doc-url", requestedDoc] : []), "--out", files.answer]);
+    const answer = await A.cli(["fleet", "join", "answer", files.request, "face=0", `sync-url=ws://127.0.0.1:${portA}/ws`,
+      ...(requestedDoc ? [`doc-url=${requestedDoc}`] : []), `out=${files.answer}`]);
     if (answer.code !== 0) throw new Error(`A: fleet join answer failed (${answer.code})\n${answer.stderr.slice(-2500)}`);
     await opts.beforeLand?.(cliB, files);
     admitted = await cliB(["fleet", "join", "land", files.answer]);

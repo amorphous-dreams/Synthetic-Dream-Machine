@@ -110,7 +110,7 @@ describe("lares surface init", () => {
   });
 });
 
-describe("lares surface init --workspace", () => {
+describe("lares surface init workspace=true", () => {
   test("★ makes a bound workspace a pool under the wiki-slug author, and a second run says already ★", async () => {
     const ws = join(rig.scratch.root, "workspaces", "backup");
     mkdirSync(ws, { recursive: true });

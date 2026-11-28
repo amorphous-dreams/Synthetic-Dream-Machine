@@ -1,5 +1,5 @@
 /**
- * `lares persona raise-sign <challenge-json> [--as <index>]` — the RECOGNISER's half of the raise ceremony.
+ * `lares persona raise-sign <challenge-json> [as=<index>]` — the RECOGNISER's half of the raise ceremony.
  *
  * A vessel standing at the floor emits a challenge naming a Nexus. A recognised operator signs it on their
  * OWN machine with their persona's per-Nexus LEAF — never the root — and the grant carries that leaf's
@@ -29,18 +29,18 @@ function usage(args: ParsedArgs, detail?: string): number {
   return refuseUsage(args, "persona raise-sign", helpLines("persona raise-sign"), detail);
 }
 
-/** `persona raise-sign <challenge-json> [--as <index>]`: the sub-door's own name already consumed. */
+/** `persona raise-sign <challenge-json> [as=<index>]`: the sub-door's own name already consumed. */
 export async function cmdRaiseSign(args: ParsedArgs): Promise<number> {
   const challengeText = args.positional[0];
   if (!challengeText) return usage(args);
 
   // WHICH COMPARTMENT ANSWERS BELONGS TO THE OPERATOR. A human holds several personas, and the one that
   // signs is the one whose leaf the challenge's Nexus admitted. Defaulting to 0 names the ordinary case
-  // without hiding the choice — `--as` moves it.
+  // without hiding the choice — `as=` moves it.
   const idxRaw = args.options["as"];
   const handleIndex = idxRaw === undefined ? 0 : Number.parseInt(idxRaw, 10);
   if (!Number.isInteger(handleIndex) || handleIndex < 0) {
-    console.error(`--as takes a non-negative integer (got "${idxRaw}")`);
+    console.error(`as= takes a non-negative integer (got "${idxRaw}")`);
     return 2;
   }
 

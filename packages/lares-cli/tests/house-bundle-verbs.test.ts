@@ -147,7 +147,7 @@ describe("the house bundle verbs", () => {
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const guarded = { ...after.doors(), unseeded: () => ["sdm", "crossroads"] };
-    await expect(houseImport(out, { apply: true, doors: guarded })).rejects.toThrow(/carry-canon-unseeded|stands unlaid.*lares vessel lay --apply/);
+    await expect(houseImport(out, { apply: true, doors: guarded })).rejects.toThrow(/carry-canon-unseeded|stands unlaid.*lares vessel lay apply=true/);
     expect(after.waves).toEqual([]);
     await expect(houseImport(out, { apply: false, doors: guarded })).resolves.toMatchObject({ applied: false });
     // CONTROL: seeded canon (nothing unseeded) imports.
@@ -219,7 +219,7 @@ describe("the house bundle verbs", () => {
     // The garden mirror still holds the rose the bundle carries, byte for byte.
     const preview = await houseImport(out, { apply: false, doors: { ...after.doors(), unseeded: () => ["sdm"] } });
     expect(preview.tallies.bag).toMatchObject({ already: 1, planned: 0 });
-    expect(preview.warnings).toEqual([expect.stringMatching(/^carry-canon-unseeded: the canon of sdm stands unlaid[\s\S]*lares vessel lay --apply/)]);
+    expect(preview.warnings).toEqual([expect.stringMatching(/^carry-canon-unseeded: the canon of sdm stands unlaid[\s\S]*lares vessel lay apply=true/)]);
     expect(after.waves).toEqual([]);
     // CONTROL: the apply still refuses by name.
     await expect(houseImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => ["sdm"] } })).rejects.toThrow(/carry-canon-unseeded/);
@@ -533,7 +533,7 @@ describe("the house bundle verbs", () => {
     expect(msg).not.toContain("someone-else");
     // the next step, in the order a person runs it
     expect(msg).toMatch(/move its root out of the house root/);
-    expect(msg).toMatch(/--accept-omissions/);
+    expect(msg).toMatch(/accept-omissions=true/);
   });
 
   test("C14b — a lit, non-worn face whose stage read answers `unread` beside its proved relation claims its root; its standing heads stay behind by count, never the root", async () => {

@@ -81,7 +81,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     // act over the standing place writes the PersonaGroup id INTO this bootstrap — it must not re-seed the place
     // underneath itself.
     const before = daemonUrlFromBootstrap();
-    lares(["vessel", "found", "--hearth", "--name", "alpha", "--skip-build"], { LAR_PEERS: "" });
+    lares(["vessel", "found", "hearth=true", "name=alpha", "--skip-build"], { LAR_PEERS: "" });
     expect(daemonUrlFromBootstrap()).toBe(before);
   });
 

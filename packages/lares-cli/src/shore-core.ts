@@ -1,8 +1,8 @@
 /**
  * shore-core — the two lines every shore act rides: `wiki-act` carrying the `shore` verb into the active
  * wiki's island, and the `shore` verb itself into the daemon island, each answer read whole and the two read
- * as one shore (`askShore`). `lares shore` sends a person's answers through it; `lares ingest --watch` sends what it
- * sensed on disk; `lares ingest --apply` asks its settle word.
+ * as one shore (`askShore`). `lares shore` sends a person's answers through it; `lares ingest watch=true` sends what it
+ * sensed on disk; `lares ingest apply=true` asks its settle word.
  */
 
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -149,7 +149,7 @@ export interface SettleReading {
   readonly stalledCount: number;
   /** The pending carriers by uri, at most `SETTLE_NAMED` of them. */
   readonly pendingUris: readonly string[];
-  /** Where a stalled settle left its resumable record (`lares shore settle --bag <bag> --pending`). */
+  /** Where a stalled settle left its resumable record (`lares shore settle bag=<bag> pending=true`). */
   readonly recordPath?: string;
   readonly refusal?: string;
   readonly why?: string;

@@ -90,7 +90,7 @@ export const statusLineForeign = (tool: string) => (cur: string | null): string 
   if (why || cur === null || cur.trim() === "") return why;
   const held = (JSON.parse(cur) as Json)["statusLine"];
   if (held === undefined || namesTool(tool)(held)) return null;
-  return "holds a statusLine another hand set; the house changes none of it (`lares home tend --force` takes that key alone and the ledger keeps the old bytes)";
+  return "holds a statusLine another hand set; the house changes none of it (`lares home tend force=true` takes that key alone and the ledger keeps the old bytes)";
 };
 
 /**

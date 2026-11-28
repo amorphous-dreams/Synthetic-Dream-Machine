@@ -25,11 +25,12 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ query · k · wing · imago · list · agent · surface · speaker · channel · function · pair · lens · sensorium
+!! takes ~ query · k · limit · wing · imago · list · agent · surface · speaker · channel · function · pair · lens · sensorium
 
 ```memetic-wikitext
 <<has entity=`arg` name=`query` params=`takes/words needs/required seat/1 as/<query…> ~ the query`>>
 <<has entity=`arg` name=`k` params=`takes/count ~ how many turns answer`>>
+<<has entity=`arg` name=`limit` params=`takes/count skins/cli ~ the same cap as k, read where k names none`>>
 <<has entity=`arg` name=`wing` params=`takes/word ~ the wing`>>
 <<has entity=`arg` name=`imago` params=`takes/word ~ fetch one turn verbatim`>>
 <<has entity=`arg` name=`list` params=`~ report the taxonomy`>>
@@ -92,6 +93,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;49scetetjyp8EbugKpdN0CpeMUH3aEJ1QSsPdDXJyIM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DSw6lwC8lHLgA2SZOj8FzBs4xhsLe9r8i-9kKQ7qi28`>>
 
 <<^ code=`&#x0004;` to=`?`>>

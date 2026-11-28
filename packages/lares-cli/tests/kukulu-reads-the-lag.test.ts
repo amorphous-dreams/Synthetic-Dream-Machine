@@ -10,9 +10,9 @@
  * it diff-gated with no question, into each wiki's working layer the worn face mounts; a workbench that does not mount is
  * named and left. No lay ever writes the canon bag. A seat (no terminal, or an AI launcher) names the lag and lays nothing.
  *
- * The vessel half: `lares vessel lay --lag` reads both gaps off disk and the worn face's seats, writing nothing, and names the
+ * The vessel half: `lares vessel lay lag=true` reads both gaps off disk and the worn face's seats, writing nothing, and names the
  * floor's drift behind live canon beside them (`floorDrift`, its own field: lag keeps its meaning, an unread drift reads null); and
- * `lares vessel lay --workbench` walks the checkout's workbench waves alone (no holdings leg, no face roots, no kahua).
+ * `lares vessel lay workbench=true` walks the checkout's workbench waves alone (no holdings leg, no face roots, no kahua).
  *
  * Every rite port answers from a FAKE; the vessel half runs over a scratch LAR_ROOT (LAR_BAGS set per test, never globally).
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
@@ -71,7 +71,7 @@ describe("kukulu reads the lag on every raise and lays the workbench with no que
     // The lag line names the two commands that fill canon, so the cure sits on the line that names the lag.
     const lagLine = f.said.find((l) => l.includes("canon lags the canon source"))!;
     expect(lagLine).toContain("`lares meme offer promote <cid>`");
-    expect(lagLine).toContain("`lares nexus release <manifest-file> --cut`");
+    expect(lagLine).toContain("`lares nexus release <manifest-file> cut=true`");
     expect(text).toMatch(/the workbenches lag the checkout's \/workspace\/wikis by 3 carrier\(s\): sdm 2, lares 1/);
     expect(text).toMatch(/workbench lares does not mount under the worn face \(the worn face holds no writer's seat there\); nothing of it lays/);
   });
@@ -107,7 +107,7 @@ describe("kukulu reads the lag on every raise and lays the workbench with no que
     const f = fakes({ tty: false });
     const out = await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise", "house-lag"]);
-    expect(f.said.join("\n")).toMatch(/this seat holds no terminal, so nothing lays; your hand: lares rite kukulu on a terminal \(or lares vessel lay --workbench --apply\)/);
+    expect(f.said.join("\n")).toMatch(/this seat holds no terminal, so nothing lays; your hand: lares rite kukulu on a terminal \(or lares vessel lay workbench=true apply=true\)/);
     expect(out).toMatchObject({ code: 0, data: { workbench: { laid: false, seat: true } } });
   });
 
@@ -133,13 +133,13 @@ describe("kukulu reads the lag on every raise and lays the workbench with no que
     const text = f.said.join("\n");
     expect(text).toContain("the seed offer waits (the seed's floor moved)");
     expect(text).toContain(CARD);
-    expect(text).toContain("`lares vessel floor status --grain seed`");
+    expect(text).toContain("`lares vessel floor status grain=seed`");
     expect(text).not.toMatch(/newer sealed floor/);
     expect(out).toMatchObject({ data: { lag: { floor: "moved", card: CARD } } });
     // A vessel that answers no card still names the runnable line.
     const bare = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
     await riteKukulu({ ...bare.ports, seedOffer: offer("f2"), floorCard: async () => null } as RitePorts, {});
-    expect(bare.said.join("\n")).toContain("`lares vessel floor status --grain seed`");
+    expect(bare.said.join("\n")).toContain("`lares vessel floor status grain=seed`");
     const same = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
     await riteKukulu({ ...same.ports, seedOffer: offer("f1"), floorCard: async () => ({ title: CARD }) } as RitePorts, {});
     expect(same.said.join("\n")).not.toMatch(/seed offer waits/);
@@ -162,7 +162,7 @@ describe("kukulu reads the lag on every raise and lays the workbench with no que
     expect(out).toMatchObject({ code: 0, data: { workbench: { laid: false }, warnings: ["workbench-lay-waits"] } });
     expect(out.data).not.toHaveProperty("refusal");
     expect(f.said.join("\n")).toMatch(/the workbench lay answered 1/);
-    expect(f.said.join("\n")).toContain("lares vessel lay --workbench --apply runs again safely");
+    expect(f.said.join("\n")).toContain("lares vessel lay workbench=true apply=true runs again safely");
   });
 
   it("RED: a Ctrl+C during the workbench lay (exit 130) reads as interrupted, never failed", async () => {
@@ -170,7 +170,7 @@ describe("kukulu reads the lag on every raise and lays the workbench with no que
     const out = await riteKukulu(f.ports, {});
     // The --json answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
     expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } });
-    expect(f.said.join("\n")).toMatch(/something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
+    expect(f.said.join("\n")).toMatch(/something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so lares vessel lay workbench=true apply=true picks it up/);
   });
 
   it("CONTROL: a raise that fails reads no lag; ports with no lag read leave the answer as it stood", async () => {

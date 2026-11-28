@@ -145,7 +145,7 @@ describe("the merges the host loops ran inline", () => {
   });
   test("the refusal names the hand cure with the instance id filled in", () => {
     const e = S.crossingRefusal({ crossing: "me 2026-11-24T11:59:00Z 1", uri: URI, pet: "lares-alpha" }, "me");
-    expect(e?.message).toContain("lares spirit om lares-alpha --instance me");
+    expect(e?.message).toContain("lares spirit om lares-alpha instance=me");
     expect(e?.message).toContain("crashed");
   });
   test("a crossing lifts only on the instance's own wake: a mark stamped 50 years either way still holds, and no clock clears it", () => {
@@ -232,7 +232,7 @@ describe("the instance names a spirit's model stream (ruling 2026-11-25-body-bec
   test("the unechoed receipt and the echo ask name the instance", () => {
     const offering = { uri: "u", text: "m", hash: "h".repeat(64), seq: 1, offeredBy: "hand", damaged: false } as never;
     expect(S.echoReceipt("p", offering, {}, null, false)).toEqual({ notice: `unechoed: p (a seat naming no instance) has not read mandate ${"h".repeat(64)}` });
-    expect(S.mandateLines("p", offering, null, false)).toContain("--instance <id>");
+    expect(S.mandateLines("p", offering, null, false)).toContain("instance=<id>");
   });
 });
 
@@ -255,7 +255,7 @@ describe("the echo names the face it woke under (plan/companion-context S1)", ()
     const turned = S.echoTurned("p", side, "s-1", 2, "ah");
     expect(turned).toMatchObject({ code: "spirit-face-turned", exit: 4 });
     expect(turned!.message).toContain("echoed its mandate under h1, and h2 answered; nothing landed");
-    expect(turned!.message).toContain("--face 1");
+    expect(turned!.message).toContain("face=1");
     expect(S.echoTurned("p", side, "s-1", 1, "ah")).toBeNull();
     expect(S.echoTurned("p", side, "s-2", 2, "ah")).toBeNull();
     expect(S.echoTurned("p", side, "s-1", null, "ah")).toBeNull();

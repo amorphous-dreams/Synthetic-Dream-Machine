@@ -178,7 +178,7 @@ check:  "unchecked"        (a clean child serves "ok")
 faults: ["2 text frames stand where the grammar admits one — only the first verifies"]
 ```
 
-— `carrier-shape.ts:182`. ''The fault the whole seam is about already has a named reading, already computed, already published beside the grade on the same face verb (`meme-face.ts:59`).'' Its readers today: `lares meme --gradient` (`packages/lares-cli/src/commands/meme.ts:488`) and the corpus tests. ''No door and no gate reads it.'' It informs; it never decides.
+— `carrier-shape.ts:182`. ''The fault the whole seam is about already has a named reading, already computed, already published beside the grade on the same face verb (`meme-face.ts:59`).'' Its readers today: `lares meme gradient=true` (`packages/lares-cli/src/commands/meme.ts:488`) and the corpus tests. ''No door and no gate reads it.'' It informs; it never decides.
 
 !! What (ii) reveals about the question itself
 
@@ -393,6 +393,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PwCIhZHUfM2RwgA873rv-oBtQT9zqOxmt9USGAvITbs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;trn61BBcXvJRuXcyEtAnV1pmH2grulpQl0yo5kMlPkc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,9 +5,9 @@
  *
  *   roster · inspect          — READ (out-of-loop; agents free)               HOTL
  *   reconcile · reconcileAll  — re-settle a sensorium against its evidence     HOTL  (+ the gated cadence)
- *   build --ephemeral         — mint a fresh pioneer (agent self-service)      HOTL
+ *   build ephemeral=true         — mint a fresh pioneer (agent self-service)      HOTL
  *   promote                   — climb a rung (in-place FIELD-FLIP, active)     hand  (+ the gated store-swap)
- *   retire --grounds <MUSTIE> — judged tombstone + recorded grounds, NO delete hand
+ *   retire grounds=<MUSTIE> — judged tombstone + recorded grounds, NO delete hand
  *   un-retire                 — move-not-delete restore of the prior state     hand
  *   purge                     — the irreversible byte GC (explicit-only)       hand
  *
@@ -43,7 +43,7 @@ import { sensoriumNames, sensoriumDir } from "./vessel-paths.js";
 import { readManifest, writeManifest, buildSensoriumManifest, type SensoriumManifest } from "./sensorium.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
-/** The default hardening half-life a fresh `build --ephemeral` stamps — a finite value marks a MATURING
+/** The default hardening half-life a fresh `build ephemeral=true` stamps — a finite value marks a MATURING
  *  pioneer (a later reconcile, once the signal wires, can tenure it). Arbitrary until F6 calibration. */
 export const DEFAULT_HARDENING_HALFLIFE = 30 as const;
 
@@ -243,7 +243,7 @@ export interface PromoteResult {
  * PROMOTE a sensorium. The ACTIVE path (F4) is the in-place FIELD-FLIP: climb one rung (pioneer →
  * hardening → durable) by flipping the manifest `lifecycle` field — the dir/cid never move, recall stays
  * unbroken (identity-preserving). The store-swap path (Sanity alias re-point) ships as STABLE GROUND,
- * FEATURE-GATED OFF: `--store-swap <target>` runs only when `LifecycleGates.storeSwapPromote` is flipped.
+ * FEATURE-GATED OFF: `store-swap=<target>` runs only when `LifecycleGates.storeSwapPromote` is flipped.
  */
 export function promoteSensorium(
   name: string, hand: SenseHand | undefined, opts: { storeSwapTarget?: string } = {}, gates: LifecycleGates = LIFECYCLE_GATES_DEFAULT,
@@ -255,7 +255,7 @@ export function promoteSensorium(
 
   if (opts.storeSwapTarget) {
     if (!gates.storeSwapPromote) {
-      throw new Error("promote --store-swap is gated OFF (there and unused) — the active promote is the in-place field-flip. Flip LifecycleGates.storeSwapPromote to enable the alias re-point.");
+      throw new Error("promote store-swap= is gated OFF (there and unused) — the active promote is the in-place field-flip. Flip LifecycleGates.storeSwapPromote to enable the alias re-point.");
     }
     const targetDir = sensoriumDir(opts.storeSwapTarget);
     if (!readManifest(targetDir)) throw new Error(`store-swap target '${opts.storeSwapTarget}' has no manifest`);

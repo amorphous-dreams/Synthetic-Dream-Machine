@@ -46,7 +46,7 @@ const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
  */
 const WIKI = ["recipe=lares"] as const;
 /** The same wiki as `lares meme project` names it: that verb keeps its flags. */
-const MEME_WIKI = ["--recipe", "lares"] as const;
+const MEME_WIKI = ["recipe=lares"] as const;
 const DAEMON_WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
 const CROSSROADS_URI = "lar:///ha.ka.ba/bags/crossroads";
 
@@ -185,7 +185,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the call door over a
 
   test("project --to md → text + a `.meta` beside --out", async () => {
     const out = join(scratch, "npc.md");
-    const r = await lar.cli(["meme", "project", URI, ...MEME_WIKI, "--to", "md", "--out", out, "--json"]);
+    const r = await lar.cli(["meme", "project", URI, ...MEME_WIKI, "to=md", `out=${out}`, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(existsSync(out)).toBe(true);
     expect(existsSync(`${out}.meta`)).toBe(true);
@@ -197,7 +197,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the call door over a
   });
 
   test("CONTROL: project --to mem left the verb — the carrier itself reads through the one door, and the usage names the targets", async () => {
-    const r = await lar.cli(["meme", "project", URI, ...MEME_WIKI, "--to", "mem", "--no-json"]);
+    const r = await lar.cli(["meme", "project", URI, ...MEME_WIKI, "to=mem", "--no-json"]);
     expect(r.code, said(r)).toBe(2);
     expect(r.stderr).toMatch(/md · html · tid · json/);
     const got = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--no-json"]);
@@ -233,7 +233,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the call door over a
     // html renders from the daemon wiki when explicitly targeted, so the meme lands there first.
     const put = await lar.cli(["put", `title=${URI}`, "recipe=default", `file=${join(scratch, "ab.mem")}`, "--json"]);
     expect(put.code, said(put)).toBe(0);
-    const r = await lar.cli(["meme", "project", URI, "--recipe", "default", "--to", "html", "--no-json"]);
+    const r = await lar.cli(["meme", "project", URI, "recipe=default", "to=html", "--no-json"]);
     expect(r.code, said(r)).toBe(0);
     expect(r.stdout.trimStart().toLowerCase().startsWith("<!doctype html")).toBe(true);
     expect(r.stdout).toContain("tc-story-river");

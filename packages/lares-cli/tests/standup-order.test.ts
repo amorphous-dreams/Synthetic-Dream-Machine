@@ -46,7 +46,7 @@ describe("foundIfAbsent — the founding writes LAR_ROOT alone", () => {
   it("★ a refused init stops before genesis and every outside reach ★", async () => {
     foundCode = 1;
     const { foundIfAbsent } = await import("../src/standup.js");
-    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "--init"]), { root, bootstrap: join(root, "vessel") });
+    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "init=true"]), { root, bootstrap: join(root, "vessel") });
     expect(log).not.toContain("linkLaresGlobal");
     expect(log).not.toContain("linkMempalaceBins");
     expect(log).not.toContain("installMempalaceIntegration");
@@ -56,7 +56,7 @@ describe("foundIfAbsent — the founding writes LAR_ROOT alone", () => {
 
   it("★ a founded init runs init then genesis, and reaches no home: no link, no mempalace ★", async () => {
     const { foundIfAbsent } = await import("../src/standup.js");
-    await foundIfAbsent(parseArgs(["vessel", "stand", "--init"]), { root, bootstrap: join(root, "vessel") });
+    await foundIfAbsent(parseArgs(["vessel", "stand", "init=true"]), { root, bootstrap: join(root, "vessel") });
     expect(log.filter((l) => ["cmdFound", "cmdBake"].includes(l))).toEqual(["cmdFound", "cmdBake"]);
     expect(log).not.toContain("linkLaresGlobal");
     expect(log).not.toContain("linkMempalaceBins");
@@ -68,7 +68,7 @@ describe("foundIfAbsent — the founding writes LAR_ROOT alone", () => {
     writeFileSync(join(root, "genesis", "seed.json"), "{}");
     writeFileSync(join(root, "vessel"), "x");
     const { foundIfAbsent } = await import("../src/standup.js");
-    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "--init"]), { root, bootstrap: join(root, "vessel") });
+    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "init=true"]), { root, bootstrap: join(root, "vessel") });
     expect(steps.find((s) => s.step === "init")?.action).toBe("skip");
     expect(steps.find((s) => s.step === "genesis")?.action).toBe("skip");
     expect(log).toEqual([]);

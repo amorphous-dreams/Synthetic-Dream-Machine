@@ -501,7 +501,7 @@ export interface CapturedEffect {
 }
 
 /**
- * A read-through, write-capture `BagAccess` for `--dry-run` / preview. Reads
+ * A read-through, write-capture `BagAccess` for `dry-run=true` / preview. Reads
  * delegate to the real store (so an executor sees real source/dest state);
  * writes (`put`/`tombstone`/`remove`) RECORD the would-land effect and COMMIT
  * NOTHING. Because every residency write — content AND the effect-record ledger —
@@ -610,7 +610,7 @@ function holdStandoffsForHand(action: IngestAction): void {
 function awaitsHandRow(uri: string, key: string): Record<string, unknown> {
   return {
     uri, decision: "conflict", reason: "awaits-hand", grade: "clean",
-    warnings: [`${uri} stands off at this island's disk shore (key ${key}), and settling it runs on a person's hand; nothing landed for it. The operator runs \`lares shore keep-disk ${uri} --key ${key}\` (or \`lares shore keep-records ${uri} --key ${key}\`) at their own terminal.`],
+    warnings: [`${uri} stands off at this island's disk shore (key ${key}), and settling it runs on a person's hand; nothing landed for it. The operator runs \`lares shore keep-disk ${uri} key=${key}\` (or \`lares shore keep-records ${uri} key=${key}\`) at their own terminal.`],
   };
 }
 
@@ -667,11 +667,11 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // the seed walks this road too. The refusal names the road: a title-less MOVE promotes the whole working layer.
     if (action.verb === "LOAD" && /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+$/.test(action.toBag)) {
       const slug = action.toBag.slice(action.toBag.lastIndexOf("/") + 1);
-      throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD --to lar:///ha.ka.ba/wikis/${slug}/working, then MOVE --from lar:///ha.ka.ba/wikis/${slug}/working --to lar:///ha.ka.ba/bags/${slug}`);
+      throw new VerbRefusal("load-into-canon", `load-into-canon: LOAD to=lar:///ha.ka.ba/wikis/${slug}/working, then MOVE from=lar:///ha.ka.ba/wikis/${slug}/working to=lar:///ha.ka.ba/bags/${slug}`);
     }
     // INGEST returns disk edits through the shore's own hash gate; this LOAD door does not govern it.
 
-    // `--dry-run` / preview: the cap-gate STILL runs (a preview you're not
+    // `dry-run=true` / preview: the cap-gate STILL runs (a preview you're not
     // authorized for fails loud the same); only the WRITES are captured + nothing
     // commits. The flag rides the raw args, ignored by the validator.
     const dryRun = args["dry-run"] === true;
@@ -774,7 +774,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       }
     }
 
-    // `--dry-run`: run the executor through the capturing access — content writes
+    // `dry-run=true`: run the executor through the capturing access — content writes
     // AND the effect-record ledger are captured, nothing commits.
     if (dryRun) {
       const cap = makeCapturingBagAccess(access);
@@ -844,7 +844,7 @@ async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver 
   }
   if (!resolve) throw new VerbRefusal("face-unresolved", `face-unresolved: this island resolves no face's own layer, so the wave naming face h${face} lands nothing (it never lands on the worn face)`);
   const target = await resolve(face, action.toBag);
-  if (target === null) throw new VerbRefusal("face-unresolved", `face-unresolved: face h${face} stands shut or holds no document for ${action.toBag}: \`lares vault unlock --face ${face}\`, then seed again`);
+  if (target === null) throw new VerbRefusal("face-unresolved", `face-unresolved: face h${face} stands shut or holds no document for ${action.toBag}: \`lares vault unlock face=${face}\`, then seed again`);
   if (target.owner !== face) {
     throw new VerbRefusal("ingest-face-foreign", `ingest-face-foreign: the document for ${action.toBag} files under ${target.owner === null ? "no open face" : `face h${target.owner}`}, never h${face}; no wave lands one face's memory in another`);
   }
@@ -2294,7 +2294,7 @@ async function executeLayerMove(action: MoveAction, access: BagAccess, o: Change
 export class TombstoneTargetHoldsNothingRefusal extends Error {
   readonly code = "TOMBSTONE_TARGET_HOLDS_NOTHING";
   constructor(title: string, bag: string) {
-    super(`MOVE: ${title} in ${bag}: this bag does not hold the title; to hide it for everyone who composes this bag above its holders, ask for a shadow (--shadow)`);
+    super(`MOVE: ${title} in ${bag}: this bag does not hold the title; to hide it for everyone who composes this bag above its holders, ask for a shadow (shadow=true)`);
     this.name = "TombstoneTargetHoldsNothingRefusal";
   }
 }
@@ -2302,7 +2302,7 @@ export class TombstoneTargetHoldsNothingRefusal extends Error {
 export class MoveWithinOneBagRefusal extends Error {
   readonly code = "MOVE_WITHIN_ONE_BAG";
   constructor(title: string, bag: string) {
-    super(`MOVE: ${title}: --from and --to both name ${bag}; a move needs two bags. Name the bag the title moves into.`);
+    super(`MOVE: ${title}: from= and to= both name ${bag}; a move needs two bags. Name the bag the title moves into.`);
     this.name = "MoveWithinOneBagRefusal";
   }
 }
@@ -2310,7 +2310,7 @@ export class MoveWithinOneBagRefusal extends Error {
 export class ShadowRequiresTombstoneRefusal extends Error {
   readonly code = "SHADOW_REQUIRES_TOMBSTONE";
   constructor(title: string) {
-    super(`MOVE: ${title}: --shadow rides a tombstone alone; source record is live. Choose a tombstone source or omit --shadow.`);
+    super(`MOVE: ${title}: shadow=true rides a tombstone alone; source record is live. Choose a tombstone source or omit shadow=true.`);
     this.name = "ShadowRequiresTombstoneRefusal";
   }
 }

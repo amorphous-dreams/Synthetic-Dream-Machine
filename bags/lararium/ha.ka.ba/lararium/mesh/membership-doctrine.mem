@@ -115,7 +115,7 @@ different signer, different trace.
 Kahu each take the charter's seat quorum, and no single-seat class covers either; kapae and rolls take it
 too. ''WALKING TAKES NONE, and carries its own bound'': a user introduces, an operator admits, and the answer
 consumes the introduction (#/the-invite). What the code holds: a clockless allowance of
-`min(1 + rolls survived, cap)` per hosting epoch (`lares host roll --cap`); a host-minted guest at floor 1; a
+`min(1 + rolls survived, cap)` per hosting epoch (`lares host roll cap=true`); a host-minted guest at floor 1; a
 walker-minted guest vesting at the host's next roll; single-use blind tokens burned at the host; revocation
 by a roll or by a kapae of the guest's leaf; no bound on the operator's own `lares host invite`. The bound
 rides three dials on the hosting act (#/the-invite); the home section stands at
@@ -275,7 +275,7 @@ introductions held.
 ''THE BUILT ALLOWANCE READS AS THE PRE-ANSWERED DIAL.'' Of the three dials the code carries one. `allowance`
 (`packages/lararium-mesh/src/hosting.ts`) grants a lineage opened on the hearth's own invite `min(1 + rolls survived, cap)`
 invites per hosting epoch; a lineage opened on a walker's invite counts one roll fewer and holds zero until the
-hearth's next roll. The cap rides the hosting act: `lares host roll --cap <n>` names it, a roll with no `--cap` keeps
+hearth's next roll. The cap rides the hosting act: `lares host roll cap=<n>` names it, a roll with no `--cap` keeps
 the standing cap, and a first roll takes `DEFAULT_HOSTING_CAP`, three (`packages/lararium-node/src/hosting-store.ts`).
 The hearth's own `lares host invite` mints with no count check (`packages/lararium-node/src/commands/host.ts`).
 
@@ -546,6 +546,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VzVxwojPFPEpanzFnSVvdtCD_QF30cH9WMZs-EdcsoE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WFFza6z1nv6vXRDy2iCGLcKxk2EJaLwiVsOyA_RlZaE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

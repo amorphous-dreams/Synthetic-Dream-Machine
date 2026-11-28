@@ -3,7 +3,7 @@
  *
  * Claude: the `InstructionsLoaded` hook (a home item) appends each instruction file a session loads
  * to the load log. Verify reads the latest session and finds the seed loaded once, by one real path.
- * `--probe` spends model calls where no host keeps a log: Claude's `/context` memory listing, Codex
+ * `probe=true` spends model calls where no host keeps a log: Claude's `/context` memory listing, Codex
  * asked for the seed's final block-check hash (a cut tail cannot answer it), and Copilot's own list
  * of the instruction sources it reads.
  */

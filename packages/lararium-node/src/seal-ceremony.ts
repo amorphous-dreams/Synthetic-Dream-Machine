@@ -151,8 +151,8 @@ const normChair = (label: string): string => label.trim().toLowerCase();
  */
 function thresholdFor(asked: number | undefined, doc: NexusDoc, chairs: number): number {
   if (asked !== undefined) {
-    if (!Number.isInteger(asked) || asked < 1) throw refuse("threshold-malformed", `--threshold expects a whole number ≥ 1, got "${asked}"`);
-    if (asked > chairs) throw refuse("threshold-past-the-roster", `--threshold ${asked} sits past the ${chairs} chair${chairs === 1 ? "" : "s"} that stood — no quorum could ever reach it`);
+    if (!Number.isInteger(asked) || asked < 1) throw refuse("threshold-malformed", `threshold= expects a whole number ≥ 1, got "${asked}"`);
+    if (asked > chairs) throw refuse("threshold-past-the-roster", `threshold=${asked} sits past the ${chairs} chair${chairs === 1 ? "" : "s"} that stood — no quorum could ever reach it`);
     return asked;
   }
   if (Number.isInteger(doc.threshold) && doc.threshold >= 1 && doc.threshold <= chairs) return doc.threshold;
@@ -239,7 +239,7 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   }
   const chairs = await standingChairs();
   if (chairs.length === 0) {
-    throw refuse("no-chair-stands", "no persona stands for a chair — stand one first:\n  lares persona new <index> --name '<label>' --seat [--chair '<chair label>']");
+    throw refuse("no-chair-stands", "no persona stands for a chair — stand one first:\n  lares persona new <index> name='<label>' seat=true [chair='<chair label>']");
   }
   const kahu: NexusCharterKahu[] = doc.kahu.map((k) => ({ ...k }));
   const chairAt = new Map<string, number>(kahu.map((k, i) => [normChair(k.chairLabel), i]));
@@ -311,7 +311,7 @@ export async function armRoll(opts: { readonly cards: readonly Uint8Array[]; rea
   }
   const chairs = await standingChairs();
   if (chairs.length === 0) {
-    throw refuse("no-chair-stands", "no persona stands for a chair — a rotation seats the roster that STANDS, and none does. Stand them first: lares persona new <index> --name '<label>' --seat [--chair '<chair label>']");
+    throw refuse("no-chair-stands", "no persona stands for a chair — a rotation seats the roster that STANDS, and none does. Stand them first: lares persona new <index> name='<label>' seat=true [chair='<chair label>']");
   }
   const threshold = thresholdFor(opts.threshold, doc, chairs.length);
   await settleSeats([...closingFaces, ...chairs.map(([index]) => index)]);
@@ -728,7 +728,7 @@ export async function signCrossing(handleIndex: number): Promise<{ readonly as: 
 /** WITNESS the bound crossing as the persona root at `handleIndex`: a face that holds a seat in NEITHER set, with a note of what it observed. */
 export async function witnessCrossing(handleIndex: number, note: string, ward?: WardCredential): Promise<{ readonly by: string }> {
   const { pending, core } = await boundCrossing("no bound crossing stands — a witness attests a closed byte-image");
-  if (note.length === 0) throw refuse("no-note", "a witness mark carries a note — what stood observed (--note)");
+  if (note.length === 0) throw refuse("no-note", "a witness mark carries a note — what stood observed (note=)");
   const witness = await heldRoot(handleIndex);
   // A witness stands outside both sets: its face holds no seat key in either, and its own key sits in neither.
   if (seatsOfFaceIn(handleIndex, [pending.oldKeys, pending.newKeys ?? []]).length > 0

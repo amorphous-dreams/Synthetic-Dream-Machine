@@ -69,7 +69,7 @@ export interface NotedRealm { readonly realm: string; readonly nexus: string | n
 
 export type StewardRefusal =
   | "no-realm"                 // the plane never stood, or stands in no realm
-  | "face-not-named"           // this vessel stands several faces open and the act named none (--face N)
+  | "face-not-named"           // this vessel stands several faces open and the act named none (face=N)
   | "face-root-absent"         // this vessel holds no root for the face the act resolves to
   | "steward-key-unreadable"   // this vessel's own keys would not read (a locked vault, a torn roster)
   | "steward-key-class"        // the key reads as anything but this vessel's own per-Nexus face key at this Nexus
@@ -200,7 +200,7 @@ export function makeRealmPlane(opts: {
   /** Note a realm in the vessel's own ledger under the Nexus that stands here: `enter` calls it once per realm. */
   readonly noteRealm?: (realm: string, nexusAid: string) => Promise<void>;
   /**
-   * The charters this vessel CARRIES beside its own (`nexus seal import --carry`): each Nexus another operator
+   * The charters this vessel CARRIES beside its own (`nexus seal import carry=`): each Nexus another operator
    * founded and this vessel contracted into. Each stands a realm plane of its own, under ITS Nexus: a hearth stands
    * on its own seed charter, so a realm of another operator's Nexus reaches it as a carried charter, never as its
    * primary. Absent, the holder stands its own charter's realm and its cabal realms alone.
@@ -390,7 +390,7 @@ export function makeRealmPlane(opts: {
         // own holder already sealed here.
         for (const name of proposed) {
           if (!(await stewardSealedHere(realmHandle.doc(), realmId, name, opts.sealReading))) {
-            throw new StewardRefused("steward-name-unproven", `"${name}" sealed nothing in this realm, so no hand but its own may write it here — that hand asks to keep the bag from its own vessel (\`lares nexus realm-bag <bag> --join\`), and each standing steward consents (\`--cosign\`)`);
+            throw new StewardRefused("steward-name-unproven", `"${name}" sealed nothing in this realm, so no hand but its own may write it here — that hand asks to keep the bag from its own vessel (\`lares nexus realm-bag <bag> join=true\`), and each standing steward consents (\`cosign=true\`)`);
           }
         }
         const rec = proposed.length > 0
@@ -454,16 +454,16 @@ export function makeRealmPlane(opts: {
           const image = hex(realmBagBytes(rec));
           (groups.get(image) ?? (groups.set(image, []), groups.get(image)!)).push({ rec, sealed: sealedBy.length });
         }
-        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> --join\`), and a keeping hand names a steward by the key that steward's acting face presents here (\`--steward <key>\`)`);
+        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> join=true\`), and a keeping hand names a steward by the key that steward's acting face presents here (\`steward=<key>\`)`);
         // WHERE NO REGISTRATION STANDS, nothing holds a proposal to a book: the signer names the hand it consents
         // with, so one planted proposal never draws a seal from a bare co-sign.
         if (!stands && withName === undefined) {
           const askers = [...groups.values()].map((g) => g[0]!.rec.signatures.map((s) => s.signer).join("+")).sort();
-          throw new Error(`realm-bag: no registration stands for "${bagUri}", so this co-sign would found one — name the hand this one consents with (\`--cosign --with <key>\`); proposals wait sealed by ${askers.join(" · ")}`);
+          throw new Error(`realm-bag: no registration stands for "${bagUri}", so this co-sign would found one — name the hand this one consents with (\`cosign=true with=<key>\`); proposals wait sealed by ${askers.join(" · ")}`);
         }
         if (groups.size > 1) {
           const askers = [...groups.values()].map((g) => g[0]!.rec.signatures.map((s) => s.signer).join("+")).sort();
-          throw new Error(`realm-bag: ${groups.size} different proposals for "${bagUri}" wait on this steward (sealed by ${askers.join(" · ")}) — name the hand this one consents with (\`--cosign --with <key>\`)`);
+          throw new Error(`realm-bag: ${groups.size} different proposals for "${bagUri}" wait on this steward (sealed by ${askers.join(" · ")}) — name the hand this one consents with (\`cosign=true with=<key>\`)`);
         }
         // Copies of ONE proposal differ only in the seals they gathered: the one that carries the most completes first.
         const proposal = [...groups.values()][0]!.sort((a, b) => b.sealed - a.sealed)[0]!.rec;

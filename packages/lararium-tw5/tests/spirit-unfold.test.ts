@@ -4,7 +4,7 @@
  * unfolds the entry, measure the attention and open slots too, theme the whole carrier.
  *
  * The fold filter and the macro ride the lares-lararium skin, so a wiki that loads the house folds its own records from its own
- * plugin; the suite boots that wiki and reads the render `lares wiki render --form text` gives.
+ * plugin; the suite boots that wiki and reads the render `lares wiki render form=text` gives.
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -206,7 +206,7 @@ describe("the fold's pure core", () => {
       `lares get title=${quoted} recipe=default`,
       `lares get title=${quoted} recipe=default face=1 aperture=arc`,
       `lares get title=${quoted} recipe=default slot='#/x' aperture=arc`,
-      `lares wiki render ${quoted} --recipe default --form text`,
+      `lares wiki render ${quoted} recipe=default form=text`,
     ]);
   });
 
@@ -223,10 +223,10 @@ describe("the fold's pure core", () => {
 
 describe("faceBound: a wake's handed commands keep naming the face that answered (plan/companion-context S3)", () => {
   test("the face joins each spirit command after its pet (--face), each call's recipe=default naming none (face=N) and each door's --recipe default; a bound command stays as it stands", () => {
-    const text = "Echo it: lares spirit ah lares-alpha --echo ab --instance s-1\n"
-      + `${slotCommand("lar:///x", "#/open", "1")} · lares get title=lar:///y recipe=default aperture=arc · lares wiki render lar:///z --recipe default --form text · \`lares spirit hum lares-alpha\`, lares spirit om lares-alpha --face 1`;
-    expect(faceBound(text, 1)).toBe("Echo it: lares spirit ah lares-alpha --face 1 --echo ab --instance s-1\n"
-      + `${slotCommand("lar:///x", "#/open", "1")} · lares get title=lar:///y recipe=default face=1 aperture=arc · lares wiki render lar:///z --recipe default --face 1 --form text · \`lares spirit hum lares-alpha --face 1\`, lares spirit om lares-alpha --face 1`);
+    const text = "Echo it: lares spirit ah lares-alpha echo=ab instance=s-1\n"
+      + `${slotCommand("lar:///x", "#/open", "1")} · lares get title=lar:///y recipe=default aperture=arc · lares wiki render lar:///z recipe=default form=text · \`lares spirit hum lares-alpha\`, lares spirit om lares-alpha face=1`;
+    expect(faceBound(text, 1)).toBe("Echo it: lares spirit ah lares-alpha face=1 echo=ab instance=s-1\n"
+      + `${slotCommand("lar:///x", "#/open", "1")} · lares get title=lar:///y recipe=default face=1 aperture=arc · lares wiki render lar:///z recipe=default face=1 form=text · \`lares spirit hum lares-alpha face=1\`, lares spirit om lares-alpha face=1`);
     expect(faceBound(text, null)).toBe(text);
   });
 });

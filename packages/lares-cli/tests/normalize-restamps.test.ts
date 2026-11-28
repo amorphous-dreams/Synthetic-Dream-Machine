@@ -318,7 +318,7 @@ describe("meme normalize/check — FRAME drift and GRAMMAR drift read as two aut
     expect(after).not.toContain('voice="Mischief-Muse"');
     // AND normalize NAMES the site it declined to touch.
     expect(out).toMatch(/would take the equals sign/);
-    expect(out).toMatch(/rerun with --grammar/);
+    expect(out).toMatch(/rerun with grammar= to apply/);
   });
 
   test("★ RED: check on GRAMMAR-only drift exits ZERO and names the preference — never fails the gate ★", () => {
@@ -355,7 +355,7 @@ describe("meme normalize/check — FRAME drift and GRAMMAR drift read as two aut
     const file = path.join(dir, "both-drift-grammar-flag.mem");
     writeFileSync(file, bothDrifts());
 
-    meme("normalize", file, ["--grammar"]);
+    meme("normalize", file, ["grammar=true"]);
     const after = readFileSync(file, "utf8");
     expect(verifyBcc(after)).toBe("ok");
     // `voice:Mischief-Muse` carries an UNQUOTED value, which the colon-param law never touches

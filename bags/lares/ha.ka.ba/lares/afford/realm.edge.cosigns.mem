@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.cosigns"
 
 ! realm.edge.cosigns ~ a quorum partial, read and cosigned by the next seat
 
-`lares edge cosign (<partial-json> | --from <file>)` reads ONE partial and prints only what its verified bytes say, signing nothing, so a person reads whom the act sets aside first. `--act <act-cid>` names the act id that read printed; then this vessel's seats sign, and the act lands once it counts. Any other act id refuses.
+`lares edge cosign (<partial-json> | from=<file>)` reads ONE partial and prints only what its verified bytes say, signing nothing, so a person reads whom the act sets aside first. `--act <act-cid>` names the act id that read printed; then this vessel's seats sign, and the act lands once it counts. Any other act id refuses.
 
 <<~/ahu>>
 
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JznoVTA__yblj7KW08sZMDkg9r3M0f-_BhoN2bPgalU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BiPWyHiIaUp8r2jSNwHHkGHxAdMm1Om0JctKIh003oI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

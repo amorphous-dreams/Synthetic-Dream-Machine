@@ -240,7 +240,7 @@ describe("the shore names the receipt wherever it names a pending removal", () =
     expect(shorePendingLines([row], none)).toEqual([
       "1 pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones",
       `  ${row.uri}  bag ${BAG}  ${row.path}`,
-      "  answer: `lares shore restore <uri>` · `lares shore remove <uri>` · over all: `--all --count <n>` with the count one bag holds (and --bag where more than one bag stands pending)",
+      "  answer: `lares shore restore <uri>` · `lares shore remove <uri>` · over all: `all=true count=<n>` with the count one bag holds (and bag= where more than one bag stands pending)",
     ]);
     expect(removeReceiptLines([row.uri], BAG, [row], none)).toEqual([`  ${row.uri}`]);
     expect(pendingRemovalLines([row], [BAG], none)).toEqual(pendingRemovalLines([row], [BAG]));

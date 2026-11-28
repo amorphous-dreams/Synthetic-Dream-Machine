@@ -776,10 +776,10 @@ export async function orphanPersonaRootKey(handleIndex: number, ward?: WardCrede
 
 /**
  * THE DAEMON MOUNT is the composition's own state, never a pointer at rest and never a face a session wears. The unlock may name
- * which face the sovereign composition MOUNTS (`lares vault unlock --face N`); nothing persists that choice across a restart, and
+ * which face the sovereign composition MOUNTS (`lares vault unlock face=N`); nothing persists that choice across a restart, and
  * no session sets it. With no face named, the composition mounts the steward's face 0 where it stands open, else the lowest face
  * standing open (under a pūlama, the lowest face it lends that stands lit), and lights every other open face beside it. A
- * command never reads this: it names its face (`--face N`), or resolves the one face standing open (`face-selector`).
+ * command never reads this: it names its face (`face=N`), or resolves the one face standing open (`face-selector`).
  */
 let mountedFace: number | undefined;
 /** NO MOUNT: the worn face locked and no open face holding anchors stands to take its place, so the composition stands at the

@@ -14,23 +14,23 @@
  * (`positional: [VERB]`, options and flags):
  *
  *   REPACK
- *     --source <file>   the disk bundle (.json / .multids) whose pack the island collects
- *     --from <bag>      the bag holding the pack's members (their aside provenance)
- *     --out <file>      (optional) where the re-rendered bundle lands; defaults to --source
+ *     source=<file>   the disk bundle (.json / .multids) whose pack the island collects
+ *     from=<bag>      the bag holding the pack's members (their aside provenance)
+ *     out=<file>      (optional) where the re-rendered bundle lands; defaults to source=
  *
  *   ADD / COPY / MOVE
- *     --title <t>       tiddler title (Work-level identity)
- *     --from <bag>      source bag URI
- *     --to <bag>        destination bag URI
- *     --change-id <id>  (optional) explicit change-id; defaults to newChangeId()
+ *     title=<t>       tiddler title (Work-level identity)
+ *     from=<bag>      source bag URI
+ *     to=<bag>        destination bag URI
+ *     change-id=<id>  (optional) explicit change-id; defaults to newChangeId()
  *
  *   CLEAR / DROP
- *     --bag <bag>       target bag URI
+ *     bag=<bag>       target bag URI
  *
  *   LOAD
- *     --source-uri <u>  external content source (https://... etc.)
- *     --to <bag>        destination bag URI
- *     --change-id <id>  (optional) explicit change-id; defaults to newChangeId()
+ *     source-uri=<u>  external content source (https://... etc.)
+ *     to=<bag>        destination bag URI
+ *     change-id=<id>  (optional) explicit change-id; defaults to newChangeId()
  *
  * Common flags:
  *   --yes             skip confirmation prompt
@@ -324,7 +324,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     return 2;
   }
   if (verbRaw === "INGEST") {
-    console.error("lares act INGEST: the ingest gesture carries hashes the act surface does not — use `lares ingest --source <dir> --to <bag>`");
+    console.error("lares act INGEST: the ingest gesture carries hashes the act surface does not — use `lares ingest source=<dir> to=<bag>`");
     return 2;
   }
   const verb = verbRaw;
@@ -335,7 +335,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   // `changeId` is EVERY verb's own CHANGE nonce (H7/M10) — the identity of the logical change an
   // operator intends, told apart from `requestId` (a fresh dispatch attempt) below. ADD/COPY/MOVE
   // and LOAD already ride it on the wire as part of `actionArgs` (it names which Work moves where);
-  // CLEAR/DROP/CREATE have no such content to distinguish one change from the next, so `--change-id`
+  // CLEAR/DROP/CREATE have no such content to distinguish one change from the next, so `change-id=`
   // rides CLI-side only, folded into the effect key's own nonce — it never reaches the wire args
   // (no mesh change). `nonce` is that fold: `""` for a verb whose wire args already carry the
   // change's identity (a re-send of identical args IS a re-send of the identical change, so the
@@ -349,7 +349,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     const fromBag  = args.options["from"];
     const toBag    = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
-    // A MOVE naming --from and --to and no --title promotes the WHOLE source layer (every live title) in one act.
+    // A MOVE naming from= and to= and no title= promotes the WHOLE source layer (every live title) in one act.
     const layerMove = verb === "MOVE" && !title && !!fromBag && !!toBag;
     if (!layerMove && (!title || !fromBag || (verb !== "MOVE" && !toBag))) {
       console.error(verb === "MOVE" ? "lares act lar:///carriage.bag.moves: title=, from= and to= (or from= and to= alone to move the whole layer) required" : `lares act ${verb}: title=, from= and to= all required`);
@@ -401,7 +401,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
       console.error(`lares act lar:///carriage.bag.creates: bag= required`);
       return 2;
     }
-    // `--plane <catalog|oracle>` names the target oracle plane: catalog = the private user/household
+    // `plane=<catalog|oracle>` names the target oracle plane: catalog = the private user/household
     // plane (default), oracle = the system/temple plane. The three-plane model's public plane
     // (crossroads) is not yet a live `act` target; it joins this set when the public plane wires in.
     // An unrecognized value errors rather than silently coercing to catalog (a typo would mis-place the bag).
@@ -497,7 +497,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     }
   }
 
-  // --dry-run / preview: capture the projected effect, commit nothing. Rides the
+  // dry-run=true / preview: capture the projected effect, commit nothing. Rides the
   // raw args; the island reactor reads it and runs the verb through a capturing access.
   if (args.flags["dry-run"]) actionArgs["dry-run"] = true;
 
@@ -543,9 +543,9 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   // subject names the bag the change lands in; re-issuing the SAME logical change
   // (same change-id + verb + target) collapses to one requestId, and the
   // dispatcher's outcome-keyed dedup then gives exactly-once EFFECT. A fresh
-  // change-id (the --change-id default) means a genuinely distinct change → runs.
+  // change-id (the change-id= default) means a genuinely distinct change → runs.
   const subject   = String(actionArgs["to-bag"] ?? actionArgs["bag"] ?? "");
-  // An explicit --in-wiki ask uses the active wiki. A slot act without that ask
+  // An explicit in-wiki=true ask uses the active wiki. A slot act without that ask
   // reaches the named wiki; other acts use the daemon's reach.
   // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
   const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
@@ -564,7 +564,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   // D1 P2.5 iter 4 commit 4): `requestId` mints a FRESH nonce per attempt, so a retry after an
   // abandoned/unknown/evicted outcome actually dispatches again rather than reusing an id this
   // vessel may have already settled forever (the livelock H4 first named for LOAD applies equally
-  // to a reused `--change-id` on ADD/COPY/MOVE, or a reused `--bag` on CLEAR/DROP/CREATE — any
+  // to a reused `change-id=` on ADD/COPY/MOVE, or a reused `bag=` on CLEAR/DROP/CREATE — any
   // content-addressed id, reused across an identical retry a frozen vessel invites, could never
   // again win "run" once this vessel had recorded it abandoned). `effectKey` still rides every
   // attempt, so the daemon's own effect index answers a repeat attempt that DID land with the
@@ -633,11 +633,11 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         return exitFor("retention-gap");
       } else {
         // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID DOES NOT DO (H4, E1),
-        // AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
+        // AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `change-id=`
         // mints a NEW change, which is exactly the double-run this hint exists to prevent. requestId
         // is a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
         // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
-        // retry rather than a new change: reuse `--change-id`.
+        // retry rather than a new change: reuse `change-id=`.
         const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares vessel request ${requestId}\`. Re-run with \`change-id=${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },

@@ -2,7 +2,7 @@
  * A STAND-OFF SETTLES ON A HAND, AT THE INGEST DOOR TOO. `take-disk` and `keep-disk` ride an INGEST wave whose candidate names
  * the records' present hash as its base, and the island's gate trusts the caller's base. So any line that hands INGEST that
  * hash (readable off `lares shore list`) would take the disk's side of a stand-off. The island answers each carrier that
- * stands in a projector stand-off `conflict` (it awaits a hand, naming `lares shore keep-disk <uri> --key <key>`) unless the
+ * stands in a projector stand-off `conflict` (it awaits a hand, naming `lares shore keep-disk <uri> key=<key>`) unless the
  * wave rides a person's line (`cli` or `tab`), and lands the rest of the wave. No word of the frame (`unattended`) changes
  * that: the vessel's own watchers never adopt over a stand-off either.
  *
@@ -74,7 +74,7 @@ describe.skipIf(coreBlobSkip)("the ingest door holds a stand-off for a hand", ()
     const result = await r.submitWave({ ...forged(r, uri, records), unattended: true }, null);
     const row = rowsOf(result).find((x) => x["uri"] === uri);
     expect(row?.["decision"]).toBe("conflict");
-    expect(String(row?.["warnings"])).toContain(`lares shore keep-disk ${uri} --key ${key}`);
+    expect(String(row?.["warnings"])).toContain(`lares shore keep-disk ${uri} key=${key}`);
     expect(await r.store.get(String(held?.tiddler["title"]))).toEqual(held);
     expect(r.projector.standing().find((s) => s.uri === uri)?.standoff).toBe(key);
   });

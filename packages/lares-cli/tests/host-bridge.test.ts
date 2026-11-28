@@ -104,11 +104,11 @@ describe("decideRoute — every branch", () => {
 
   it("meme's local seats stay local; its store seats forward", () => {
     expect(decideRoute(input(["meme", "normalize", "a.mem"]))).toBe("local");
-    expect(decideRoute(input(["meme", "check", "a.mem", "--gradient"]))).toBe("local");
-    expect(decideRoute(input(["meme", "project", "a.mem", "--to", "md"]))).toBe("local");
-    expect(decideRoute(input(["meme", "project", "a.mem", "--to=md", "--bag", "b"]))).toBe("local");
-    expect(decideRoute(input(["meme", "project", "lar:///x", "--to", "md", "--bag", "b"]))).toBe("forward");
-    expect(decideRoute(input(["meme", "project", "a.mem", "--to", "html", "--bag", "b"]))).toBe("forward");
+    expect(decideRoute(input(["meme", "check", "a.mem", "gradient=true"]))).toBe("local");
+    expect(decideRoute(input(["meme", "project", "a.mem", "to=md"]))).toBe("local");
+    expect(decideRoute(input(["meme", "project", "a.mem", "to=md", "bag=b"]))).toBe("local");
+    expect(decideRoute(input(["meme", "project", "lar:///x", "to=md", "bag=b"]))).toBe("forward");
+    expect(decideRoute(input(["meme", "project", "a.mem", "to=html", "bag=b"]))).toBe("forward");
   });
 
   it("an unknown command stays local, so the CLI names it unknown rather than reaching for a house", () => {
@@ -149,7 +149,7 @@ describe("decideRoute — every branch", () => {
   });
 
   it("credential verbs refuse by name with no TTY, never falling back to -T", () => {
-    for (const argv of [["vault", "unlock"], ["vault", "bind"], ["vault", "unbind"], ["found"], ["vessel", "found", "--hearth"], ["persona", "new", "1", "--name", "joshua-fontany-engineer"]]) {
+    for (const argv of [["vault", "unlock"], ["vault", "bind"], ["vault", "unbind"], ["found"], ["vessel", "found", "hearth=true"], ["persona", "new", "1", "name=joshua-fontany-engineer"]]) {
       const r = decideRoute(input(argv, { tty: false }));
       expect(typeof r === "object" && r.error.code, argv.join(" ")).toBe(CREDENTIAL_TTY_EXIT);
       expect(typeof r === "object" && r.error.lines.join("\n")).toMatch(/terminal/);
@@ -160,7 +160,7 @@ describe("decideRoute — every branch", () => {
     expect(decideRoute(input(["vault", "unlock"]))).toBe("forward");
     expect(decideRoute(input(["vault", "status"], { tty: false }))).toBe("forward");
     expect(decideRoute(input(["up"], { tty: false }))).toBe("forward");
-    expect(decideRoute(input(["persona", "new", "2", "--name", "joshua-fontany-referee"]))).toBe("forward");
+    expect(decideRoute(input(["persona", "new", "2", "name=joshua-fontany-referee"]))).toBe("forward");
     expect(decideRoute(input(["persona", "list"], { tty: false }))).toBe("forward");
   });
 });
@@ -187,10 +187,10 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
 
   it("translation table: positional and option paths, both option spellings", () => {
     expect(ok(["export", `${H}/config/carry/b1`])).toEqual(["export", "/lar/config/carry/b1"]);
-    expect(ok(["import", `${H}/config/carry/b1`, "--apply"])).toEqual(["import", "/lar/config/carry/b1", "--apply"]);
-    expect(ok(["vault", "backup", "--face", "0", "--out", `${H}/config/f.bundle`])).toEqual(["vault", "backup", "--face", "0", "--out", "/lar/config/f.bundle"]);
-    expect(ok(["ingest", `--source=${W}/notes`, "--to", "b"])).toEqual(["ingest", "--source=/workspace/notes", "--to", "b"]);
-    expect(ok(["meme", "put", "lar:///x", "--bag", "b", "--file", `${W}/bags/x.mem`])).toEqual(["meme", "put", "lar:///x", "--bag", "b", "--file", "/workspace/bags/x.mem"]);
+    expect(ok(["import", `${H}/config/carry/b1`, "apply=true"])).toEqual(["import", "/lar/config/carry/b1", "apply=true"]);
+    expect(ok(["vault", "backup", "face=0", `out=${H}/config/f.bundle`])).toEqual(["vault", "backup", "face=0", "out=/lar/config/f.bundle"]);
+    expect(ok(["ingest", `source=${W}/notes`, "to=b"])).toEqual(["ingest", "source=/workspace/notes", "to=b"]);
+    expect(ok(["meme", "put", "lar:///x", "bag=b", `file=${W}/bags/x.mem`])).toEqual(["meme", "put", "lar:///x", "bag=b", "file=/workspace/bags/x.mem"]);
     expect(ok(["nexus", "admit-take", `${W}/admit.json`])).toEqual(["nexus", "admit-take", "/workspace/admit.json"]);
     expect(ok(["fleet", "join", "land", `${H}/config/answer.json`])).toEqual(["fleet", "join", "land", "/lar/config/answer.json"]);
     expect(ok(["nexus", "seal", "roll", "file", `${W}/r.mem`])).toEqual(["nexus", "seal", "roll", "file", "/workspace/r.mem"]);
@@ -199,7 +199,7 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
 
   it("a relative path reads from the cwd: inside the checkout it lands under /workspace", () => {
     expect(ok(["export", "./carry/b1"], `${H}/config`)).toEqual(["export", "/lar/config/carry/b1"]);
-    expect(ok(["meme", "project", "bags/x.mem", "--to", "html", "--bag", "b"], W)).toEqual(["meme", "project", "/workspace/bags/x.mem", "--to", "html", "--bag", "b"]);
+    expect(ok(["meme", "project", "bags/x.mem", "to=html", "bag=b"], W)).toEqual(["meme", "project", "/workspace/bags/x.mem", "to=html", "bag=b"]);
   });
 
   it("~ expands to HOME", () => {
@@ -214,13 +214,13 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
 
   it("a container spelling passes unchanged", () => {
     expect(ok(["export", "/lar/config/carry/b1"])).toEqual(["export", "/lar/config/carry/b1"]);
-    expect(ok(["nexus", "seal", "import", "--carry", "/workspace/founding-roster.mem"])).toEqual(["nexus", "seal", "import", "--carry", "/workspace/founding-roster.mem"]);
+    expect(ok(["nexus", "seal", "import", "carry=/workspace/founding-roster.mem"])).toEqual(["nexus", "seal", "import", "carry=/workspace/founding-roster.mem"]);
   });
 
   it("only /lar/** and /workspace/** pass unchanged: the image's own /app reads as a host path, outside every mount", () => {
-    const r = tr(["vessel", "found", "--genesis", "/app/genesis"]);
+    const r = tr(["vessel", "found", "genesis=/app/genesis"]);
     expect("error" in r && r.error.code).toBe(PATH_OUTSIDE_EXIT);
-    expect(ok(["vessel", "found", "--genesis", "/lar/config/genesis"])).toEqual(["vessel", "found", "--genesis", "/lar/config/genesis"]);
+    expect(ok(["vessel", "found", "genesis=/lar/config/genesis"])).toEqual(["vessel", "found", "genesis=/lar/config/genesis"]);
     // A vessel spelling climbs out of its root no further: `/lar/../app/x` normalizes to /app/x and reads as a host path.
     const climbed = tr(["act", "lar:///carriage.bundle.repacks", "source=/lar/config/b.json", "out=/lar/../app/x.json", "from=b"]);
     expect("error" in climbed && climbed.error.code).toBe(PATH_OUTSIDE_EXIT);
@@ -232,16 +232,16 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
     // A LOAD by URL names no host file: the URL rides as written.
     expect(ok(["act", "lar:///carriage.bag.loads", "source-uri=https://example.org/notes", "to=lar:///b"])).toEqual(["act", "lar:///carriage.bag.loads", "source-uri=https://example.org/notes", "to=lar:///b"]);
     expect(ok(["get", "title=lar:///a/b", "bag=./not/a/path"])).toEqual(["get", "title=lar:///a/b", "bag=./not/a/path"]);
-    expect(ok(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"])).toEqual(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"]);
-    expect(ok(["persona", "new", "0", "--name", "/etc/passwd"])).toEqual(["persona", "new", "0", "--name", "/etc/passwd"]);
+    expect(ok(["meme", "project", "lar:///x/y", "to=html", "bag=b"])).toEqual(["meme", "project", "lar:///x/y", "to=html", "bag=b"]);
+    expect(ok(["persona", "new", "0", "name=/etc/passwd"])).toEqual(["persona", "new", "0", "name=/etc/passwd"]);
   });
 
   it("cabal --bundle translates a file that exists and leaves literal JSON alone", () => {
     const has = (p: string) => p === `${W}/b.json`;
-    const r1 = translatePaths({ argv: ["cabal", "join", "--bundle", `${W}/b.json`], cwd: "/", home: "/home/op", mounts, fs: { exists: has, realpath: (p) => p } });
-    expect(r1).toEqual({ argv: ["cabal", "join", "--bundle", "/workspace/b.json"] });
-    const r2 = translatePaths({ argv: ["cabal", "join", "--bundle", '{"a":1}'], cwd: "/", home: "/home/op", mounts, fs: { exists: has, realpath: (p) => p } });
-    expect(r2).toEqual({ argv: ["cabal", "join", "--bundle", '{"a":1}'] });
+    const r1 = translatePaths({ argv: ["cabal", "join", `bundle=${W}/b.json`], cwd: "/", home: "/home/op", mounts, fs: { exists: has, realpath: (p) => p } });
+    expect(r1).toEqual({ argv: ["cabal", "join", "bundle=/workspace/b.json"] });
+    const r2 = translatePaths({ argv: ["cabal", "join", 'bundle={"a":1}'], cwd: "/", home: "/home/op", mounts, fs: { exists: has, realpath: (p) => p } });
+    expect(r2).toEqual({ argv: ["cabal", "join", 'bundle={"a":1}'] });
   });
 
   it("a host path outside every mount refuses by name, in three lines, with the distinct code", () => {
@@ -294,7 +294,7 @@ function bench(opts: { envFile?: boolean; running?: boolean } = {}): Bench {
     "#!/bin/sh",
     `{ printf 'CALL\\n'; for a in "$@"; do printf '[%s]\\n' "$a"; done; } >> "$CALL_LOG"`,
     `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac`,
-    `case " $* " in *" --observe --json "*) printf '%s\\n' '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac`,
+    `case " $* " in *" observe=true --json "*) printf '%s\\n' '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac`,
     `case " $* " in *" sh -c "*|*" stop "*|*" rm -f "*) exit 0;; esac`,
     `case " $* " in *" exec "*|*" run "*) [ -n "\${FAKE_SLEEP:-}" ] && { echo $$ > "$CALL_LOG.pid"; exec sleep 30; }; printf 'stdout-from-the-vessel\\n'; printf 'stderr-from-the-vessel\\n' >&2; exit "\${FAKE_EXEC_RC:-0}";; esac`,
     "exit 0",
@@ -316,7 +316,7 @@ const calls = (b: Bench): string[][] => {
   return readFileSync(b.log, "utf8").split("CALL\n").filter(Boolean)
     .map((c) => c.split("\n").filter(Boolean).map((l) => l.slice(1, -1)));
 };
-const execCall = (b: Bench): string[] | undefined => calls(b).find((c) => c.includes("exec") && !c.includes("--observe"));
+const execCall = (b: Bench): string[] | undefined => calls(b).find((c) => c.includes("exec") && !c.includes("observe=true"));
 
 const builtExists = existsSync(join(HERE, "..", "dist", "src", "host-bridge.js"));
 const haveScript = spawnSync("script", ["--version"]).status === 0;
@@ -359,7 +359,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("RED: a sense hand verb forwarded from a harness shell with the mark stripped carries the seat mark into the vessel", () => {
     const b = bench();
     try {
-      const r = fromHarnessShell(b, ["sense", "purge", "x", "--approve"]);
+      const r = fromHarnessShell(b, ["sense", "purge", "x", "approve=true"]);
       expect(r.status, r.stderr).toBe(0);
       expect(marks(execCall(b)!)).toEqual(["CLAUDECODE"]);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
@@ -483,7 +483,9 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
     try {
       const child = spawn(process.execPath, [BIN, "get", "title=x", "bag=b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
       const pidFile = `${b.log}.pid`;
-      for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
+      // The sleeper starts at the call's own exec, after a cold CLI start (4-4.5 s under load, BUILT_CLI_BUDGET) and the shim's
+      // standing reads, so the wait for it spans 15 s inside the case's 60 s budget.
+      for (let i = 0; i < 300 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
       expect(existsSync(pidFile)).toBe(true);
       const sleeper = Number(readFileSync(pidFile, "utf8").trim());
       // The terminal's Ctrl+C reaches the whole foreground group: this test's own child group, never -1.

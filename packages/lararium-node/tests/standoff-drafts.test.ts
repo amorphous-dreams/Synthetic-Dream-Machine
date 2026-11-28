@@ -169,9 +169,9 @@ describe.skipIf(coreBlobSkip)("a stand-off comes inside as drafts", () => {
       expect(value).not.toContain("the seat's rival words");
     }
     expect(words.reason).toContain(uri);
-    expect(words.reason).toContain(`lares shore keep-disk ${uri} --key ${key}`);
-    expect(words.reason).toContain(`lares shore keep-records ${uri} --key ${key}`);
-    expect(words.reason).toContain(`lares shore keep-both ${uri} --key ${key}`);
+    expect(words.reason).toContain(`lares shore keep-disk ${uri} key=${key}`);
+    expect(words.reason).toContain(`lares shore keep-records ${uri} key=${key}`);
+    expect(words.reason).toContain(`lares shore keep-both ${uri} key=${key}`);
     expect(words.reason).toContain(`lares shore drafts ${uri}`);
   });
 

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.restrings"
 
 ! face.lei.restrings ~ restring ~ swarm-lei-restring
 
-`lares lei restring --rite <rite> --branch <name>` supersedes the standing lei with a newer one; the door fills `after` from the line's tip, so the line names no `--after`.
+`lares lei restring rite=<rite> branch=<name>` supersedes the standing lei with a newer one; the door fills `after` from the line's tip, so the line names no `--after`.
 
 <<~/ahu>>
 
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_YEmfEdd6wL7_Vl1mYgstSZjNOkMaunhAJnMmPZ1Kf8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t4fOGtwBA8mSyFOsHNKAzbb_GUXKM2rYqh8HiF26Ti0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

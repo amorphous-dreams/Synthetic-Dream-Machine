@@ -28,7 +28,7 @@
  *            while the face's key rests here. The face must stand LIT here (a shut face refuses `face-shut`: `light` opens it); the
  *            face's own route (the A1 ruling: never the vessel's) opens its key for the proof alone through the holder's attempt
  *            budget (`openFaceForAct`, while open), the opened copy zeroes at once, and ONE grant rests in the server's memory
- *            (`grantRecard`). The vessel's `lares vault recard --face N` then reads its own guard (only a face whose last light
+ *            (`grantRecard`). The vessel's `lares vault recard face=N` then reads its own guard (only a face whose last light
  *            refused for want of a prekey secret), spends the grant over its session (`face.recard`) and arms that face's next
  *            light. An unlit pūlama refuses `pulama-locked` before the route reads; a refusal grants nothing. The lock forgets it.
  *   lock     every session drops and every key zero-fills.
@@ -55,12 +55,12 @@
  *            without `confirm` and a restring naming no tip each refuse before the route reads; `check: true` answers `ready`
  *            there and reads no route.
  *
- *   publish  THE HAND SIGNS ONE PLUGIN OFFERING (`lares nexus publish plugins … --apply` under a pūlama), SIGN-ONLY, in the lei
+ *   publish  THE HAND SIGNS ONE PLUGIN OFFERING (`lares nexus publish plugins … apply=true` under a pūlama), SIGN-ONLY, in the lei
  *            pattern. The vessel under a pūlama holds no face root, so the offering's signature comes here: the vessel reads the
  *            source and hands the CLOSED descriptor it would sign (`offeror` · `pluginsCid` · `blobs`, the `signPluginOffering`
  *            preimage and nothing beside it: `offeringTermsOf`), the face's root opens fresh under the operator's route (a ward
  *            act; a miss spends the face's own ward attempts), signs that ONE descriptor, and zeroes. The answer carries the
- *            signed offering; the act writes nothing, and the vessel lands it (`--land`), where the bytes, the boot set and
+ *            signed offering; the act writes nothing, and the vessel lands it (`land=`), where the bytes, the boot set and
  *            the descriptor the source folds to are judged again. An unlit pūlama, an unopened face, a descriptor outside the
  *            closed shape (an extra field, a blob without provenance, a region its blobs do not fold to) and an offeror that
  *            names another key than the face's root each refuse before the route reads.
@@ -68,8 +68,8 @@
  *   sign     THE HAND SIGNS ONE RECORD OF A CLOSED SET under a face root, SIGN-ONLY, in the lei pattern: every ward act that signs
  *            as the face under a pūlama rides here (`lares kahua lift|withdraw|carry`, and `publish` beneath it), each by its
  *            record KIND (`pulama-sign`: a closed table, each kind its own shape check and domain-tagged preimage). The vessel
- *            reads the terms (`--terms`: the face, the kind, the one unsigned record), the route opens the face root for ONE
- *            signature and zeroes, and the vessel lands the record (`--land`) over the record it builds afresh. An unlit
+ *            reads the terms (`terms=true`: the face, the kind, the one unsigned record), the route opens the face root for ONE
+ *            signature and zeroes, and the vessel lands the record (`land=`) over the record it builds afresh. An unlit
  *            pūlama, an unopened face, a kind outside the table, a record outside its kind's shape and a record naming another
  *            root or group each refuse before the route reads; `check: true` answers `ready` there and reads no route.
  *
@@ -560,7 +560,7 @@ export function pulamaHandDoor(a: {
         log(`recard granted by hand: h${face}`);
         return { op: "recard", reading: "granted", face, lines: [
           `face h${face}: its own route proved at the pūlama, and one recard grant stands for the vessel that lends it.`,
-          `Next, at the vessel: lares vault recard --face ${face} (it arms the face's next light and spends the grant; a face that needs no recard leaves the grant unspent).`,
+          `Next, at the vessel: lares vault recard face=${face} (it arms the face's next light and spends the grant; a face that needs no recard leaves the grant unspent).`,
           "A lock of the pūlama forgets the grant.",
         ] };
       }
@@ -589,7 +589,7 @@ export function pulamaHandDoor(a: {
         if (closure === null) return { op: "hoala-string", reading: "closure-unreported", detail: "the host reported no closure for this keeper, so the lei cannot name the keeper it licenses; `lares up` reports it, then string again" };
         if (!a.hoala.seated()) return { op: "hoala-string", reading: "hoala-device-unseated", detail: "this keeper mounts no device directory, so no device key rests and no hoʻāla lei strings; raise the keeper on an image and compose file that carry the device volume (`lares rite kukulu`), then string again" };
         const returns = f["returns"];
-        if (typeof returns !== "number" || !Number.isSafeInteger(returns) || returns < 1) return { op: "hoala-string", reading: "hoala-malformed", detail: "a hoʻāla lei names its returns, a count of at least one: lares lei kui --rite hoala --returns <n>" };
+        if (typeof returns !== "number" || !Number.isSafeInteger(returns) || returns < 1) return { op: "hoala-string", reading: "hoala-malformed", detail: "a hoʻāla lei names its returns, a count of at least one: lares lei kui rite=hoala returns=<n>" };
         if (returns > HOALA_RETURNS_ASK_ABOVE && f["confirm"] !== true) return { op: "hoala-string", reading: "hoala-returns-unconfirmed", detail: `this lei would carry ${returns} returns, more than ${HOALA_RETURNS_ASK_ABOVE}; confirm the count to string it (--yes)` };
         if ((await openFaces()).length === 0) return { op: "hoala-string", reading: "face-locked", detail: "no face stands lit at this keeper, so a restart would relight none; light it with the route that opens your faces (`lares pulama light`), then string again", ...status() };
         if (f["check"] === true) return { op: "hoala-string", reading: "ready", returns };

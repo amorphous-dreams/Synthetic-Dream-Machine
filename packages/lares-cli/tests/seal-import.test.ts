@@ -127,7 +127,7 @@ async function run(a: ParsedArgs): Promise<{ code: number; out: Record<string, u
   } finally { log.mockRestore(); err.mockRestore(); out.mockRestore(); }
 }
 
-describe("lares nexus seal import --carry · accept-carriage --nexus · seal show (in process)", () => {
+describe("lares nexus seal import carry=true · accept-carriage --nexus · seal show (in process)", () => {
   let root: string;
   let prior: string | undefined;
   let scratch: string;
@@ -197,7 +197,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
     const before = readFileSync(nexusCharterDocPath(larSealHome()));
     const r = await run(verb(["seal", "import", partnerFile((await charter(await foreignKeys(10))))]));
     expect(r.code).toBe(3);
-    expect(String((r.out["error"] as { message?: string })?.message)).toMatch(/--carry/);
+    expect(String((r.out["error"] as { message?: string })?.message)).toMatch(/carry=<file>/);
     expect(readFileSync(nexusCharterDocPath(larSealHome())).equals(before)).toBe(true);
   });
 

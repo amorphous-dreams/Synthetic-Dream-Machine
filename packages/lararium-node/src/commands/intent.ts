@@ -66,7 +66,7 @@ export class IntentRefused extends Error { override name = "IntentRefused"; }
 /** The named face, else the ONE face standing open; `held` (the open faces holding anchors) gates the choice and never makes it. */
 export function resolveIntentFaceIndex(named: number | undefined, held: readonly number[], open: readonly number[]): number {
   if (named === undefined) {
-    if (open.length !== 1) throw new FaceNotNamed(`FaceNotNamed: name --face N for ${open.map((n) => `h${n}`).join(", ") || "a face this vessel holds"}`);
+    if (open.length !== 1) throw new FaceNotNamed(`FaceNotNamed: name face=N for ${open.map((n) => `h${n}`).join(", ") || "a face this vessel holds"}`);
     named = open[0]!;
   }
   if (!Number.isSafeInteger(named) || named < 0 || !held.includes(named)) throw new IntentRefused(`face-not-held: h${named}`);
@@ -74,7 +74,7 @@ export function resolveIntentFaceIndex(named: number | undefined, held: readonly
 }
 export function intentAudience(input: { to?: string; prefer?: string; class?: string; every?: boolean }): IntentAudience {
   const selected = [input.to !== undefined, input.prefer !== undefined, input.class !== undefined, input.every === true].filter(Boolean).length;
-  if (selected !== 1) throw new IntentRefused("audience: name exactly one of --to, --prefer, --class, --every");
+  if (selected !== 1) throw new IntentRefused("audience: name exactly one of to=, prefer=, class=, every=true");
   if (input.to) return { mode: "pinned", atom: input.to };
   if (input.prefer) return { mode: "prefer", atoms: input.prefer.split(",").map((s) => s.trim()) };
   if (input.class) return { mode: "class", capability: input.class };
@@ -351,7 +351,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
           // A joinee asks the face's founding hearth to seat it: the request carries this vessel's own ContactCard and complete
           // device edge, pins the hearth, and takes the face-join nonce (the atom and the pin) so a replay keeps one intent id.
           const hearth = projection.admissions[0]?.deviceKey;
-          if (!named && !hearth) throw new IntentRefused("hearth-absent: the face's log names no founding hearth; name one with --to");
+          if (!named && !hearth) throw new IntentRefused("hearth-absent: the face's log names no founding hearth; name one with to=");
           audience = named ? intentAudience(opts) : { mode: "pinned", atom: hearth! };
           if (args === undefined) {
             // A ContactCard is not byte-stable across derivations, so a replay returns the request already standing.

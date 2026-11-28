@@ -7,7 +7,7 @@
  * thinks it already saw, and MCP servers holding the torn store open. Hand-`rm`-ing
  * the paths invites the confused-deputy trap (wipe an ambient default, miss the
  * watermark). This verb resolves every target explicitly, previews by default,
- * and removes only on `--confirm`, which a person's hand at a real terminal alone approves: the command reads its own branch
+ * and removes only on `confirm=true`, which a person's hand at a real terminal alone approves: the command reads its own branch
  * through the house hand gate (`readOwnHand`), and an AI harness there refuses `hand-act-only` (hitl-reads-a-hand).
  *
  * Targets (resolved, never ambient) — the SOVEREIGN sensoriums only; the external guest
@@ -21,15 +21,15 @@
  * `~/.mempalace` rides its own lane (guestMempalaceOrgan) and is never in this list.
  *
  * Safety: if live mempalace processes (MCP servers / a running mine) hold a SELECTED store open, the
- * verb REFUSES (exit conflict) unless `--force` is also given — a holder of an UN-selected sensorium
+ * verb REFUSES (exit conflict) unless `force=true` is also given — a holder of an UN-selected sensorium
  * never blocks. Re-pave after with the full ceremony:
- * `lares vessel stand --init` → `lares sense pour --all` → `lares mempalace resume`.
+ * `lares vessel stand init=true` → `lares sense pour all=true` → `lares mempalace resume`.
  *
  * Usage:  lares sense teardown                    # preview EVERY group
  *         lares sense teardown memory             # preview ONE sensorium
- *         lares sense teardown memory --confirm   # tear one, leave the rest standing
- *         lares sense teardown --confirm          # remove every group
- *         lares sense teardown --confirm --force  # remove even under live holders
+ *         lares sense teardown memory confirm=true   # tear one, leave the rest standing
+ *         lares sense teardown confirm=true          # remove every group
+ *         lares sense teardown confirm=true force=true  # remove even under live holders
  *   groups: memory · mesh · memetic-wikitext · scratch   (no group = all)
  */
 
@@ -92,7 +92,7 @@ const ORGAN_LABEL: Readonly<Record<string, string>> = {
 
 /**
  * Resolve the teardown targets — never an ambient default. The PALACE organs come from the SHARED
- * @lararium/node registry (`palaceOrgans`), the SAME list `lares vessel stand --init` stands up (one
+ * @lararium/node registry (`palaceOrgans`), the SAME list `lares vessel stand init=true` stands up (one
  * enumerator, two consumers, can't drift). Teardown adds its own non-palace idempotency targets
  * (the harvest watermark + stage) AND every ephemeral scratch sensorium instance, so an
  * interrupted `sensorium run` can never leak state past a re-pave.
@@ -229,7 +229,7 @@ export async function cmdPalaceTeardown(args: ParsedArgs, hand: HandRead = () =>
         targets: targets.map((t) => ({ group: t.group, label: t.label, path: t.path, exists: t.exists, bytes: t.bytes })),
         totalBytes,
         liveProcesses: procs.map((p) => ({ pid: p.pid, kind: p.kind, serves: p.serves, spawner: p.spawnerCmd, holdsStore: p.holdsStore, mintsDaemons: p.mintsDaemons })),
-        hint: "re-run with --confirm to remove",
+        hint: "re-run with confirm=true to remove",
       },
       human: () => {
         console.log("lares sense teardown — PREVIEW (nothing removed)\n");
@@ -249,17 +249,17 @@ export async function cmdPalaceTeardown(args: ParsedArgs, hand: HandRead = () =>
         if (procs.length) {
           console.log(`\n  ⚠ ${procs.length} live palace process(es) block a clean tear:`);
           for (const p of procs) console.log(`      ${describeProc(p)}`);
-          console.log("      → --drain gracefully quiesces them first, or --force overrides.");
+          console.log("      → drain=true gracefully quiesces them first, or force=true overrides.");
         }
-        console.log("\n  → re-run with --confirm to remove (add --drain to quiesce live daemons first).");
+        console.log("\n  → re-run with confirm=true to remove (add drain=true to quiesce live daemons first).");
       },
     });
     return 0;
   }
 
-  // THE TEAR READS A HAND (hitl-reads-a-hand): `--confirm` names the intent, and the hand behind this command approves it. An AI
+  // THE TEAR READS A HAND (hitl-reads-a-hand): `confirm=true` names the intent, and the hand behind this command approves it. An AI
   // harness on the command's branch refuses `hand-act-only` before any drain or removal; the preview above stays open to it.
-  const line = `lares sense teardown ${[...requested, "--confirm"].join(" ")}`;
+  const line = `lares sense teardown ${[...requested, "confirm=true"].join(" ")}`;
   try {
     handFor("lares sense teardown", line, hand);
   } catch (e) {
@@ -272,10 +272,10 @@ export async function cmdPalaceTeardown(args: ParsedArgs, hand: HandRead = () =>
     return exitFor(e.code);
   }
 
-  // --drain: gracefully quiesce (pause hooks → drain warm daemons → confirm zero)
+  // drain=true: gracefully quiesce (pause hooks → drain warm daemons → confirm zero)
   // BEFORE tearing, so no live daemon re-mints into the dir we are about to remove
-  // (the ENOTEMPTY race). Holds the hooks paused through the tear (--hold).
-  // ALWAYS runs on --drain — never gated on a momentarily-quiet process table: a
+  // (the ENOTEMPTY race). Holds the hooks paused through the tear (hold=true).
+  // ALWAYS runs on drain=true — never gated on a momentarily-quiet process table: a
   // Stop-hook can fire MID-tear and re-mint a poisoned half-palace (witnessed:
   // ~/.mempalace re-created config-less). quiescePalace stays idempotent; on a
   // quiet table it pauses the hooks and no-ops the drain.
@@ -286,7 +286,7 @@ export async function cmdPalaceTeardown(args: ParsedArgs, hand: HandRead = () =>
     procs = liveMempalaceProcs().filter((p) => procBlocks(p, selectedDirs, memorySelected)); // re-snapshot, still scoped
   }
 
-  // Live-process safety: a positive find REFUSES unless --force overrides. The
+  // Live-process safety: a positive find REFUSES unless force=true overrides. The
   // refusal NAMES each blocker + its spawner + the graceful cure (never "stop them").
   if (procs.length && !force) {
     emit(args, {
@@ -294,14 +294,14 @@ export async function cmdPalaceTeardown(args: ParsedArgs, hand: HandRead = () =>
       error: {
         code: "conflict",
         message: `${procs.length} live palace process(es) block a clean teardown`,
-        hint: "run `lares mempalace quiesce` (or re-run with --drain), or re-run with --confirm --force",
+        hint: "run `lares mempalace quiesce` (or re-run with drain=true), or re-run with confirm=true force=true",
       },
       data: { liveProcesses: procs.map((p) => ({ pid: p.pid, kind: p.kind, serves: p.serves, spawner: p.spawnerCmd })) },
       human: () => {
         console.error("lares sense teardown: REFUSED — live palace processes block a clean tear:");
         for (const p of procs) console.error(`  ${describeProc(p)}`);
         console.error("\nGraceful cure: `lares mempalace quiesce` (pauses hooks + drains daemons), then re-run.");
-        console.error("Or re-run with --drain (quiesce-then-tear), or --confirm --force to override.");
+        console.error("Or re-run with drain=true (quiesce-then-tear), or confirm=true force=true to override.");
       },
     });
     return exitFor("conflict");
@@ -344,14 +344,14 @@ export async function cmdPalaceTeardown(args: ParsedArgs, hand: HandRead = () =>
       if (culprits.length) {
         console.log(`\n  ⚠ a live daemon refilled the dir mid-tear — the ENOTEMPTY culprit:`);
         for (const p of culprits) console.log(`      ${describeProc(p)}`);
-        console.log("      cure: `lares mempalace quiesce` (pauses hooks + drains), then re-run --confirm.");
+        console.log("      cure: `lares mempalace quiesce` (pauses hooks + drains), then re-run confirm=true.");
       }
       console.log(`\n  freed: ${humanBytes(freed)}`);
-      // The FULL ceremony tail — a bare `harvest --all` hint left followers with a
-      // config-less palace and hooks paused forever (--drain holds them paused).
+      // The FULL ceremony tail — a bare `harvest all=true` hint left followers with a
+      // config-less palace and hooks paused forever (drain=true holds them paused).
       console.log("  re-pave ceremony:");
-      console.log("    1. lares vessel stand --init        (stand the organs: config.json + hooks.auto_save=false pin)");
-      console.log("    2. lares sense pour --all      (the re-pave)");
+      console.log("    1. lares vessel stand init=true        (stand the organs: config.json + hooks.auto_save=false pin)");
+      console.log("    2. lares sense pour all=true      (the re-pave)");
       console.log("    3. lares mempalace resume   (un-pause the hooks)");
     },
   });

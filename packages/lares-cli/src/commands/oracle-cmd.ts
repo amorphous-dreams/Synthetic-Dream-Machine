@@ -1,13 +1,13 @@
 /**
- * `lares oracle cast --recipe <slug> [--by <kind>] [--uncertain <words>] [--observe <pointers>] [--asking <the fork>] [--coins <six values>]`
+ * `lares oracle cast recipe=<slug> [by=<kind>] [uncertain=<words>] [observe=<pointers>] [asking=<the fork>] [coins=<six values>]`
  * — the CLI skin of the `oracle-cast` verb (`lar:///library.oracle.speaks`): one consult of the oracle whose corpus rests on
- * the library shelf `--by` names (`library/oracles/<kind>/`, default `e-jing`), landed by the vessel once as an OODA-HA meme
+ * the library shelf `by=` names (`library/oracles/<kind>/`, default `e-jing`), landed by the vessel once as an OODA-HA meme
  * under `casts/`. The shelf's index declares its method (e-jing and doa: `three-coins`, the I Ching by three coins a line);
- * the door keeps the spelling `oracle cast` as its skin. `--observe` names the arm's context pointers and `--uncertain` the gathered
+ * the door keeps the spelling `oracle cast` as its skin. `observe=` names the arm's context pointers and `uncertain=` the gathered
  * uncertainty; they fill the meme's first slots, and the slots the seat owes print with the append line that fills them.
  *
  * A CAST STANDS AS AN ACT. The vessel casts and lands the record once; reading it again never casts again. With no
- * `--coins` the vessel draws the coins through the platform's entropy door (`crypto.getRandomValues`); `--coins` hands
+ * `coins=` the vessel draws the coins through the platform's entropy door (`crypto.getRandomValues`); `coins=` hands
  * it the six values the operator threw with real coins (6, 7, 8 or 9, bottom line first), named
  * `operator:three-coins`. THE CLOCK SEAM sits at this edge: the command reads the time once and the verb reads none.
  *
@@ -15,7 +15,7 @@
  * with its attribution and license, and the cast's title); `--json` carries the verb's own answer verbatim as `data`,
  * the same body the MCP seat's `act(address="lar:///library.oracle.speaks")` hands back. The throw stands and the reading stays open.
  *
- * The container law holds: name `--recipe <slug>` (`--recipe default`, the worn face's daemon wiki) or `--bag <slug>`.
+ * The container law holds: name `recipe=<slug>` (`recipe=default`, the worn face's daemon wiki) or `bag=<slug>`.
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -42,9 +42,9 @@ const mintNonce = (): string => hex(PLATFORM_ENTROPY.fill(new Uint8Array(16)));
 
 /**
  * The verb and its args for `oracle cast`: the argument law, with no vessel in reach. `at` is the time the CLI read, kept
- * as testimony. ONE ASKING, ONE THROW: `--asking <words>` names the asking, so the same words answer the same standing
- * cast; a bare cast mints its nonce here, at the word, so a retry of this one line sends the same asking. `--fresh` (a
- * new nonce for the same words) and `--seed <words>` (coins drawn from the person's seed) ride a person's hand.
+ * as testimony. ONE ASKING, ONE THROW: `asking=<words>` names the asking, so the same words answer the same standing
+ * cast; a bare cast mints its nonce here, at the word, so a retry of this one line sends the same asking. `fresh=true` (a
+ * new nonce for the same words) and `seed=<words>` (coins drawn from the person's seed) ride a person's hand.
  */
 export function oraclePlan(args: ParsedArgs, at: string, mint: () => string = mintNonce): DoorPlan {
   const out: Record<string, unknown> = { ...containerArgs(args, "oracle cast", "write"), at, caster: wordOf(args.options["caster"]) ?? DEFAULT_CASTER };
@@ -55,8 +55,8 @@ export function oraclePlan(args: ParsedArgs, at: string, mint: () => string = mi
   const uncertain = wordOf(args.options["uncertain"]);
   const observe = wordOf(args.options["observe"]);
   const by = wordOf(args.options["by"]);
-  if (seed !== null && fresh) throw new DoorUsage("--seed and --fresh name two hands for one throw; pass one (`--seed <words>` throws the same coins for the same words, `--fresh` throws new ones)");
-  if (seed !== null && coins !== null) throw new DoorUsage("--seed draws the coins and --coins names them; pass one");
+  if (seed !== null && fresh) throw new DoorUsage("seed= and fresh=true name two hands for one throw; pass one (`seed=<words>` throws the same coins for the same words, `fresh=true` throws new ones)");
+  if (seed !== null && coins !== null) throw new DoorUsage("seed= draws the coins and coins= names them; pass one");
   if (by !== null && by !== DEFAULT_ORACLE_KIND) out["by"] = by;
   if (asking !== null) out["asking"] = asking;
   if (uncertain !== null) out["uncertain"] = uncertain;
@@ -66,7 +66,7 @@ export function oraclePlan(args: ParsedArgs, at: string, mint: () => string = mi
   if (fresh) out["fresh"] = true;
   if (coins !== null) {
     const lines = parseCoins(coins);
-    if (lines === null) throw new DoorUsage(`--coins takes six line values of 6, 7, 8 or 9, bottom line first (e.g. --coins 7,8,9,6,7,7); got "${coins}"`);
+    if (lines === null) throw new DoorUsage(`coins= takes six line values of 6, 7, 8 or 9, bottom line first (e.g. coins=7,8,9,6,7,7); got "${coins}"`);
     out["coins"] = lines;
   }
   return { verb: "oracle-cast", args: out };
@@ -90,7 +90,7 @@ function checkoutShelves(): Record<string, string> {
 function offlineShelf(kind: string): string {
   const shelves = checkoutShelves();
   const standing = Object.entries(shelves).filter(([, m]) => m !== "").map(([k, m]) => `${k} (${m})`).join(" · ") || "none";
-  const cure = `consult a shelf that stands (\`lares oracle cast --by ${DEFAULT_ORACLE_KIND}\`); the shelves that stand: ${standing}`;
+  const cure = `consult a shelf that stands (\`lares oracle cast by=${DEFAULT_ORACLE_KIND}\`); the shelves that stand: ${standing}`;
   const method = shelves[kind] ?? "";
   if (!KIND_RE.test(kind) || method === "") throw new DoorUsage(`oracle-shelf-unknown: no shelf ${ORACLE_SHELF_PREFIX}${kind}/index declares its method; ${cure}`);
   if (!RUN_METHODS.includes(method)) throw new DoorUsage(`oracle-method-unrun: the ${kind} shelf declares method \`${method}\`, which this verb runs not yet; ${cure}`);
@@ -107,7 +107,7 @@ async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
   // A SLEEPING VESSEL KEEPS NO ASKING: its one throw lives in the vessel's record, so an asking with no seed and no coins
   // refuses here rather than draw coins no later ask could replay.
   if (plan.args["asking"] !== undefined && seed === null && !coins && plan.args["fresh"] !== true) {
-    throw new DoorUsage("the vessel sleeps, and an asking keeps its one throw in the vessel's record: stand it (`lares vessel stand`) and ask again, or name a seed (`--seed <strong words>`) for a throw any later ask replays");
+    throw new DoorUsage("the vessel sleeps, and an asking keeps its one throw in the vessel's record: stand it (`lares vessel stand`) and ask again, or name a seed (`seed=<strong words>`) for a throw any later ask replays");
   }
   const by = typeof plan.args["by"] === "string" ? plan.args["by"] : DEFAULT_ORACLE_KIND;
   const method = offlineShelf(by);
@@ -186,7 +186,7 @@ async function oracleCast(args: ParsedArgs): Promise<number> {
       console.log("");
       console.log(`cast: ${String(answer["title"])}`);
       if (answer["replayed"] === true) {
-        console.log("replayed: this asking already holds its throw; the same words answer it again (a person's --fresh throws anew)");
+        console.log("replayed: this asking already holds its throw; the same words answer it again (a person's fresh=true throws anew)");
         if (typeof answer["uncertain"] === "string" && answer["uncertain"] !== "") console.log(`kept: the uncertainty of the first throw: ${answer["uncertain"]}`);
       }
       for (const s of (answer["slots"] as Array<{ slot: string; phase: string; owed: boolean }> | undefined) ?? []) {

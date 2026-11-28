@@ -4,7 +4,7 @@
  * host's command scope.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { dispatch, COMMANDS } from "../src/bin/lares.js";
+import { dispatch, COMMANDS, doorTakes } from "../src/bin/lares.js";
 import { commandScope } from "../src/host-bridge.js";
 
 async function run(argv: string[]): Promise<{ code: number; out: string; err: string }> {
@@ -21,7 +21,7 @@ describe("lares ddate", () => {
   test("the verb stands in the table, runs on the host, and takes no flag of its own beside the global --json", () => {
     const row = COMMANDS.find((c) => c.name === "ddate");
     expect(row).toBeDefined();
-    expect(row?.accepts).toEqual([]);
+    expect(doorTakes(row!.name)).toEqual([]);
     expect(commandScope("ddate")).toBe("host");
   });
 

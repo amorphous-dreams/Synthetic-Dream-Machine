@@ -15,7 +15,7 @@
  *   V6  RED: the board moves while A's seat signs an open (the handshake lands the completed admit first): the
  *       revoke A signed reads stale on A's own judge, and no partial leaves.
  *   V4  RED: an admit whose supplied contract-in does not verify refuses before any seat signs.
- *   V5  The store door's rows carry the same act (the path `lares nexus contract --out` and `--partial` take), and
+ *   V5  The store door's rows carry the same act (the path `lares nexus contract out=true` and `--partial` take), and
  *       a refusal answers under the row's own name.
  * A 2-of-3 control and the whole-quorum and no-seat open refusals wait on a fixture that seats such a roster beside
  * a joint Nexus (train N step 5's add-a-chair roll); the cofound door founds two of two.

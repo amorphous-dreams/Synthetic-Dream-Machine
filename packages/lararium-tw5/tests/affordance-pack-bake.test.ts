@@ -21,16 +21,16 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     const carrier = pack.carriers[FIXTURE_ADDRESS];
     expect(carrier).toBeDefined();
     const whole = carrier!.renders["cli"]!["whole"]!.join("\n");
-    expect(carrier!.renders["cli"]!["whole"]![0]).toBe("usage: lares oracle cast (--recipe <slug> | --bag <slug>) [--asking <words>] [--fresh] [--seed <words>] [--coins <values>] [--caster <name>]");
+    expect(carrier!.renders["cli"]!["whole"]![0]).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=true] [seed=<words>] [coins=<values>] [caster=<name>]");
     expect(whole).toContain("lares oracle cast — Cast the I Ching by three coins; the cast lands as a tiddler.");
     expect(whole).toContain(FIXTURE_LIMIT);
     expect(whole).toContain("guess");
-    expect(whole).toContain("  lares oracle cast --recipe default --asking 'which road first?'    # a seat's cast at its own open fork");
-    expect(whole).toContain("    cure: lares oracle cast --recipe default --asking <words>");
+    expect(whole).toContain("  lares oracle cast recipe=default asking='which road first?'    # a seat's cast at its own open fork");
+    expect(whole).toContain("    cure: lares oracle cast recipe=default asking=<words>");
     expect(whole).toContain("  replayed (exit 0)  the cast already standing answers");
     expect(whole).toContain("Gate (the carrier's testimony; the door checks):");
     expect(whole).toContain("  lar:///ha.ka.ba/lares/api/pono/oracle-loop");
-    expect(whole).toContain("  lares oracle cast --recipe default --asking 'which road first?' --fresh    # a person asks the same words anew");
+    expect(whole).toContain("  lares oracle cast recipe=default asking='which road first?' fresh=true    # a person asks the same words anew");
     expect(whole).toContain("    cure: tiddler.get.reads --title <cast>");
     expect(whole).not.toContain("--at");   // `at` skins mcp, tw5 and console alone: the cli reads the time once
     expect(whole).toContain(`lares get title=${FIXTURE_TITLE} recipe=lares aperture=measure`);

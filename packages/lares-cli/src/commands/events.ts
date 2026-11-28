@@ -36,7 +36,7 @@ export async function cmdEvents(args: ParsedArgs): Promise<number> {
   const since = typeof sinceRaw === "string" ? parseSince(sinceRaw) : undefined;
   if (sinceRaw !== undefined && since === null) {
     for (const line of helpLines("events")) console.error(line);
-    console.error(`lares events: invalid --since cursor "${sinceRaw}"`);
+    console.error(`lares events: invalid since= cursor "${sinceRaw}"`);
     return 2;
   }
 

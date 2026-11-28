@@ -164,7 +164,7 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
       return { title, digest: row.digest, relation: row.relation, text: row.text, fields: row.fields, heads };
     }
     case "lift": {
-      if (opts.taint === undefined) throw new KahuaRefused("kahua-act-refused: taint: name --taint (`none` when every input came from inside the face)");
+      if (opts.taint === undefined) throw new KahuaRefused("kahua-act-refused: taint: name taint= (`none` when every input came from inside the face)");
       const input = {
         title: need(opts.title, "a title"), digest: need(opts.digest, "the staged row's digest"), taint: opts.taint,
         ...(opts.sources ? { sources: opts.sources } : {}),

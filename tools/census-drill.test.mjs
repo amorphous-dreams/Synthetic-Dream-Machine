@@ -7,7 +7,7 @@
 //   P2  TWO REAL HOUSES: found a scratch house, write memory into its steward's daemon wiki (a free-titled record among it),
 //       found a second face after the stand, share one wiki with a page and one with none, `lares export`, take its census
 //       into a file and take it down (the rite's order: the two houses never stand at once), found a brand-new scratch house
-//       under the same pet-names, `lares import --apply`, and the witness reads par of the snapshot against the new house's
+//       under the same pet-names, `lares import apply=true`, and the witness reads par of the snapshot against the new house's
 //       real read doors. Then on the new house delete one meme, change another and drop one share: the witness reads red,
 //       exits non-zero, and names all three and nothing else (the meme rests in the working layer alone, so its delete leaves
 //       plainly and raises no kāpae shadow).
@@ -244,7 +244,7 @@ async function standHouse(tag, name) {
   const port = await freePort();
   const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true" };
   const lares = (args) => spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env });
-  const found = lares(["vessel", "found", "--hearth", "--name", name, "--root", root, "--skip-build"]);
+  const found = lares(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "--skip-build"]);
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
   const child = spawn(process.execPath, [nodeMain, "--root", root, "--port", String(port)], { cwd: join(repo, "packages/lararium-node"), env });
   let log = "";
@@ -257,7 +257,7 @@ async function standHouse(tag, name) {
     }, 200);
   });
   const unlock = async () => {
-    // Every face wearing h0 (`lares vault unlock --all --face 0`). A face born after the stand already stands lit, so a second
+    // Every face wearing h0 (`lares vault unlock all=true face=0`). A face born after the stand already stands lit, so a second
     // unlock after a `persona new` answers `already-unlocked` and reads the new face open beside the first.
     const a = await unlockTestCustody(root, "unlock", 0);
     assert.ok(a?.held === true || a?.reading === "opens" || a?.reading === "already-unlocked", `${tag} unlock: ${JSON.stringify(a)}`);
@@ -300,9 +300,9 @@ test("a-face-born-after-the-stand-exports: a face `persona new` founds on a stan
   let house = null;
   try {
     house = await standHouse("late", "steward");
-    house.must(["persona", "new", "1", "--name", "engineer"]);
+    house.must(["persona", "new", "1", "name=engineer"]);
     await house.unlock();
-    const stage = house.lares(["kahua", "get", "--face", "1"]);
+    const stage = house.lares(["kahua", "get", "face=1"]);
     assert.equal(stage.status, 0, `the late face's stage reads: ${stage.stdout}${stage.stderr}`);
     const exported = JSON.parse(house.must(["export", join(scratch, "bundle"), "--json"]).stdout.trim().split("\n").pop());
     assert.deepEqual(exported.data.faces, ["steward", "engineer"]);
@@ -321,14 +321,14 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     // ── the exporting house: a steward and an engineer, memory in the steward's daemon wiki, one shared wiki ──────────
     const old = await standHouse("old", "steward");
     houses.push(old);
-    old.must(["persona", "new", "1", "--name", "engineer"]);
+    old.must(["persona", "new", "1", "name=engineer"]);
     // A share to a workbench that rests sealed needs a lit holder of its key to hand the new seat its lockbox: light first.
     await old.unlock();
     old.must(["wiki", "init", "notes", "--json"]);
-    old.must(["wiki", "share", "notes", "--read", "engineer"]);
+    old.must(["wiki", "share", "notes", "read=engineer"]);
     // A wiki that holds no page carries by its catalog row, beside its share row.
     old.must(["wiki", "init", "quiet", "--json"]);
-    old.must(["wiki", "share", "quiet", "--read", "engineer"]);
+    old.must(["wiki", "share", "quiet", "read=engineer"]);
     // The rite holds each workbench before the export (a cold wiki reads `document-unavailable`), and the wiki carries a page,
     // so its workbench travels and the import re-stands it (an empty wiki carries its share row alone).
     old.must(["wiki", "keep", "notes"]);
@@ -357,10 +357,10 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     // ── the brand-new house: the same pet-names, its own keys, then the import ──────────────────────────────────
     const fresh = await standHouse("new", "steward");
     houses.push(fresh);
-    fresh.must(["persona", "new", "1", "--name", "engineer"]);
+    fresh.must(["persona", "new", "1", "name=engineer"]);
     await fresh.unlock();
     // The bundle carries the keep seat beside its roster: the staged root's route opens it at the import, and no file crosses.
-    const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
+    const imported = fresh.lares(["import", bundle, "apply=true", "--json"]);
     assert.equal(JSON.parse(imported.stdout.trim().split("\n").pop()).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
     fresh.must(["wiki", "keep", "notes"]);
     fresh.must(["wiki", "keep", "quiet"]);

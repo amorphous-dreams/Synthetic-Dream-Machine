@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.rite.begins"
 
 ! face.rite.begins ~ begin ~ rite-begin in the vessel
 
-`lares rite begin --rite <rite> --branch <name> --head <commit>` runs `rite-begin` in the vessel: it derives the head's tree, returns the rite's lei (a kūkulu: each lent face's own) and rests the guest half of the tessera. A keep adds `--staging <path>`, the bundle it staged inside its workspace; a kūkulu names `--image`, the image the host made, and `--supersedes` the halves it sets down first (comma-joined tesserae).
+`lares rite begin rite=<rite> branch=<name> head=<commit>` runs `rite-begin` in the vessel: it derives the head's tree, returns the rite's lei (a kūkulu: each lent face's own) and rests the guest half of the tessera. A keep adds `--staging <path>`, the bundle it staged inside its workspace; a kūkulu names `--image`, the image the host made, and `--supersedes` the halves it sets down first (comma-joined tesserae).
 
 <<~/ahu>>
 
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;T6es7wYxLSiBMqc8ZRjHk66XkcRH5UnQ3kJAvLrM9R4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NPBS0DRknKKxL4SYZi_Hnl5jAyDT6-URnoEorUnG6V8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

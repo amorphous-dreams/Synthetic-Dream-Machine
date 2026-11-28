@@ -8,12 +8,12 @@
  * `bags/daemon-<F>` (local, unsigned), and `lift` carries one staged row to the fleet.
  *
  * LIFT WITH EYES. A lift reads the staged row back first (`kahua-read` `staged`) and prints its preview (title, digest,
- * fields, body); it lifts only on that digest typed back at a terminal, or `--digest <hex>` naming the digest the preview
+ * fields, body); it lifts only on that digest typed back at a terminal, or `digest=<hex>` naming the digest the preview
  * printed. A bare `--yes` names no digest and lifts nothing. The door re-reads the row and refuses `kahua-lift-unstaged` or
  * `kahua-lift-digest-moved`, so the signed lift carries exactly the row the person read. A lift names its taint list
- * (`--taint none` when every input came from inside the face); the row reads the lōkahi cap off the vessel's island and
+ * (`taint=none` when every input came from inside the face); the row reads the lōkahi cap off the vessel's island and
  * the operator's grant out of sealed custody, and refuses by name. After a root rotation the earlier items read in
- * history alone until the operator's hand `carry`s them (named cids, or `--all`): one root-signed act at the current
+ * history alone until the operator's hand `carry`s them (named cids, or `all=true`): one root-signed act at the current
  * epoch. An AI seat proposes and stages (`propose`, `stage`, or the MCP's `kahua_propose`); its session never runs a
  * lift, a withdraw or a carry, and no MCP tool carries.
  *
@@ -21,8 +21,8 @@
  * carry runs in the lei pattern, and the host shim walks it (`tools/lares-container.sh kahua lift|withdraw|carry …`): `--terms`
  * runs every gate and prints ONE stdout line (`{"face","kind","record"}`: the one unsigned act its root signs), opening no
  * route; the pūlama's `sign '<terms>'` checks it, reads the route on the operator's terminal and its face root signs it;
- * `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body.
- * Neither `--terms` nor `--land` asks the passphrase on the vessel.
+ * `land='<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body.
+ * Neither `terms=true` nor `land=` asks the passphrase on the vessel.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -39,9 +39,9 @@ const ACTS: ReadonlySet<string> = new Set([...KAHUA_VERBS, "list"]);
 
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
-  if (args.flags["face"] !== undefined) throw new Error("face-malformed: --face needs a whole persona index");
+  if (args.flags["face"] !== undefined) throw new Error("face-malformed: face= needs a whole persona index");
   if (raw === undefined) return {};
-  if (!/^(?:0|[1-9][0-9]*)$/.test(raw) || !Number.isSafeInteger(Number(raw))) throw new Error("face-malformed: --face needs a whole persona index from 0");
+  if (!/^(?:0|[1-9][0-9]*)$/.test(raw) || !Number.isSafeInteger(Number(raw))) throw new Error("face-malformed: face= needs a whole persona index from 0");
   return { face: Number(raw) };
 }
 
@@ -53,14 +53,14 @@ function json(raw: string | undefined, key: string): unknown {
 
 function stageArgs(args: ParsedArgs, title: string): Record<string, unknown> {
   const text = args.options["text"], file = args.options["file"];
-  if ((text === undefined) === (file === undefined)) throw new Error("kahua-stage-text: name the row's body by --text or --file (one of them)");
+  if ((text === undefined) === (file === undefined)) throw new Error("kahua-stage-text: name the row's body by text= or file= (one of them)");
   const fields = json(args.options["fields"], "fields");
   return { title, text: text ?? readFileSync(file!, "utf8"), ...(fields !== undefined ? { fields } : {}) };
 }
 
 function liftArgs(args: ParsedArgs, title: string): Record<string, unknown> {
   const taint = args.options["taint"];
-  if (taint === undefined) throw new Error("kahua-act-refused: taint: name --taint (`none` when every input came from inside the face)");
+  if (taint === undefined) throw new Error("kahua-act-refused: taint: name taint= (`none` when every input came from inside the face)");
   if (args.options["text"] !== undefined || args.options["file"] !== undefined || args.options["fields"] !== undefined) {
     throw new Error("kahua-lift-unstaged: a lift carries a staged row's own body and fields; stage them first (`lares kahua stage`)");
   }
@@ -75,15 +75,15 @@ function liftArgs(args: ParsedArgs, title: string): Record<string, unknown> {
   };
 }
 
-/** The hand mode a line names: `--terms` (read the one body the pūlama signs), `--land` (land its signed record), or neither. */
+/** The hand mode a line names: `terms=true` (read the one body the pūlama signs), `land=` (land its signed record), or neither. */
 type HandMode = { readonly terms: true } | { readonly signed: unknown; readonly face: number } | null;
 
 /** One pūlama `sign` answer's signed kahua act and the face it signed for; a refusal or another kind lands nothing. */
 export function kahuaLanding(raw: string, named: number | undefined): { readonly signed: unknown; readonly face: number } {
   let read: unknown;
-  try { read = JSON.parse(raw); } catch { throw new Error("kahua-hand-malformed: --land's answer reads as no JSON"); }
+  try { read = JSON.parse(raw); } catch { throw new Error("kahua-hand-malformed: land='s answer reads as no JSON"); }
   const r = (typeof read === "object" && read !== null && !Array.isArray(read) ? read : {}) as Record<string, unknown>;
-  if (r["op"] !== "sign") throw new Error("kahua-hand-malformed: --land takes the pūlama's sign answer");
+  if (r["op"] !== "sign") throw new Error("kahua-hand-malformed: land= takes the pūlama's sign answer");
   if (r["reading"] !== "signed") throw new Error(`kahua-hand-unsigned: the pūlama signed nothing (${String(r["reading"])}), so nothing lands`);
   if (r["kind"] !== "kahua-act") throw new Error(`kahua-hand-malformed: the pūlama signed a ${String(r["kind"])}, not a kahua act`);
   const face = r["face"];
@@ -113,12 +113,12 @@ export function kahuaPreviewLines(p: KahuaStagedPreview): string[] {
 }
 
 /** What a stage answer's `digest` names, said beside it (stderr; stdout keeps the door's own JSON). */
-export const STAGE_DIGEST_NOTE = "  the `digest` above names the row digest (sha256 over the row's body and fields): a lift's --digest names it. A proposal's `digest` names the body digest (sha256 over the body bytes alone), so the two differ for one row.";
-/** What `--digest` spares on a lift, and what it never spares. */
-export const LIFT_WARD_NOTE = "a lift always asks the face's passphrase at a terminal; `--digest` names the preview's row digest in place of typing it back, and spares nothing else";
+export const STAGE_DIGEST_NOTE = "  the `digest` above names the row digest (sha256 over the row's body and fields): a lift's digest= names it. A proposal's `digest` names the body digest (sha256 over the body bytes alone), so the two differ for one row.";
+/** What `digest=` spares on a lift, and what it never spares. */
+export const LIFT_WARD_NOTE = "a lift always asks the face's passphrase at a terminal; `digest=` names the preview's row digest in place of typing it back, and spares nothing else";
 
 /**
- * THE CONFIRM: the digest a lift names. `--digest` must name the preview's digest; else a terminal asks for the digest's
+ * THE CONFIRM: the digest a lift names. `digest=` must name the preview's digest; else a terminal asks for the digest's
  * first eight hex typed back; else nothing confirms, and the lift refuses `kahua-lift-unconfirmed` (a bare --yes too).
  */
 export async function confirmedDigest(preview: KahuaStagedPreview, named: string | undefined, ask: ((prompt: string) => Promise<string>) | null): Promise<string> {
@@ -126,7 +126,7 @@ export async function confirmedDigest(preview: KahuaStagedPreview, named: string
     if (named !== preview.digest) throw new Error(`kahua-lift-digest-moved: the staged row reads digest ${preview.digest}, not the ${named} named; read its preview again`);
     return named;
   }
-  if (ask === null) throw new Error("kahua-lift-unconfirmed: a lift needs eyes: read the preview and name --digest <hex> (the row digest as it printed), or type it back at a terminal (a bare --yes lifts nothing). --digest spares the typed-back digest alone: a lift always asks the face's passphrase at a terminal");
+  if (ask === null) throw new Error("kahua-lift-unconfirmed: a lift needs eyes: read the preview and name digest=<hex> (the row digest as it printed), or type it back at a terminal (a bare --yes lifts nothing). digest= spares the typed-back digest alone: a lift always asks the face's passphrase at a terminal");
   const typed = (await ask(`type the first 8 hex of the digest (${preview.digest.slice(0, 8)}…) to lift "${preview.title}", anything else lifts nothing: `)).trim().toLowerCase();
   if (typed.length < 8 || !preview.digest.startsWith(typed)) throw new Error("kahua-lift-unconfirmed: the typed digest did not match; nothing lifted");
   return preview.digest;
@@ -146,10 +146,10 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
   if (!act || !ACTS.has(act)) return refuseUsage(args, "kahua", helpLines("kahua"), act ? `unknown sub-verb "${act}"` : "name a sub-verb");
   try {
     let face = faceOf(args);
-    // THE HAND AT THE PŪLAMA: `--terms` and `--land` name a lift, a withdraw or a carry, never both.
+    // THE HAND AT THE PŪLAMA: `terms=true` and `land=` name a lift, a withdraw or a carry, never both.
     const land = args.options["land"];
-    if (args.flags["land"] !== undefined) throw new Error("kahua-hand-malformed: --land takes the pūlama's sign answer");
-    if (args.flags["terms"] === true && land !== undefined) throw new Error("kahua-hand-malformed: name --terms or --land, never both");
+    if (args.flags["land"] !== undefined) throw new Error("kahua-hand-malformed: land= takes the pūlama's sign answer");
+    if (args.flags["terms"] === true && land !== undefined) throw new Error("kahua-hand-malformed: name terms=true or land=, never both");
     if ((args.flags["terms"] === true || land !== undefined) && act !== "lift" && act !== "withdraw" && act !== "carry") throw new Error(`kahua-hand-malformed: only a lift, a withdraw or a carry signs at the pūlama's hand, never ${act}`);
     const hand: HandMode = args.flags["terms"] === true ? { terms: true } : land !== undefined ? kahuaLanding(land, face.face) : null;
     if (hand && "face" in hand) face = { face: hand.face };
@@ -160,7 +160,7 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
       case "mint": door = "kahua-mint"; payload = {}; break;
       case "propose": {
         const proposals = json(args.options["proposals"], "proposals");
-        if (!Array.isArray(proposals)) throw new Error("kahua-proposal-proposals: name --proposals as a JSON list of {title, revision, text|digest, taint}");
+        if (!Array.isArray(proposals)) throw new Error("kahua-proposal-proposals: name proposals= as a JSON list of {title, revision, text|digest, taint}");
         door = "kahua-propose"; payload = { proposals };
         break;
       }
@@ -179,14 +179,14 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
       case "withdraw": door = "kahua-withdraw"; payload = { target: need("a revision cid") }; break;
       case "carry": {
         const cids = args.positional.slice(1), all = args.flags["all"] === true;
-        if (all === (cids.length > 0)) throw new Error("carry: name the revision cids that keep standing, or --all (never both)");
+        if (all === (cids.length > 0)) throw new Error("carry: name the revision cids that keep standing, or all=true (never both)");
         door = "kahua-carry"; payload = all ? { all: true } : { cids };
         break;
       }
       case "list": throw new Error("kahua list moved to `kahua get [<title>]`");
       case "get":
       default:
-        if (!target && args.flags["history"] === true) throw new Error("get --history needs a title");
+        if (!target && args.flags["history"] === true) throw new Error("get history=true needs a title");
         door = "kahua-read";
         payload = target ? { action: "get", title: target, ...(args.flags["history"] === true ? { history: true } : {}) } : { action: "list", ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) };
     }

@@ -10,7 +10,7 @@
  *
  * HOST VERBS STAY HOME. `home` and `repo` edit this machine's homes and checkout; `help` and every `--help` render
  * from the table; `mempalace` tends the guest comparator in this home;
- * `meme normalize|check` and `meme project <file> --to md` run over a file with no daemon; `surface` keeps the face pools,
+ * `meme normalize|check` and `meme project <file> to=md` run over a file with no daemon; `surface` keeps the face pools,
  * which rest on this disk, and asks the vessel only for the face no label settles. They never forward.
  *
  * NEVER INSIDE THE VESSEL. The image sets `LAR_ROOT=/lar` and `LARES_IN_CONTAINER=1`; either keeps the route local, so
@@ -33,7 +33,7 @@ export { locateShim, SHIM_ABSENT_EXIT };
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join, posix, resolve } from "node:path";
-import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
+import { parseArgs, ArgsError, isCallWord, type ParsedArgs } from "./parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "./surface-env.js";
 import { ownPeerKind } from "@lararium/node";
 type PeerKind = ReturnType<typeof ownPeerKind>;
@@ -62,7 +62,7 @@ const SHIM_VERB_HELP: Readonly<Record<string, { readonly usage: string; readonly
   up:    { usage: "lares up [--capture <dir>]... [--workspace <name>=<dir>]...", about: ["Stand the vessel's container (detached) and wait until it answers healthy; then `vault unlock` on this terminal.", "A vessel stands holding no key: every start returns it to the floor until a person unlocks it."] },
   down:  { usage: "lares down [compose-down args]", about: ["Stop the vessel and remove its container; the house stays in LARES_HOUSE.", "It asks the standing vessel first what a stop would drop (`vessel census`) and refuses on any item, naming the act that lands it; a save at rest under the vessel's key reads kept and stops with the house."] },
   reset: { usage: "lares reset", about: ["Clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after confirmation at a terminal.", "Sensoriums, projections, library and config stay."] },
-  found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `--hearth` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares vessel found --help` names its flags."] },
+  found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `hearth=true` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares vessel found --help` names its flags."] },
   logs:  { usage: "lares logs [compose-logs args]", about: ["Read the vessel's log (`-f` follows it)."] },
   build: { usage: "lares build [compose-build args]", about: ["Rebuild the vessel image from the committed checkout and stamp HEAD as its revision label.", "A dirty checkout, or none, refuses: the label must name a real commit."] },
   pulama: { usage: "lares pulama light [--admit] | name-successor [<rev>] | keeper-land | status | lock | admit [face…] | …", about: ["The pūlama's hand verbs, on this terminal (the shim reads no route; the pūlama does). `light --admit` lights and admits the reported image under one route (the struck fire).", "`name-successor [<rev>]` names the keeper's successor (PANI, the one who fills a place): it prints the successor closure D′ and the source tree, offers the clean-tree re-check (tools/pulama-closure.mjs on a fresh archive), then the pūlama proves your route; the next `lares rite kukulu` then hands the living fire to it unattended.", "A standing kukulu lei with returns left on the line licenses that successor itself: a no-terminal `lares rite kukulu` rests it with no route, over a revision reachable from origin, green in CI, built into an image whose closure label matches, and the rite's own return spends on it; every face the vessel holds of one device.", "`status` closes on the kūkulu reading, one line read off the checkout's closure against the running pūlama's, the pūlama's own status and the kukulu lei on the checkout's branch: `runs alone`, `keeper vests under …`, or `needs your hand: <why>`, through the gates a no-terminal `lares rite kukulu` walks."] },
@@ -136,7 +136,7 @@ function memeLocal(args: ParsedArgs): boolean {
 function readsCredential(args: ParsedArgs): boolean {
   const sub = args.positional[0];
   if (args.command === "found") return true;
-  // A rehive reads the face's own route at the terminal (`vault rehive --face N`); a recard the face's own too (`vault recard --face N`; under a pūlama it asks none, the route proving at the pūlama's hand door).
+  // A rehive reads the face's own route at the terminal (`vault rehive face=N`); a recard the face's own too (`vault recard face=N`; under a pūlama it asks none, the route proving at the pūlama's hand door).
   if (args.command === "vault") return sub === "unlock" || sub === "bind" || sub === "unbind" || sub === "rehive" || sub === "recard";
   if (args.command === "vessel") return sub === "found" || sub === "rotate";
   // A face founds under its own ward route, read at the terminal (`persona new N`, the face's custody born under it).
@@ -156,9 +156,14 @@ export function decideRoute(input: RouteInput): Route {
   // (`lares act lar:///…`, landing 9, a call head with no COMMANDS row) forward.
   const called = head === "-" || head === "act" || (head ?? "").startsWith("lar:///");
   if (head === undefined || (head.startsWith("-") && !called) || asksHelp(argv)) return "local";
+  // A SHIM VERB CARRIES THE SHIM'S OWN ARGV (`rebuild --at <rev>`, `up --workspace <name>=<dir>`, compose's args): the CLI's
+  // token rule never reads it, so its dashes forward whole instead of refusing here.
   let args: ParsedArgs;
-  try { args = parseArgs(argv); }
-  catch (err) { if (err instanceof ArgsError) return "local"; throw err; }
+  if (SHIM_VERBS.has(head)) args = { command: head, positional: argv.slice(1), options: {}, flags: {} };
+  else {
+    try { args = parseArgs(argv); }
+    catch (err) { if (err instanceof ArgsError) return "local"; throw err; }
+  }
   const name = args.command as string;
   if (!SHIM_VERBS.has(name) && !called) {
     if (!input.commands.includes(name)) return "local";
@@ -202,12 +207,12 @@ export function decideRoute(input: RouteInput): Route {
 const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
   ingest:  ["source"],
   meme:    ["file", "out", "root"],
-  bag:     ["dir", "root"],                         // bag repo add --root <path>; --dir <bags dir>
+  bag:     ["dir", "root"],                         // bag repo add root=<path>; dir=<bags dir>
   vault:   ["out"],
   library: ["out"],
   fleet:   ["out"],
-  nexus:   ["out", "carry", "from", "source"],      // --from <partial|anchor file>; publish --source <dir>
-  edge:    ["from"],                                // cosign --from <file>
+  nexus:   ["out", "carry", "from", "source"],      // from=<partial|anchor file>; publish source=<dir>
+  edge:    ["from"],                                // cosign from=<file>
   circle:  ["card"],
   handle:  ["card"],
   vessel:  ["genesis", "root", "restore", "storage"],
@@ -339,25 +344,18 @@ export function translatePaths(input: TranslateInput): { argv: string[] } | { er
     return value;
   };
 
-  // Walk the raw tokens the way parseArgs reads them, so each value keeps its own spelling and place.
+  // Walk the raw tokens the way parseArgs reads them, so each value keeps its own spelling and place. A door line's params
+  // stand outside its positional count; a call line's params count, since the call door reads them in place.
+  const call = isCallWord(name);
   const out: string[] = [argv[0]!];
   let positional = 0;
   let endOfOptions = false;
   for (let i = 1; i < argv.length; i++) {
     const tok = argv[i]!;
     if (!endOfOptions && tok === "--") { endOfOptions = true; out.push(tok); continue; }
-    if (!endOfOptions && tok.startsWith("--")) {
-      const body = tok.slice(2);
-      const eq = body.indexOf("=");
-      if (body.startsWith("no-")) { out.push(tok); continue; }
-      if (eq !== -1) { const key = body.slice(0, eq); out.push(`--${key}=${optionValue(key, body.slice(eq + 1))}`); continue; }
-      if (BOOLEAN_FLAGS.has(body)) { out.push(tok); continue; }
-      const next = argv[i + 1];
-      if (next !== undefined && !next.startsWith("--")) { out.push(tok, optionValue(body, next)); i++; continue; }
-      out.push(tok);
-      continue;
-    }
-    const param = /^([a-z][a-z0-9-]*)=(.*)$/s.exec(tok);
+    if (!endOfOptions && tok.startsWith("--")) { out.push(tok); continue; }
+    const param = endOfOptions ? null : /^([a-z][a-z0-9-]*)=(.*)$/s.exec(tok);
+    if (param !== null && !call) { out.push(`${param[1]}=${optionValue(param[1]!, param[2]!)}`); continue; }
     // A VALUE WITH A URL SCHEME (`source-uri=https://…`) names no host file: it rides as written.
     if (param !== null && (PATH_PARAMS[name] ?? []).includes(param[1]!)) out.push(`${param[1]}=${URL_SCHEME.test(param[2]!) ? param[2]! : toVessel(param[2]!)}`);
     else if (paths.includes(positional)) out.push(toVessel(tok));

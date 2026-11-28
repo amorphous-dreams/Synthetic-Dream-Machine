@@ -5,7 +5,7 @@ import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 
 export class FaceSigningRefused extends Error {
   constructor(readonly why: "face-not-named" | "face-atom-absent") {
-    super(`[face-signing] ${why}: select and unlock a face with \`lares vault unlock --face N\``);
+    super(`[face-signing] ${why}: select and unlock a face with \`lares vault unlock face=N\``);
     this.name = "FaceSigningRefused";
   }
 }

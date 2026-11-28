@@ -1,5 +1,5 @@
 /**
- * `lares vessel fresher --bag <slug|uri>` — each working copy that shadows a canon record fresher than the one it forked
+ * `lares vessel fresher bag=<slug|uri>` — each working copy that shadows a canon record fresher than the one it forked
  * from, with the copy's base hash beside the canon hash standing now; then each copy that names no base and differs from
  * canon (base unknown), for review. It reads alone, over the daemon's `fresher-canon`
  * verb a page at a time; a person who wants the fresher canon removes the copy with the ordinary verbs.

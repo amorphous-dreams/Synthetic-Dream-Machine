@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.rite.offers"
 
 ! face.rite.offers ~ offer ~ rite-offer in the standing vessel
 
-`lares rite offer --branch <name> --head <commit> --image <digest>` runs `rite-offer` in the standing vessel between the build and the lowering: it gathers every lent face's line, signs one vouch per face over the image the host built, and rests the offer the next vessel carries to the pūlama. A keeper move rides as `--keeper-to <64 hex> --keeper-next sha256:<64 hex>`, both or neither. `--base` names the resting offer's hash this line read (`rite receipts --rite kukulu` answers it as `offerBase`); an overwrite without it refuses `conflict`.
+`lares rite offer branch=<name> head=<commit> image=<digest>` runs `rite-offer` in the standing vessel between the build and the lowering: it gathers every lent face's line, signs one vouch per face over the image the host built, and rests the offer the next vessel carries to the pūlama. A keeper move rides as `--keeper-to <64 hex> --keeper-next sha256:<64 hex>`, both or neither. `--base` names the resting offer's hash this line read (`rite receipts --rite kukulu` answers it as `offerBase`); an overwrite without it refuses `conflict`.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KKsI1KQbPI_NQ1t1__qUfhK6PAw_it7l7p49i6KtksI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cf4ny6lvDNpOQv61TNg6P_y9I2xepEfLfcYOtRql3BE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

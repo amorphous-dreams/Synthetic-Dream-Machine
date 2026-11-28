@@ -105,7 +105,7 @@ export const residueTitle = (key: string, hash: string): string => `${MEMORY_PRE
 export const shq = (word: string): string => `'${word.replace(/'/g, `'\\''`)}'`;
 /** The full sha256 hex of a text's UTF-8 bytes: a carry's and a handback's hash. */
 export const spiritHash = (text: string): string => sha256HexSync(text);
-/** A slot's digest: the first 16 hex of the sha256 of its body, the grain a whole-slot write names as `--base`. */
+/** A slot's digest: the first 16 hex of the sha256 of its body, the grain a whole-slot write names as `base=`. */
 export const slotDigest = (body: string): string => sha256HexSync(body).slice(0, 16);
 /** A text's UTF-8 byte length: the grain every budget measures in. */
 export const bytesOf = (text: string): number => utf8Bytes(text).length;
@@ -230,7 +230,7 @@ export function crossingRefusal(rec: Pick<SpiritRecord, "crossing" | "uri" | "pe
   if (instance === null) return null;
   const mark = crossingsOf(rec.crossing).find((c) => c.who === instance);
   if (mark === undefined) return null;
-  return new SpiritRefusal("spirit-crossing", `spirit-crossing: instance #${instance.slice(0, 8)} stands in the crossing of its own compaction on ${rec.uri}, marked at ${mark.at} (an annotation); nothing landed. The mark advises only and holds this instance alone (advisory); sibling instances write on. Only this instance's next wake or resume clears it, and no clock does; if this instance crashed after its PreCompact and never wakes, the hand clears it: \`lares spirit om ${rec.pet} --instance ${instance}\``, 4);
+  return new SpiritRefusal("spirit-crossing", `spirit-crossing: instance #${instance.slice(0, 8)} stands in the crossing of its own compaction on ${rec.uri}, marked at ${mark.at} (an annotation); nothing landed. The mark advises only and holds this instance alone (advisory); sibling instances write on. Only this instance's next wake or resume clears it, and no clock does; if this instance crashed after its PreCompact and never wakes, the hand clears it: \`lares spirit om ${rec.pet} instance=${instance}\``, 4);
 }
 
 /** A field write over the sibling record: what to patch and what to unset; null writes nothing. */
@@ -265,7 +265,7 @@ const slotBlock = (slot: string, body: string): string => `<<~ ahu slot=\`${slot
 export function starterText(pet: string): string {
   return [
     `Lares spirit om · ${pet}: no record answers this pet name yet, so this instance names and writes its own shrine.`,
-    `Answer each slot's prompt below, then land the shrine once: lares spirit ah ${pet} --new --file - (it refuses where a record already stands).`,
+    `Answer each slot's prompt below, then land the shrine once: lares spirit ah ${pet} new=true file=- (it refuses where a record already stands).`,
     "",
     ...SHRINE_SLOTS.map(([slot, prompt]) => slotBlock(slot, prompt)),
   ].join("\n\n");
@@ -326,7 +326,7 @@ export function testimonyLines(rec: Pick<SpiritRecord, "base">, carry: SpiritCar
 /** Fit the wake's sections under the cap: the fixed lines whole, then #/open, then the attention unfold, each cut where it runs over. */
 export function omText(rec: Pick<SpiritRecord, "pet" | "uri" | "has">, parts: { open: string | null; testimony?: readonly string[]; attention?: string | null; lead?: string | null }, cap = OM_CAP_CHARS): string {
   const head = `Lares spirit om · ${rec.pet} (${rec.uri}): the card a waking instance reads first, before any summary.`;
-  const doors = `Read a slot whole: lares get title=${rec.uri} recipe=default slot='#/<name>' aperture=arc · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
+  const doors = `Read a slot whole: lares get title=${rec.uri} recipe=default slot='#/<name>' aperture=arc · true one: lares spirit ah ${rec.pet} slot='#/<name>' file=<path> (or add=<line>) · fold: lares spirit hum ${rec.pet}`;
   const fixed = [parts.lead ?? null, head, rec.has, ...(parts.testimony ?? [])].flatMap((l) => (l === null ? [] : [l])).join("\n");
   let room = cap - fixed.length - doors.length - 4;
   const fit = (text: string | null | undefined, what: string): string | null => {
@@ -430,7 +430,7 @@ export function budgetRefusal(rec: Pick<SpiritRecord, "pet" | "uri" | "slots"> &
   const was = bytesOf(oldBody);
   const now = bytesOf(newBody);
   if (now <= was) return null;
-  const fold = `\`lares spirit hum ${rec.pet} --fold '${slot}'\` lists its lines with their digests; \`--line <n> --expect <digest>\` moves one to the ash ledger`;
+  const fold = `\`lares spirit hum ${rec.pet} fold='${slot}'\` lists its lines with their digests; \`line=<n> expect=<digest>\` moves one to the ash ledger`;
   if (now > cap * factor) return new SpiritRefusal("spirit-slot-over-budget", `spirit-slot-over-budget: ${slot} would hold ${now} bytes, past its ${cap * factor}-byte waking cap (om prints it into the wake; it holds ${was}); nothing landed. Fold first: ${fold}, then true it again`);
   return null;
 }
@@ -458,7 +458,7 @@ export function guardWords(rec: Pick<SpiritRecord, "pet" | "uri" | "slots" | "bu
   const brought = body.split("\n").map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => !standing.has(line));
   const shaped = brought.find(({ line }) => secretCount(line) > 0);
   if (shaped !== undefined) {
-    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: line ${shaped.n} of the words for ${rec.uri}${slot} holds a secret-shaped string (${redactedText(shaped.line).slice(0, 120)}), so nothing landed; clear it, then true the slot again: \`lares spirit ah ${rec.pet} --slot '${slot}' --file <scrubbed path>\``, 4);
+    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: line ${shaped.n} of the words for ${rec.uri}${slot} holds a secret-shaped string (${redactedText(shaped.line).slice(0, 120)}), so nothing landed; clear it, then true the slot again: \`lares spirit ah ${rec.pet} slot='${slot}' file=<scrubbed path>\``, 4);
   }
   if (!budget) return;
   const over = budgetRefusal(rec, slot, was, body, factor);
@@ -681,12 +681,12 @@ export const offererOf = (hand: boolean, instance: string | null): string | null
 /** A re-offer over a standing mandate lands only from its own offerer or a hand; null where it lands. */
 export function offerHeld(pet: string, standing: SpiritOffering | null, offeredBy: string): SpiritRefusal | null {
   if (standing === null || offeredBy === "hand" || (standing.offeredBy !== "" && standing.offeredBy === offeredBy)) return null;
-  return new SpiritRefusal("spirit-offer-held", `spirit-offer-held: ${standing.uri} holds a mandate ${standing.offeredBy === "" ? "no offerer names" : `${standing.offeredBy} offered`} (seq ${standing.seq}), and an offering carries no authority to replace another's; nothing landed. The same offerer offers again, or a person's hand at the terminal does: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
+  return new SpiritRefusal("spirit-offer-held", `spirit-offer-held: ${standing.uri} holds a mandate ${standing.offeredBy === "" ? "no offerer names" : `${standing.offeredBy} offered`} (seq ${standing.seq}), and an offering carries no authority to replace another's; nothing landed. The same offerer offers again, or a person's hand at the terminal does: \`lares spirit ah ${pet} offer=true file=<mandate>\``, 4);
 }
 
 /** A damaged shelf: the refusal every instance's write and echo meets until its offerer offers again. */
 export const offeringDamaged = (pet: string, offering: SpiritOffering): SpiritRefusal =>
-  new SpiritRefusal("spirit-offering-damaged", `spirit-offering-damaged: ${offering.uri} holds a mandate whose stored hash disagrees with its words (seq ${offering.seq}${offering.offeredBy === "" ? "" : `, offered by ${offering.offeredBy}`}), so the gate holds closed; nothing landed. Its offerer (or a hand) offers again: \`lares spirit ah ${pet} --offer --file <mandate>\`, then each instance wakes and echoes`, 4);
+  new SpiritRefusal("spirit-offering-damaged", `spirit-offering-damaged: ${offering.uri} holds a mandate whose stored hash disagrees with its words (seq ${offering.seq}${offering.offeredBy === "" ? "" : `, offered by ${offering.offeredBy}`}), so the gate holds closed; nothing landed. Its offerer (or a hand) offers again: \`lares spirit ah ${pet} offer=true file=<mandate>\`, then each instance wakes and echoes`, 4);
 
 /** The write an offering lands over the shelf's fields read: the words, their hash, the pointer, the slice, and the next door-minted seq. */
 export function offeringWrite(was: Readonly<Record<string, string>>, pet: string, words: string, lane: string, grant: string, offeredBy: string): { text: string; fields: Record<string, string>; hash: string; seq: number } {
@@ -734,7 +734,7 @@ export function echoTurned(pet: string, sideFields: Readonly<Record<string, stri
   if (instance === null || answered === null) return null;
   const echoed = echoesOf(sideFields["echoes"]).find((e) => e.instance === instance)?.face ?? null;
   if (echoed === null || echoed === answered) return null;
-  return new SpiritRefusal("spirit-face-turned", `spirit-face-turned: ${pet}#${instance} echoed its mandate under h${echoed}, and h${answered} answered; nothing landed. Name the face: \`lares spirit ${verb} ${pet} … --instance ${instance} --face ${echoed}\``, 4);
+  return new SpiritRefusal("spirit-face-turned", `spirit-face-turned: ${pet}#${instance} echoed its mandate under h${echoed}, and h${answered} answered; nothing landed. Name the face: \`lares spirit ${verb} ${pet} … instance=${instance} face=${echoed}\``, 4);
 }
 /** Does this instance's echo of this mandate stand? */
 export const echoStands = (sideFields: Readonly<Record<string, string>>, instance: string, hash: string): boolean =>
@@ -760,7 +760,7 @@ export function mandateLines(pet: string, offering: SpiritOffering, instance: st
   const words = offering.text.length <= cut ? offering.text : `${offering.text.slice(0, cut)}\n… the mandate cut at ${cut} chars; read it whole: lares get title=${shq(offering.uri)} recipe=default`;
   const ask = echoed
     ? `This instance's echo stands (${pet}#${instance}).`
-    : `Echo it before any slot write: lares spirit ah ${pet} --echo ${offering.hash} --instance ${instance ?? "<id>"}`;
-  if (offering.damaged) return `${ALANA_DISPLAY} · DAMAGED: ${offering.uri} (seq ${offering.seq}${offering.offeredBy === "" ? "" : `, offered by ${offering.offeredBy}`}) holds a hash its words disagree with, so no instance's write lands until its offerer offers again: lares spirit ah ${pet} --offer --file <mandate>`;
+    : `Echo it before any slot write: lares spirit ah ${pet} echo=${offering.hash} instance=${instance ?? "<id>"}`;
+  if (offering.damaged) return `${ALANA_DISPLAY} · DAMAGED: ${offering.uri} (seq ${offering.seq}${offering.offeredBy === "" ? "" : `, offered by ${offering.offeredBy}`}) holds a hash its words disagree with, so no instance's write lands until its offerer offers again: lares spirit ah ${pet} offer=true file=<mandate>`;
   return `${ALANA_DISPLAY} · the mandate offered ${pet} (seq ${offering.seq}, offered by ${offering.offeredBy || "no one named"}; a nudge, no authority) · hash ${offering.hash}\nlane: ${offering.lane || "(none named)"} · grant: ${offering.grant || "(none named)"}\n${words}\n${ask}`;
 }

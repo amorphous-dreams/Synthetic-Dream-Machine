@@ -112,7 +112,7 @@ describe("every parse site of a prose-first read names --json", () => {
     expect(shellBreaches(`  compose exec -T lares node "$CLI" vault status --json 2>/dev/null | grep -q '"unlocked"'`, PROSE_FIRST_READS)).toEqual([]);
     expect(shellBreaches(`    if waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null; then`, PROSE_FIRST_READS)).toEqual([]);
     expect(shellBreaches(`  $null | & docker compose @Base exec -T lares node $Cli wear $face`, PROSE_FIRST_READS)).toEqual([]);
-    expect(argvBreaches(`const j = JSON.parse(run(root, ["vessel", "read", "--root", root]).stdout);`, PROSE_FIRST_READS)).toHaveLength(1);
+    expect(argvBreaches(`const j = JSON.parse(run(root, ["vessel", "read", \`root=\${root}\`]).stdout);`, PROSE_FIRST_READS)).toHaveLength(1);
     expect(argvBreaches(`const j = JSON.parse(run(root, ["vessel", "read", "--json"]).stdout);`, PROSE_FIRST_READS)).toEqual([]);
   });
 });

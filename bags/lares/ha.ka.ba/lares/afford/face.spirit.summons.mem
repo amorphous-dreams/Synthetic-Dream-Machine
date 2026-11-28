@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.spirit.summons"
 
 ! face.spirit.summons ~ summon ~ the house starts its own arm
 
-`lares spirit summon <pet>#<n> --mandate <uri>@<hash>` reads and verifies the mandate, checks it names this instance and the answering face, reads custody (a hand, or the coordinator's own mandate granting it) and claims a lane on the coordinator's ledger, then lands the summons edge ahead of the launch, so no process stands that the house holds no record of. The host launch cap (`tools/summon-launch.mjs`) starts the process detached; the edge records what it launched holding. A retry that finds the edge naming its launch starts nothing. A launch that started nothing frees its lane; one whose receipt never came keeps it.
+`lares spirit summon <pet>#<n> mandate=<uri>@<hash>` reads and verifies the mandate, checks it names this instance and the answering face, reads custody (a hand, or the coordinator's own mandate granting it) and claims a lane on the coordinator's ledger, then lands the summons edge ahead of the launch, so no process stands that the house holds no record of. The host launch cap (`tools/summon-launch.mjs`) starts the process detached; the edge records what it launched holding. A retry that finds the edge naming its launch starts nothing. A launch that started nothing frees its lane; one whose receipt never came keeps it.
 
 
 THE GUEST'S REACH: a summoned instance arrives as a guest and holds the guest's reach where its mandate names none (the lares doors, Read, Edit, Write, Grep, Glob, and the shell for git, node and pnpm: one table, `GUEST_REACH` in `@lararium/mesh/spirit-summons`); the mandate's hash-covered `--allowed-tools` shapes it, a bare comma-joined list naming the reach exactly (narrowing for a reader) and a list led by `+` widening the guest's reach (for a builder), `mandate-allowed-tools-malformed` otherwise; the edge records the reach as `launched-reach`.
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QjHK77hhF7qrwMg5fIB_d3XkOJermMbK3lBvswRxs9Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d2cKP56qTB1TkzU7HLy-yq7iXhikm15yha2AHzS4OOA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

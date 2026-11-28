@@ -110,7 +110,7 @@ interface StoreClaimShape {
 
 /**
  * A held claim on a store's rendezvous name. A `"vessel"` holder's claim BEGINS A VESSEL LIFE: `life` names it, the fresh
- * id this claim minted (`vessel-life.ts`), which every fence on a life reads from the claim itself (a `--held` pin, a
+ * id this claim minted (`vessel-life.ts`), which every fence on a life reads from the claim itself (a `held=true` pin, a
  * committed receipt fact, the session contract's `ownerEpoch`, the pūlama hello), never re-read off disk. A `"direct"`
  * one-shot act begins no life, so it carries no `life` at all.
  */
@@ -172,7 +172,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
       const claim = await bindClaim(storageDir, holder, refuse, opts.parkLimit ?? PARK_LIMIT, opts);
       // A VESSEL LIFE BEGINS HERE, AND ONLY FOR A VESSEL: its claim mints the life's id, inside the claim it already
       // holds. A "direct" one-shot CLI act claims this same name for one command and releases it moments later, and
-      // begins no life, so a `--held` pin outlives every unrelated `lares` invocation.
+      // begins no life, so a `held=true` pin outlives every unrelated `lares` invocation.
       if (holder === "vessel") {
         // A MINT THAT THROWS BEGINS NO LIFE: the claim it bound releases before the fault rises, so the next claim stands.
         let life: string;

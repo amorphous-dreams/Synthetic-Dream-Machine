@@ -55,7 +55,7 @@ export async function runWalkState(): Promise<readonly WalkReading[]> {
  */
 export async function runWalkTake(opts: {
   readonly carried: string; readonly dialGate?: string | null;
-  /** The face that walks (`--face N`); absent, the one face standing open. */
+  /** The face that walks (`face=N`); absent, the one face standing open. */
   readonly face?: number;
 }): Promise<{ readonly gatePubKey: string; readonly nexusAid: string; readonly relay: string | null; readonly leaf: string }> {
   const invite = decodeInvite(opts.carried);
@@ -79,7 +79,7 @@ export async function runWalkTake(opts: {
     throw new WalkRefusal("the invite names no relay to dial — ask its giver for one that carries where the hearth answers");
   }
   const leaf = await mintFaceNexusLeaf(invite.nexusAid, face);
-  if (!leaf) throw new WalkRefusal("this vessel holds no root for the face that would walk — a walker walks as a face it founded: name one (--face N)");
+  if (!leaf) throw new WalkRefusal("this vessel holds no root for the face that would walk — a walker walks as a face it founded: name one (face=N)");
   // THE KEEP COMMITS ONE HEARTH. The list above reads before the keep, so two takes for two hearths could each
   // read no other hearth; the store checks again inside the custody hold that seals the row.
   const taken = await takeInvite(nodeWalkStore({ face, oneHearth: true }), opts.carried).catch((err: unknown) => {

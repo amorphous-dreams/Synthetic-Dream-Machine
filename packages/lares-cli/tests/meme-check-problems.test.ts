@@ -48,7 +48,7 @@ beforeAll(() => {
 describe("meme check --format=problems — the goldens", () => {
   for (const n of NAMES) {
     test(`${n}: the exact lines, 1-based, and the exit the human seat gives`, () => {
-      const r = lares(["meme", "check", "--format=problems", `${n}.mem`]);
+      const r = lares(["meme", "check", "format=problems", `${n}.mem`]);
       expect(r.stderr).toBe("");
       expect(r.stdout).toBe(GOLDEN[n].lines.map((l) => `${l}\n`).join(""));
       expect(r.code).toBe(GOLDEN[n].code);
@@ -56,25 +56,25 @@ describe("meme check --format=problems — the goldens", () => {
   }
 
   test("one run over every fixture prints each file's lines in the order named, and nothing for the clean one", () => {
-    const r = lares(["meme", "check", "--format=problems", ...NAMES.map((n) => `${n}.mem`)]);
+    const r = lares(["meme", "check", "format=problems", ...NAMES.map((n) => `${n}.mem`)]);
     expect(r.stdout).toBe(NAMES.flatMap((n) => GOLDEN[n].lines).map((l) => `${l}\n`).join(""));
     expect(r.code).toBe(1);
   });
 
   test("the spaced spelling `--format problems` reads the same", () => {
-    const r = lares(["meme", "check", "--format", "problems", "torn.mem"]);
+    const r = lares(["meme", "check", "format=problems", "torn.mem"]);
     expect(r.stdout).toBe(GOLDEN.torn.lines.map((l) => `${l}\n`).join(""));
   });
 
   test("an unknown format refuses as usage, naming the one it reads", () => {
-    const r = lares(["meme", "check", "--format=json", "torn.mem"]);
+    const r = lares(["meme", "check", "format=json", "torn.mem"]);
     expect(r.code).toBe(2);
-    expect(`${r.stdout}${r.stderr}`).toMatch(/--format=problems/);
+    expect(`${r.stdout}${r.stderr}`).toMatch(/format=problems/);
   });
 
   test("beside a sibling reading, or on normalize, the format refuses as usage", () => {
-    expect(lares(["meme", "check", "--format=problems", "--gradient", "torn.mem"]).code).toBe(2);
-    expect(lares(["meme", "normalize", "--format=problems", "torn.mem"]).code).toBe(2);
+    expect(lares(["meme", "check", "format=problems", "gradient=torn.mem"]).code).toBe(2);
+    expect(lares(["meme", "normalize", "format=problems", "torn.mem"]).code).toBe(2);
   });
 });
 

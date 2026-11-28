@@ -115,7 +115,7 @@ class FakeHouse {
   sourcedSlugs = new Set<string>();
   /** One face's own working document, whichever face stands worn. */
   workingOf(relation: string): Map<string, Rec> { return this.layers.get(`${WORKING}@${relation}`) ?? new Map(); }
-  /** `lares vault unlock --face N`: the composition wears another face. */
+  /** `lares vault unlock face=N`: the composition wears another face. */
   wear(relation: string): void { this.worn = relation; }
   live(bag: string, title: string): Rec | undefined { const r = this.layer(bag).get(title); return r && !r.deleted ? r : undefined; }
   canonUnder(bag: string): string | null {
@@ -436,7 +436,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     try { await runMirrorLeg({ command: "vessel", positional: ["lay"], options: {}, flags: { apply: true, yes: true } }, v.mirrorDoors()); }
     finally { console.log = log; console.error = err; }
     expect(v.lifts).toEqual([]);
-    expect(said.join("\n")).toMatch(/--lift-kahua 1/);
+    expect(said.join("\n")).toMatch(/lift-kahua=1/);
 
     // A FILE THAT DIFFERS FROM THE STANDING HEAD reads `differs` and supersedes that head on the confirmed count.
     v.stage.set(0, [{ title: HERON, cid: sha("standing"), text: "an older heron", fields: {}, taint: [], sources: [] }]);
@@ -622,10 +622,10 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(v.workingOf(R1).get(N1)?.text).toBe(tid(N1, "face h1's memory"));
     expect(v.waveFaces.some((w) => w.face === 2)).toBe(false);
     expect(first.waiting.map((w) => [w.handleIndex, w.petname, w.folders])).toEqual([[2, pets[2], [P(`faces/${pets[2]}`)]]]);
-    expect(mirrorLines(first).out.join("\n")).toContain(`${pets[2]} stays shut: \`lares vault unlock --face 2\`, then lay again`);
+    expect(mirrorLines(first).out.join("\n")).toContain(`${pets[2]} stays shut: \`lares vault unlock face=2\`, then lay again`);
     expect(existsSync(P(`faces/${pets[2]}`))).toBe(true);
 
-    // `lares vault unlock --face 2`, then lay: h2's memory lands in h2's own document alone; h0 and h1 read quiet.
+    // `lares vault unlock face=2`, then lay: h2's memory lands in h2's own document alone; h0 and h1 read quiet.
     (v.faces as Array<BundleVesselFace>)[2] = { ...v.faces[2]!, relation: R2, kahua: [] };
     v.waveFaces = [];
     const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
@@ -703,7 +703,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     const s2 = await seedMirrors({ apply: true, doors: shut.mirrorDoors() });
     expect(s2.refusals).toEqual([]);
     expect(s2.waiting.map((w) => [w.handleIndex, w.petname, w.folders])).toEqual([[2, "referee", [P("faces/referee")]]]);
-    expect(mirrorLines(s2).out.join("\n")).toContain("referee stays shut: `lares vault unlock --face 2`, then lay again");
+    expect(mirrorLines(s2).out.join("\n")).toContain("referee stays shut: `lares vault unlock face=2`, then lay again");
     expect(existsSync(P("faces/referee/wikis/daemon/ha.ka.ba/notes/shut.tid"))).toBe(true);
   });
 
@@ -850,7 +850,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     // The steward stands worn: the engineer's personal layer waits for the engineer's own wear, and lands in no other face's layer.
     expect(first.waiting.map((w) => [w.handleIndex, w.why, w.folders])).toEqual([[1, "unworn", [P("faces/engineer/personal/lares")]]]);
     expect(v.personalOf(R0, "lares").size + v.personalOf(R1, "lares").size).toBe(0);
-    expect(mirrorLines(first).out.join("\n")).toMatch(/engineer stands unworn, and a face's own layer of a wiki lays at that face's wear: wear it \(`lares vault unlock --face 1`\)/);
+    expect(mirrorLines(first).out.join("\n")).toMatch(/engineer stands unworn, and a face's own layer of a wiki lays at that face's wear: wear it \(`lares vault unlock face=1`\)/);
     expect(mirrorsLeftWork(first), "a waiting face leaves no work for a hand beyond its wear").toBe(false);
     v.wear(R1);
     const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
@@ -1003,7 +1003,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(first.kahua.refused, "an expected wait names itself; it never reads as a refusal").toEqual([]);
     expect(first.kahua.waiting.map((p) => [p.handleIndex, p.title])).toEqual([[1, WREN]]);
     expect(mirrorsLeftWork(first)).toBe(false);
-    expect(mirrorLines(first).out.join("\n")).toMatch(/engineer \(h1\)[^\n]*lifts at its own face's wear: wear it \(`lares vault unlock --face 1`\)/);
+    expect(mirrorLines(first).out.join("\n")).toMatch(/engineer \(h1\)[^\n]*lifts at its own face's wear: wear it \(`lares vault unlock face=1`\)/);
     expect(readKahuaPending().map((p) => p.title), "the waiting item stays at the shore").toEqual([WREN]);
     // A count that names the unworn face's item too refuses before anything writes: this wear lifts one.
     await expect(seedMirrors({ apply: true, doors: doors(), liftKahua: 2 })).rejects.toThrow(/seed-kahua-count/);
@@ -1026,7 +1026,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(r.layers.flatMap((t) => t.refused)).toEqual([]);
     expect(r.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[1, "unresolved"]]);
     expect(mirrorsLeftWork(r), "an expected wait leaves the exit green").toBe(false);
-    expect(mirrorLines(r).out.join("\n")).toMatch(/engineer stands open, and its own layer lays at its own face's wear[^\n]*wear it \(`lares vault unlock --face 1`\) and lay again/);
+    expect(mirrorLines(r).out.join("\n")).toMatch(/engineer stands open, and its own layer lays at its own face's wear[^\n]*wear it \(`lares vault unlock face=1`\) and lay again/);
     expect(mirrorLines(r).err).toEqual([]);
     const other = await seedMirrors({ apply: true, doors: refusing("cap-denied: write on the layer required") });
     expect(mirrorsLeftWork(other), "CONTROL: a refusal that names no wait still asks a hand").toBe(true);

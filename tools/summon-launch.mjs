@@ -8,7 +8,7 @@
  * hash, the edge, the lane ceiling, the custody read) stands in `@lararium/mesh/spirit-summons` and `lares spirit summon`.
  *
  * THE CAP CARRIES ONE LINE AND A MODEL, NOTHING ELSE. The prompt reads
- *   wake as <pet>#<n>: lares spirit om <pet> --mandate <lar uri>@<64 hex> [--face <N>]
+ *   wake as <pet>#<n>: lares spirit om <pet> mandate=<lar uri>@<64 hex> [face=<N>]
  * and any other prompt refuses (`launch-prompt-malformed`), so no brief rides the harness: the instance reads its seed, its card
  * and its affordances from the house. `WAKE_LINE` carries the same pattern as the mesh core's (`spirit-summons.ts`); this
  * tool's suite reads that source and the core's suite runs its `wakeLine` through `launchPlan`, so neither drifts alone.
@@ -32,7 +32,7 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** The one line a launch carries (the mesh core's `wakeLine` writes it). */
-export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,128}): lares spirit om ([a-z0-9][a-z0-9-]{0,62}) --mandate (lar:\/\/\/[^\s@]+)@([0-9a-f]{64})(?: --face (0|[1-9][0-9]{0,5}))?$/;
+export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,128}): lares spirit om ([a-z0-9][a-z0-9-]{0,62}) mandate=(lar:\/\/\/[^\s@]+)@([0-9a-f]{64})(?: face=(0|[1-9][0-9]{0,5}))?$/;
 /** A model's slug: it leads with a letter or digit, so it never reads as a flag. */
 export const MODEL_SLUG = /^[A-Za-z0-9][A-Za-z0-9._:[\]-]{0,63}$/;
 
@@ -53,9 +53,9 @@ export function launchPlan({ cap, prompt, model = null, allowedTools = null }) {
   const held = Object.hasOwn(LAUNCH_CAPS, cap ?? "") ? LAUNCH_CAPS[cap] : null;
   if (held === null) throw new LaunchRefused("launch-cap-unknown", `launch-cap-unknown: this host holds ${Object.keys(LAUNCH_CAPS).join(", ")}, and the launch names "${cap ?? ""}"; nothing started. Name one: --cap ${Object.keys(LAUNCH_CAPS)[0]}`);
   const m = WAKE_LINE.exec(prompt ?? "");
-  if (m === null || m[1] !== m[3]) throw new LaunchRefused("launch-prompt-malformed", "launch-prompt-malformed: a launch carries the one wake line alone (`wake as <pet>#<n>: lares spirit om <pet> --mandate <uri>@<hash>`); nothing started. Start an instance through its mandate: `lares spirit summon <pet>#<n> --mandate <uri>@<hash>`");
+  if (m === null || m[1] !== m[3]) throw new LaunchRefused("launch-prompt-malformed", "launch-prompt-malformed: a launch carries the one wake line alone (`wake as <pet>#<n>: lares spirit om <pet> mandate=<uri>@<hash>`); nothing started. Start an instance through its mandate: `lares spirit summon <pet>#<n> mandate=<uri>@<hash>`");
   if (model !== null && !MODEL_SLUG.test(model)) throw new LaunchRefused("launch-model-malformed", "launch-model-malformed: --model names a slug (letters, digits, `.`, `_`, `:`, `-`); nothing started. Name the model as the mandate does: --model <slug>");
-  if (allowedTools !== null && !ALLOWED_TOOLS.test(allowedTools)) throw new LaunchRefused("launch-allowed-tools-malformed", "launch-allowed-tools-malformed: --allowed-tools names comma-joined tool rules (`Tool` or `Tool(spec)`, no blank line, no nested parenthesis); nothing started. Land the mandate again naming them: `lares spirit mandate <pet>#<n> --file <carrier> --allowed-tools 'Bash(lares:*)'`");
+  if (allowedTools !== null && !ALLOWED_TOOLS.test(allowedTools)) throw new LaunchRefused("launch-allowed-tools-malformed", "launch-allowed-tools-malformed: --allowed-tools names comma-joined tool rules (`Tool` or `Tool(spec)`, no blank line, no nested parenthesis); nothing started. Land the mandate again naming them: `lares spirit mandate <pet>#<n> file=<carrier> allowed-tools='Bash(lares:*)'`");
   return { cap, bin: held.bin, argv: held.argv(prompt, model, allowedTools), instance: `${m[1]}#${m[2]}`, mandate: `${m[4]}@${m[5]}` };
 }
 
@@ -69,11 +69,11 @@ export function launch(plan, { cwd = process.cwd(), log = null } = {}, deps = {}
   const spawn = deps.spawn ?? nodeSpawn;
   const holdsDir = deps.holdsDir ?? ((dir) => { try { return statSync(dir).isDirectory(); } catch { return false; } });
   const openLog = deps.openLog ?? ((file) => { mkdirSync(dirname(file), { recursive: true }); return openSync(file, "a"); });
-  if (!holdsDir(cwd)) return Promise.reject(new LaunchRefused("launch-workdir-absent", `launch-workdir-absent: this host holds no directory at ${cwd}, so nothing started. Make it, or land the mandate again naming one that stands: \`lares spirit mandate <pet>#<n> --file <carrier> --workdir /absolute/path\``));
+  if (!holdsDir(cwd)) return Promise.reject(new LaunchRefused("launch-workdir-absent", `launch-workdir-absent: this host holds no directory at ${cwd}, so nothing started. Make it, or land the mandate again naming one that stands: \`lares spirit mandate <pet>#<n> file=<carrier> workdir=/absolute/path\``));
   let out = "ignore";
   if (log !== null) {
     try { out = openLog(log); }
-    catch (error) { return Promise.reject(new LaunchRefused("launch-log-unwritable", `launch-log-unwritable: the log ${log} took no append (${String(error?.message ?? error)}), so nothing started. Land the mandate again naming a file this host writes: \`lares spirit mandate <pet>#<n> --file <carrier> --log /absolute/file\``)); }
+    catch (error) { return Promise.reject(new LaunchRefused("launch-log-unwritable", `launch-log-unwritable: the log ${log} took no append (${String(error?.message ?? error)}), so nothing started. Land the mandate again naming a file this host writes: \`lares spirit mandate <pet>#<n> file=<carrier> log=/absolute/file\``)); }
   }
   return new Promise((resolve, reject) => {
     let child;

@@ -19,7 +19,7 @@ describe("the unlock line climbs", () => {
     expect(lines[3]).toMatch(/LAST TRY/);
     expect(lines[4]).toMatch(/SPENT/);
     for (const line of lines) {
-      expect(line).toContain("lares vessel stand --restart");
+      expect(line).toContain("lares vessel stand restart=true");
       expect(line).toMatch(/until (the vessel|it) restarts/);
     }
   });

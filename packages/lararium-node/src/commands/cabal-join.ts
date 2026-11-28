@@ -119,7 +119,7 @@ export interface CabalJoinOptions {
   readonly maxVouchesPerVoucher?: number;
   readonly policy?:   CabalJoinPolicy;
   readonly dials?:    AdmissionDials;
-  /** The face whose ledger the crossing reads (`--face N`); absent, the one face standing open. */
+  /** The face whose ledger the crossing reads (`face=N`); absent, the one face standing open. */
   readonly face?:     number;
   /** The charter DOC's authority home (the door supplies `larSealHome()`): the seats a quorum act answers to. */
   readonly sealHome:   string;
@@ -165,7 +165,7 @@ export async function runCabalJoin(
   // FAIL CLOSED BEFORE A BOARD IS TOUCHED. A malformed realm reads an empty board and comes back
   // "nobody vouched" — a wrong answer wearing a plausible shape, and the shape a caller believes.
   if (!NYM_RE.test(realm)) {
-    throw new CabalJoinError(`--realm expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
+    throw new CabalJoinError(`realm= expects a 64-hex cabal-realm doc id, got "${opts.realm}"`);
   }
   if (!NYM_RE.test(applicant)) {
     throw new CabalJoinError(`the applicant reads as a 64-hex verifying key, got "${opts.applicant}"`);

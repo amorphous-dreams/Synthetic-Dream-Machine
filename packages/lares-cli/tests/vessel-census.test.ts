@@ -108,7 +108,7 @@ describe("the vessel census", () => {
       expect(reading.unasked, row.documentId).toBeUndefined();
       expect(reading.items, row.documentId).toEqual([{ kind: "held-save", refusal: "save-unnamed", documentId: row.documentId, saves: row.saves, bagId: null }]);
       expect(await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) })), row.documentId).toBe(3);
-      expect(c.out.join("\n"), row.documentId).toContain(`held-save  save-unnamed  doc ${row.documentId}  ${row.saves} save(s) in memory  bag (none mapped)  (no map or roster names it, and the vessel's key stood out of reach as it arrived: \`lares vault unlock\` rests it in the vessel's inbox; or read who carries it with \`lares vessel census --docs\` and open the bag that owns it so its saves land)`);
+      expect(c.out.join("\n"), row.documentId).toContain(`held-save  save-unnamed  doc ${row.documentId}  ${row.saves} save(s) in memory  bag (none mapped)  (no map or roster names it, and the vessel's key stood out of reach as it arrived: \`lares vault unlock\` rests it in the vessel's inbox; or read who carries it with \`lares vessel census docs=true\` and open the bag that owns it so its saves land)`);
       expect(c.out.join("\n"), row.documentId).not.toMatch(/accept-loss/);
       vi.restoreAllMocks();
     }
@@ -169,7 +169,7 @@ describe("the vessel census", () => {
     const c = capture();
     const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLocked: [2] }) }));
     expect(reading.clean).toBe(false);
-    expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock --face 2`), then down" }]);
+    expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock face=2`), then down" }]);
     expect(await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLocked: [2] }) }))).toBe(2);
     expect(c.err.join("\n")).toMatch(/h2 stands locked; unlock it/);
   });
@@ -178,7 +178,7 @@ describe("the vessel census", () => {
     capture();
     const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1], facesLocked: [2] }) }));
     expect(reading.facesLit).toEqual([0, 1]);
-    expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock --face 2`), then down" }]);
+    expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock face=2`), then down" }]);
   });
 
   test("V6 census-names-none-worn: faces lit and none worn, the census says so and names the wear; CONTROL: a worn face names none", async () => {

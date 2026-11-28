@@ -330,7 +330,7 @@ export function decideFloorAdopt(args: { readonly pin: FloorPin; readonly base: 
     return { ok: false, refusal: "adopt-engine-held", detail: `the seed's floor names engine ${seed.manifest.engine}, the base ${base.engine}; the engine stays behind its own cadence threshold, so a re-found takes it today` };
   }
   if (pin.local?.state === "staged") {
-    return { ok: false, refusal: "adopt-uncommitted", detail: `the adoption of seed ${pin.local.receipt} stands staged; commit it at par (\`lares vessel floor adopt --commit\`) or revert it (\`lares vessel floor adopt --revert\`) first` };
+    return { ok: false, refusal: "adopt-uncommitted", detail: `the adoption of seed ${pin.local.receipt} stands staged; commit it at par (\`lares vessel floor adopt commit=true\`) or revert it (\`lares vessel floor adopt revert=true\`) first` };
   }
   const manifest: FloorManifest = { format: base.format, engine: base.engine, plugins: seed.manifest.plugins, snapshots: base.snapshots };
   const manifestBytes = floorManifestBytes(manifest);

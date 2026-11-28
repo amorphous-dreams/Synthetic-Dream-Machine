@@ -65,7 +65,7 @@ export interface RealmRestPort {
 }
 
 /** The cure a seated face reads while the realm's owner has not founded the bag (or handed it a lockbox). */
-export const WAIT_FOR_OWNER_CURE = "light the realm's owner face (`lares vault unlock --face <owner's handle>`) so its holder founds the workbench's key and hands this face its lockbox, then save again";
+export const WAIT_FOR_OWNER_CURE = "light the realm's owner face (`lares vault unlock face=<owner's handle>`) so its holder founds the workbench's key and hands this face its lockbox, then save again";
 
 /**
  * THE REALM ONE FACE READS A BAG UNDER: the working slot of a wiki whose workbench the vessel's ledger binds, kept where the
@@ -108,7 +108,7 @@ export function realmRestPort(input: {
     ownerCure: (bag) => {
       const handle = input.ownerHandle?.(bag.realmId, bag.slug);
       return typeof handle === "number"
-        ? `light the realm's owner face (\`lares vault unlock --face ${handle}\`) so its holder founds the workbench's key and hands this face its lockbox, then save again`
+        ? `light the realm's owner face (\`lares vault unlock face=${handle}\`) so its holder founds the workbench's key and hands this face its lockbox, then save again`
         : WAIT_FOR_OWNER_CURE;
     },
     async of(bagId) {

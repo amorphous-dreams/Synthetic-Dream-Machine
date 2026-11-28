@@ -9,8 +9,8 @@
  *
  * WHEN IT SEATS. A pair seats at the moment the human's passphrase stands in hand: the unlock (`lares vault unlock`, the act that
  * offers the keep lei) mints it under that passphrase where none rests. A paper slot joins at a paper read-back (`lares vault
- * bind --paper`), opened by the route that bind already took. A cut asks for nothing: it seals to the public half, so `rite keep
- * --if-due` and the session-end hook cut where nobody stands; a house with no seat refuses the cut by name. A root a harness
+ * bind paper=true`), opened by the route that bind already took. A cut asks for nothing: it seals to the public half, so `rite keep
+ * if-due=true` and the session-end hook cut where nobody stands; a house with no seat refuses the cut by name. A root a harness
  * staged (`.lar-test-scratch`) with no terminal seats under the published test route, and only where its custody tree itself
  * opens under that route or stands absent: a house a person founded never takes a keep the world's test passphrase opens. A
  * seat the test route made says so, and the first real proved unlock replaces it.
@@ -150,7 +150,7 @@ function weakPassphrase(p: string): boolean {
   return s.length < 12 || (s.length < 16 && kinds <= 2);
 }
 
-const WEAK_LINE = "keep: keep-passphrase-weak: the keep's wrapped secret rides its remote, where anyone who copies it may guess offline; this passphrase reads short. The keep seats anyway; a longer custody passphrase (`lares vault bind --passphrase`, then `lares vault unbind` the old slot) re-seats it stronger";
+const WEAK_LINE = "keep: keep-passphrase-weak: the keep's wrapped secret rides its remote, where anyone who copies it may guess offline; this passphrase reads short. The keep seats anyway; a longer custody passphrase (`lares vault bind passphrase=true`, then `lares vault unbind` the old slot) re-seats it stronger";
 
 /** One route an act proved: the credentials of one custody slot, and that slot's threshold and pin count. */
 export interface ProvedRoute { readonly creds: readonly Credential[]; readonly t: number; readonly pins: number }
@@ -196,7 +196,7 @@ async function mintUnder(routes: readonly ProvedRoute[], say: (line: string) => 
 /**
  * RE-SEAT: a fresh pair under the PROVED route, over whatever rests (`lares vault reseat`, and every custody unbind, where the
  * route that opens the house changes). A bundle carries the seat it sealed under and opens under that seat's route; every keep
- * cut after the re-seat seals to the fresh pair. A paper slot the replaced seat held joins again at the next `vault bind --paper`.
+ * cut after the re-seat seals to the fresh pair. A paper slot the replaced seat held joins again at the next `vault bind paper=true`.
  */
 export async function reseatKeepPair(routes: ReadonlyArray<readonly Credential[]>, say: (line: string) => void, shapes?: readonly ProvedRoute[]): Promise<boolean> {
   const before = readResting();
@@ -327,7 +327,7 @@ export async function bindKeepPaper(openWith: readonly Credential[], confirmed: 
 }
 
 /**
- * THE READ-BACK'S MOMENT: a bind whose new slot holds a paper sheet just read back word for word (`vault bind --paper`) binds a
+ * THE READ-BACK'S MOMENT: a bind whose new slot holds a paper sheet just read back word for word (`vault bind paper=true`) binds a
  * paper slot beside the keep seat's passphrase, opened by the route the bind already took, and says so. A bind of any other
  * route, no seat, or a route that opens no keep slot binds nothing; the keep stands as it stood.
  */

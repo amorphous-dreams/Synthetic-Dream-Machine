@@ -1,5 +1,5 @@
 /**
- * THE DOCUMENT CENSUS READS EVERY NAME (`lares vessel census --docs`).
+ * THE DOCUMENT CENSUS READS EVERY NAME (`lares vessel census docs=true`).
  *
  * A scratch house's store holds documents named each way the house names one, and documents nothing names: the census
  * reads each back in its class. A binding-mint census alone read zero over 79 orphan maps, so every reference kind is

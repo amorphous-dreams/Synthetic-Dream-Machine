@@ -105,7 +105,7 @@ vi.mock("../src/env.js", async (orig) => ({
 
 import { cmdSpirit } from "../src/commands/spirit.js";
 import type { LaunchAnswer, LaunchAsk } from "../src/commands/spirit-summon.js";
-import { COMMANDS } from "../src/bin/lares.js";
+import { COMMANDS, doorTakes } from "../src/bin/lares.js";
 import { GUEST_REACH, lanesHeld, lanesOf, mandateWrite, refLine, summonsOf, type MandateField } from "@lararium/mesh/spirit-summons";
 import { sha256HexSync } from "@lararium/mesh/crypto";
 import { verifyBcc } from "@lararium/memetic-frame";
@@ -162,7 +162,7 @@ describe("the command table names the summons verbs", () => {
   test("mandate, summon and handback stand among the spirit door's verbs, their options accepted", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
     expect(row.verbs).toEqual(expect.arrayContaining(["mandate", "summon", "handback"]));
-    expect(row.accepts).toEqual(expect.arrayContaining(["allowed-tools", "cap", "caps", "grants", "handback", "lanes", "links", "log", "mandate", "model", "parent", "paths", "reads", "record", "workdir"]));
+    expect(doorTakes(row!.name)).toEqual(expect.arrayContaining(["allowed-tools", "cap", "caps", "grants", "handback", "lanes", "links", "log", "mandate", "model", "parent", "paths", "reads", "record", "workdir"]));
   });
 });
 
@@ -173,7 +173,7 @@ describe("summon reads, verifies and starts", () => {
     const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
     expect(r.exit).toBe(0);
     expect(cap.asks).toHaveLength(1);
-    expect(cap.asks[0]).toMatchObject({ cap: "claude-cli", model: "claude-fable-5-2", prompt: `wake as cold-reader#00002: lares spirit om cold-reader --mandate ${m.uri}@${m.hash}` });
+    expect(cap.asks[0]).toMatchObject({ cap: "claude-cli", model: "claude-fable-5-2", prompt: `wake as cold-reader#00002: lares spirit om cold-reader mandate=${m.uri}@${m.hash}` });
     // The ask carries the wake line, the model, the reach the house hands the guest, the workdir and the log: nothing else rides.
     expect(Object.keys(cap.asks[0]!).sort()).toEqual(["allowedTools", "cap", "cwd", "log", "model", "prompt"]);
     expect(data(r)).toMatchObject({ decision: "launched", instance: "cold-reader#00002", hash: m.hash, pid: 4242, offerer: "lares-alpha#00001" });
@@ -188,13 +188,13 @@ describe("summon reads, verifies and starts", () => {
     const m = arm(coordinator({ face: "1" }), "00002", { face: "1" });
     const cap = stub();
     await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
-    expect(cap.asks[0]!.prompt).toBe(`wake as cold-reader#00002: lares spirit om cold-reader --mandate ${m.uri}@${m.hash} --face 1`);
+    expect(cap.asks[0]!.prompt).toBe(`wake as cold-reader#00002: lares spirit om cold-reader mandate=${m.uri}@${m.hash} face=1`);
     h.face = 2;
     const other = arm(null, "00003", { face: "1" });
     const turned = stub();
     const r = await run(argv(["summon", "cold-reader#00003"], { mandate: other.ref }), { launch: turned.launch });
     expect(error(r).code).toBe("mandate-face-turned");
-    expect(error(r).message).toContain("--face 1");
+    expect(error(r).message).toContain("face=1");
     expect(turned.asks).toHaveLength(0);
   });
 });
@@ -322,7 +322,7 @@ describe("the coordinator's lanes", () => {
     const cap = stub();
     const r = await run(argv(["summon", "cold-reader#00002"], { mandate: arm(c).ref }), { launch: cap.launch });
     expect(error(r).code).toBe("coordinator-lanes-full");
-    expect(error(r).message).toContain("--lanes <n>");
+    expect(error(r).message).toContain("lanes=<n>");
     expect(cap.asks).toHaveLength(0);
   });
 });
@@ -340,7 +340,7 @@ describe("custody: a seat starts a process only under a written grant", () => {
     const cap = stub();
     const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { hand: SEAT, launch: cap.launch });
     expect(error(r).code).toBe("summons-ungranted");
-    expect(error(r).message).toContain("--grants summons");
+    expect(error(r).message).toContain("grants=summons");
     expect(cap.asks).toHaveLength(0);
     expect(fieldsOf(summonsOf(m.hash))).toBeNull();
     expect((await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { hand: HAND, launch: cap.launch })).exit).toBe(0);
@@ -362,7 +362,7 @@ describe("mandate lands the carrier under its own hash", () => {
     const d = data(r) as { uri: string; hash: string; ref: string; summon: string };
     expect(d.uri).toBe(`${M}mandate/${d.hash.slice(0, 16)}`);
     expect(fieldsOf(d.uri)).toMatchObject({ pet: "lares-alpha", instance: "00001", offerer: "hand", face: "1", grants: "summons", lanes: "3", model: "claude-fable-5-2", "mandate-hash": d.hash, tags: "mandate", text: "Coordinate the arms." });
-    expect(d.summon).toBe(`lares spirit summon 'lares-alpha#00001' --mandate ${d.ref} --face 1`);
+    expect(d.summon).toBe(`lares spirit summon 'lares-alpha#00001' mandate=${d.ref} face=1`);
   });
   test("an arm's mandate under --parent reads its offerer off the coordinator's, and the round trip summons", async () => {
     const c = coordinator();
@@ -382,13 +382,13 @@ describe("mandate lands the carrier under its own hash", () => {
   test("a seat naming no coordinator's mandate reads usage, and nothing lands", async () => {
     const r = await run(argv(["mandate", "cold-reader#00002"], { text: WORDS }), { hand: SEAT });
     expect(error(r).code).toBe("usage");
-    expect(error(r).message).toContain("--parent");
+    expect(error(r).message).toContain("parent=");
     expect([...h.store.keys()]).toEqual([]);
   });
 });
 
 describe("the wake under a mandate", () => {
-  test("om --mandate verifies the mandate and leads the wake with its unfold", async () => {
+  test("om mandate=verifies the mandate and leads the wake with its unfold", async () => {
     const m = arm(coordinator(), "00002", { reads: "[tag[ruling]]", "handback-shape": "three findings" });
     const r = await run(argv(["om", "cold-reader"], { mandate: m.ref }));
     expect(r.exit).toBe(0);
@@ -396,7 +396,7 @@ describe("the wake under a mandate", () => {
     expect(text).toContain(`mandate: ${m.ref} · you wake as cold-reader#00002, offered by lares-alpha#00001`);
     expect(text).toContain("lar:///ha.ka.ba/lares/api/noosphere-boot");
     expect(text).toContain("reads: lares get filter='[tag[ruling]]'");
-    expect(text).toContain("lares spirit handback 'cold-reader#00002' --record <uri>");
+    expect(text).toContain("lares spirit handback 'cold-reader#00002' record=<uri>");
     expect(text).toContain(WORDS);
   });
   test("a moved mandate stops the wake", async () => {
@@ -452,7 +452,7 @@ describe("a lane claims atomically on the coordinator's ledger", () => {
     h.racer = { title: LEDGER, move: () => { const held = h.store.get(LEDGER) ?? { fields: {}, rev: 0 }; h.store.set(LEDGER, { fields: { ...held.fields, note: String(held.rev) }, rev: held.rev + 1 }); } };
     const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
     expect(error(r).code).toBe("lane-claim-unsettled");
-    expect(error(r).message).toContain(`lares spirit summon 'cold-reader#00002' --mandate ${m.ref}`);
+    expect(error(r).message).toContain(`lares spirit summon 'cold-reader#00002' mandate=${m.ref}`);
     expect(cap.asks).toHaveLength(0);
     expect(holds()).toEqual([]);
   });
@@ -554,7 +554,7 @@ describe("a summoned instance arrives as a guest: the reach it launches with", (
     const before = h.store.size;
     const r = await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, "allowed-tools": "--dangerously-skip-permissions" }));
     expect(error(r).code).toBe("mandate-allowed-tools-malformed");
-    expect(error(r).message).toContain("--allowed-tools 'Bash(lares:*)'");
+    expect(error(r).message).toContain("allowed-tools='Bash(lares:*)'");
     expect(h.store.size).toBe(before);
   });
 });
@@ -598,7 +598,7 @@ describe("a carrier mandate founds its family, and every reader verifies it by t
     expect(d.uri).toBe(`${M}mandate/${root["mandate-seed"]!.slice(0, 16)}`);
     // The ref's hash reads the family's canonical hash: the sha256 of the carrier the family recomposes to.
     expect(d).toMatchObject({ decision: "put", family: true, hash: sha256HexSync(h.carriers.get(d.uri)!), ref: `${d.uri}@${d.hash}` });
-    expect(d.summon).toBe(`lares spirit summon 'cold-reader#00002' --mandate ${d.ref} --face 1`);
+    expect(d.summon).toBe(`lares spirit summon 'cold-reader#00002' mandate=${d.ref} face=1`);
   });
   test("a flag outranks the affordance the carrier's meta names", async () => {
     const d = await land({ handback: "one line" });
@@ -609,7 +609,7 @@ describe("a carrier mandate founds its family, and every reader verifies it by t
     const cap = stub();
     const r = await run(argv(["summon", "cold-reader#00002"], { mandate: d.ref }), { launch: cap.launch });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    expect(cap.asks[0]).toMatchObject({ prompt: `wake as cold-reader#00002: lares spirit om cold-reader --mandate ${d.uri}@${d.hash}` });
+    expect(cap.asks[0]).toMatchObject({ prompt: `wake as cold-reader#00002: lares spirit om cold-reader mandate=${d.uri}@${d.hash}` });
     expect(fieldsOf(summonsOf(d.hash))).toMatchObject({ "mandate-hash": d.hash, instance: "cold-reader#00002", offerer: "hand" });
     expect(h.calls.some((c) => c.verb === "tiddler-get" && c.args["title"] === d.uri && c.args["meme"] === true && c.args["grain"] === "whole"), "the family reads on the meme lens").toBe(true);
     const om = await run(argv(["om", "cold-reader"], { mandate: d.ref }));
@@ -623,7 +623,7 @@ describe("a carrier mandate founds its family, and every reader verifies it by t
     const cap = stub();
     const r = await run(argv(["summon", "cold-reader#00002"], { mandate: d.ref }), { launch: cap.launch });
     expect(error(r).code).toBe("mandate-moved");
-    expect(error(r).message).toContain("lares spirit mandate cold-reader#00002 --file <carrier>");
+    expect(error(r).message).toContain("lares spirit mandate cold-reader#00002 file=<carrier>");
     expect(cap.asks).toHaveLength(0);
     expect(fieldsOf(summonsOf(d.hash))).toBeNull();
     expect(error(await run(argv(["om", "cold-reader"], { mandate: d.ref }))).code).toBe("mandate-moved");
@@ -638,7 +638,7 @@ describe("a carrier mandate founds its family, and every reader verifies it by t
   test("a carrier with no whole frame reads usage, and nothing lands", async () => {
     const r = await run(argv(["mandate", "cold-reader#00002"], { file: file(MEM.replace("<<^ code=`&#x0003;`>>", "")) }));
     expect(error(r).code).toBe("usage");
-    expect(error(r).message).toContain("--text <words>");
+    expect(error(r).message).toContain("text=<words>");
     expect([...h.store.keys()]).toEqual([]);
   });
   test("CONTROL: --text still lands as one record, its fields beside its words, hashed over both", async () => {

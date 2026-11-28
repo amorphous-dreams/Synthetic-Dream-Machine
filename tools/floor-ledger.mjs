@@ -5,7 +5,7 @@
  * (`packages/lararium-tw5/src/floor-ledger.ts`); this tool only APPENDS lines and ASKS views, through the doors:
  *
  *   append  `lares put title=<ledger> append=- create=true`   (two appends at once both land)
- *   ask     `lares wiki render --recipe default --form text --text '<$text text={{{ [[<ledger>]floor-queue[<view>],[<arg>]…] }}}/>'`
+ *   ask     `lares wiki render recipe=default form=text text='<$text text={{{ [[<ledger>]floor-queue[<view>],[<arg>]…] }}}/>'`
  *
  * While the doors stand dark (a locked vessel, no hearth), an append lands in the flat mirror `<lock dir>/.floor/queue.log`
  * (the lock dir: `<passwd home>/.lares-scratch` by default, so `~/.lares-scratch/.floor/queue.log`), the same lines, never a

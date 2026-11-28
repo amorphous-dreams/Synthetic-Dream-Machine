@@ -204,7 +204,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
       await opts.repo.flush();
     }
     console.log(`[lares vessel found] ${bootstrap} already exists — skipping.`);
-    console.log("  Pass --force or delete the file to re-seed.");
+    console.log("  Pass force=true or delete the file to re-seed.");
     return { skipped: true, bootstrapPath: bootstrap, storageDir, genesisDir };
   }
 
@@ -263,7 +263,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     if (standingRoots.length > 0) {
       console.log(`[lares vessel found] ${standingRoots.length} persona root(s) stand: ${standingRoots.join(", ")}`);
       console.log("  This bootstrap names none of them, so the vessel stands FACELESS at the waking floor.");
-      console.log(`  Re-light each one (the root loads, it is not re-minted):  lares persona new ${standingRoots[0]} --name '<label>'`);
+      console.log(`  Re-light each one (the root loads, it is not re-minted):  lares persona new ${standingRoots[0]} name='<label>'`);
     }
   } else {
     const founded = await foundCustody({ io: custodyIo, homes: custodyHomes, slots: opts.custody.slots });
@@ -410,7 +410,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     console.log(`  PersonaGroup ${payload.personaGroupId.slice(0, 20)}…`);
     console.log(`  signer pin   ${payload.signerDid.slice(0, 20)}…`);
     console.log(`  hearth-name  ${payload.hearthTrueName.slice(0, 20)}…  (binding: device × hearthTrueName)`);
-    console.log("[lares fleet join land] done — joined the PersonaGroup. Start with: lares vessel stand --with-web");
+    console.log("[lares fleet join land] done — joined the PersonaGroup. Start with: lares vessel stand with-web=true");
     return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
   }
 
@@ -421,7 +421,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   // cabal seated on that individual — and stops there. The vessel now carries, serves the public shelf,
   // and holds every sovereign act closed: the waking floor, reached by founding rather than by falling.
   //
-  // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
+  // The FACE lands later, by an operator act: `lares persona new 0 name='<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
   // THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT (operator ruling 2026-11-09): both mint with the FACE, where its
@@ -446,7 +446,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   console.log(`  engine        ${engineCid.slice(0, 20)}…  (the genesis engine this place boots)`);
   console.log("[lares vessel found] the PLACE stands — carrying, serving the public shelf, faceless.");
   console.log("  stand it:      lares vessel stand");
-  console.log("  light a face:  lares persona new 0 --name '<label>'");
+  console.log("  light a face:  lares persona new 0 name='<label>'");
 
   return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
 }
@@ -645,7 +645,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     }
     // A compartment rides BESIDE the mounted face — the founding face must stand first.
     if (!packed[PERSONA_GROUP_ID_TIDDLER]?.text) {
-      throw new Error("[lares persona new] no founding face stands yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
+      throw new Error("[lares persona new] no founding face stands yet — found the hearth and its first face with `lares found hearth=true name='<label>'` first.");
     }
   }
 
@@ -657,13 +657,13 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // THE HEARTH'S TRUE NAME IS ITS SEED CHARTER'S AID. A face binds (device × the hearth's own first Nexus), so an
   // edge minted at one of a human's hearths names that hearth and no other: the engine CID every hearth shares
   // would let it pass at all of them. A place with no seed charter holds no hearth for a face to bind to; the
-  // Stable founding act (`lares vessel found --hearth`) seats the charter before it founds persona zero.
+  // Stable founding act (`lares vessel found hearth=true`) seats the charter before it founds persona zero.
   if (!GENESIS_ENGINE_CID(genesisDir)) {
     throw new Error(`[lares persona new] the engine CID stands absent from ${genesisDir} — this place did not finish founding.`);
   }
   const hearthTrueName = hearthAid();
   if (!hearthTrueName) {
-    throw new Error("[lares persona new] no seed charter stands here, so no hearth stands for a face to bind to — found the hearth with `lares vessel found --hearth --name '<label>'`.");
+    throw new Error("[lares persona new] no seed charter stands here, so no hearth stands for a face to bind to — found the hearth with `lares vessel found hearth=true name='<label>'`.");
   }
 
   const vesselIdentity = await generateOrLoadVesselIdentity();

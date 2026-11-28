@@ -14,7 +14,7 @@
  * ── THE RULE ────────────────────────────────────────────────────────────────────────────────────
  * At the PRIMARY path a charter arrives where none stands, or it refuses. Re-importing the same charter
  * passes, because an operator who repeats a step should not be punished for it, and repeating destroys
- * nothing. A partner's charter takes `--carry` instead and lands BESIDE the primary
+ * nothing. A partner's charter takes `carry=` instead and lands BESIDE the primary
  * (`@lararium/node` `importCarriedCharter`), where a re-import moves forward along its own seal lineage.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/founding-runbook
@@ -49,7 +49,7 @@ export function sealImportVerdict(at: { incoming: string; standing: string | nul
            why: `a DIFFERENT charter already stands here (${at.standing.slice(0, 12)}…), and this write would `
               + `replace it with ${at.incoming.slice(0, 12)}… — that destroys your own founding, and every `
               + "contract-in you signed afterwards would bind to the wrong epoch. A partner's charter belongs "
-              + "beside yours, never over it: `lares nexus seal import --carry <file>` lands it under its own "
+              + "beside yours, never over it: `lares nexus seal import carry=<file>` lands it under its own "
               + "Nexus AID and leaves this one standing." };
 }
 

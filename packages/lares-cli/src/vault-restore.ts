@@ -7,11 +7,11 @@
  * environment variable.
  *
  * WHAT CROSSES THE DOOR. One act of the sealed-act table: `bundle.restore` (the lineage: a recovery act that takes
- * a NEW seat) or, under `--memory`, `bundle.import` (the content keys, onto the restored seat). The act carries the
+ * a NEW seat) or, under `memory=true`, `bundle.import` (the content keys, onto the restored seat). The act carries the
  * body still SEALED and the bundle key; the vessel opens the body behind its own door, so the face's root reaches
  * no receipt, outcome, argument digest or log line. With no vessel standing the same act runs in this process.
  *
- * THE ROOT CARDS (`--cards`). The card reader rebuilds the root and builds the face's body in this process; the body
+ * THE ROOT CARDS (`cards=true`). The card reader rebuilds the root and builds the face's body in this process; the body
  * crosses sealed under a fresh bundle key, through the same `bundle.restore` act, so the cards' seed never rides an
  * argument in the clear and the restore runs every check a bundle's body passes.
  *
@@ -135,11 +135,11 @@ export function restoreLines(landed: RestoreLanded): string[] {
     "  PROVISIONAL: the face reads, recovers and serves its own content, and signs no act that changes who holds authority until a party to its relation shows its own view of the head above and that view agrees (`lares persona confirm`). Who could confirm:",
     ...landed.provisional.couldConfirm.map((line) => `    ${line}`),
     landed.via === "vessel"
-      ? "  the face mounts when the vessel stands again: `lares vessel stand --restart`, then `lares vault unlock`."
+      ? "  the face mounts when the vessel stands again: `lares vessel stand restart=true`, then `lares vault unlock`."
       : "  the face mounts when the vessel stands: `lares vessel stand`, then `lares vault unlock`.",
   ];
   if (landed.holds.length > 0) {
-    lines.push(`  memory: the bundle carries ${landed.holds.length} key version(s). With the vessel standing unlocked and wearing this face, run:  lares vault restore <file> --memory`);
+    lines.push(`  memory: the bundle carries ${landed.holds.length} key version(s). With the vessel standing unlocked and wearing this face, run:  lares vault restore <file> memory=true`);
   } else {
     lines.push("  memory: the bundle carries no content key.");
   }

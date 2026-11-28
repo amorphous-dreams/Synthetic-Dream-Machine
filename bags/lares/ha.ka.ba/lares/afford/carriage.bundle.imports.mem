@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bundle.imports"
 
 `import <dest>` verifies every hash and path in the bundle before anything moves, then PREVIEWS and stops. `--apply` replays the re-declare list as fresh acts, maps each bundle face to the ONE face here that carries its pet-name (none or two refuse by name), re-pours the working and face canon rows through the ingest gesture (a diverged id stands off and never overwrites), re-lifts the kahua heads under the new face's grant, keyed by title and body digest, and lands draft and temp files where none stands.
 
-A journal under `<root>/config` lets an interrupted import re-enter to the same end, and a second import lands nothing. A face standing shut waits: the lines name `lares vault unlock --face N`, then import again; a workbench lands at the wear of a face that holds a writer's seat there. The exit reads 0 clean, `verb-error` where a row refused, `conflict` where a row stood off.
+A journal under `<root>/config` lets an interrupted import re-enter to the same end, and a second import lands nothing. A face standing shut waits: the lines name `lares vault unlock face=N`, then import again; a workbench lands at the wear of a face that holds a writer's seat there. The exit reads 0 clean, `verb-error` where a row refused, `conflict` where a row stood off.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[carriage.bundle.imports dest/<dest>]] ~ the bundle directory stands required`>>
 <<has entity=`refusal` name=`bundle-refused` params=`cure/[[carriage.bundle.imports dest/<dest>]] ~ a hash or path failed to verify, or two faces carry one pet-name; nothing moved`>>
-<<has entity=`refusal` name=`face-waiting` params=`~ a face stands shut or unworn; the line names lares vault unlock --face N, then import again`>>
+<<has entity=`refusal` name=`face-waiting` params=`~ a face stands shut or unworn; the line names lares vault unlock face=N, then import again`>>
 ```
 
 <<~/ahu>>
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Sp-JSbt8vHuH156yp2o64YFlzrIBDOsAMMxUVbUhwKA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8IiNLo7N1Frio5SCtqaXECEmPXjHfwFjzlag0M78Eak`>>
 
 <<^ code=`&#x0004;` to=`?`>>

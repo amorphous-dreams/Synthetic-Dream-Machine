@@ -127,13 +127,13 @@ A ''browser'' vessel meets one more gate before any of this — the ''secure-con
 
 !! The Windows Surface
 
-A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the same `lares vessel stand --init` and `lares fleet join`, with these surface notes:
+A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the same `lares vessel stand init=true` and `lares fleet join`, with these surface notes:
 
 * ''`lares` global'' — `--install` writes a `lares.cmd` shim beside the bin (on Unix it symlinks into `~/.local/bin`). Add that directory to PATH so `lares` runs bare. The link step stays self-contained — it does not depend on `pnpm setup`/`PNPM_HOME`.
 * ''Python'' — the integration check resolves `python3` → `python` → `py`, so the check finds Windows' `python`/`py`.
 * ''The wake hook stays portable'' — it runs node exec-form (`node lares-wake-hook.mjs`), no shell, identical on Windows and Unix.
 * ''mempalace's keep-hooks run in bash'' (`Stop` / `PreCompact`) — on native Windows they need ''Git for Windows'' (which Claude Code already requires for its bash tool). With Git Bash present, `lares home tend` wires them as `bash "<path>"`; without it, the verbatim keep-leg stays dark until someone installs Git for Windows.
-* ''`lares vessel stand --restart`'' (the dev restart) checks POSIX ports with `lsof` then `ss`, and Windows ports with `netstat`; the restart path signals the discovered process (`packages/lares-cli/src/port-control.ts`).
+* ''`lares vessel stand restart=true`'' (the dev restart) checks POSIX ports with `lsof` then `ss`, and Windows ports with `netstat`; the restart path signals the discovered process (`packages/lares-cli/src/port-control.ts`).
 
 <<~/ahu>>
 
@@ -145,6 +145,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zWUi4Q2KnV0VK1biUyloxkFzNPpNMKyaWjdio6y6SXI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nQftCcPI90AY_FE7w8O4aQux6zGD2CnlI48PqhGGksc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

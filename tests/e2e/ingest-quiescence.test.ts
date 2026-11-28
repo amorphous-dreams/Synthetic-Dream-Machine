@@ -40,7 +40,7 @@ async function awaitProjection(timeoutMs = 60_000): Promise<void> {
 }
 
 function ingest(args: string[]): ReturnType<LarInstance["cli"]> {
-  return lar.cli(["ingest", "--source", join(lar.root, "projections/bags/lares"), "--to", LARES_URI, ...args, "--json"]);
+  return lar.cli(["ingest", `source=${join(lar.root, "projections/bags/lares")}`, `to=${LARES_URI}`, ...args, "--json"]);
 }
 
 beforeAll(async () => {
@@ -75,7 +75,7 @@ describe.skipIf(!stagedTarget)("ingest quiescence — the composed loop holds st
     expect(edited).not.toBe(before); // guard: a carrier with no heading fails loud, never a no-op edit
     writeFileSync(projected, edited);
 
-    const r = await ingest(["--apply", "--yes"]);
+    const r = await ingest(["apply=true", "--yes"]);
     const d = r.json?.["data"] as Record<string, unknown>;
     const carriers = d["carriers"] as Array<Record<string, unknown>>;
     expect(carriers?.[0]?.["decision"]).toBe("ingest");

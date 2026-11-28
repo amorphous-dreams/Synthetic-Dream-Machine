@@ -1,5 +1,5 @@
 /**
- * `lares bag cas --pin <cid> --held` BINDS TO THE LIFE THE STORE NAMES, or refuses by name.
+ * `lares bag cas pin=<cid> held=true` BINDS TO THE LIFE THE STORE NAMES, or refuses by name.
  *
  * A held pin dies with the vessel life the store names at rest (`<hearth>/vessel/.life`, `readVesselLife`). A store that names
  * no life (never claimed, or a life record that reads torn) gives `--held` nothing to bind to: the door refuses
@@ -42,7 +42,7 @@ async function pinHeld(): Promise<{ code: number; payload: { ok: boolean; data?:
   return { code, payload: JSON.parse(lines.join("")) };
 }
 
-describe("lares bag cas --pin --held", () => {
+describe("lares bag cas pin=true held=true", () => {
   test("★ a store that names no life refuses held-pin-no-life by name, and writes no pin ★", async () => {
     const { code, payload } = await pinHeld();
     expect(code).toBe(1);

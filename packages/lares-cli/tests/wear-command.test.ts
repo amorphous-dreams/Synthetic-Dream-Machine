@@ -107,7 +107,7 @@ describe("RED lares wear N", () => {
 
   it("`--face N` names the face as well as the positional", async () => {
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 2, held: true, standing: "hearth" };
-    expect(await wear("--face", "2")).toBe(0);
+    expect(await wear("face=2")).toBe(0);
     expect(frames.at(-1)).toEqual({ op: "wear", face: 2 });
   });
 
@@ -174,11 +174,12 @@ describe("RED lares wear N", () => {
     expect(landings).toEqual([]);
   });
 
-  it("the command table seats `wear`, accepting `face` and `yes` (turn over records the shore's flush left unwritten) alone: no word drops a held save", () => {
+  it("the command table seats `wear`, taking `face` and `yes` (turn over records the shore's flush left unwritten) alone: no word drops a held save", async () => {
+    const { doorTakes } = await import("../src/bin/lares.js");
     const row = COMMANDS.find((c) => c.name === "wear");
     expect(row).toBeDefined();
-    expect(row!.accepts).toEqual(["face", "yes"]);
-    expect(COMMANDS.find((c) => c.name === "vault")!.accepts).not.toContain("accept-loss");
+    expect([...doorTakes(row!.name)].sort()).toEqual(["face", "yes"]);
+    expect(doorTakes("vault")).not.toContain("accept-loss");
   });
 });
 
@@ -196,7 +197,7 @@ describe("RED vault unlock gathers a route only while custody stays closed", () 
     door = (frame) => frame["op"] === "custody" ? custody(true)
       : frame["op"] === "census" ? { op: "census", facesLit: [0, 1, 2], facesLocked: [] }
       : { op: "wear", face: 1, held: true, standing: "hearth" };
-    expect(await cmdVault(parseArgs(["vault", "unlock", "--face", "1", "--json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "unlock", "face=1", "--json"]))).toBe(0);
     expect(prompts).toBe(0);
     expect(frames).toEqual([{ op: "custody" }, { op: "census" }, { op: "wear", face: 1 }]);
     expect(answer()).toMatchObject({ ok: true, data: { op: "wear", face: 1 } });
@@ -205,7 +206,7 @@ describe("RED vault unlock gathers a route only while custody stays closed", () 
 
   it("`unlock --face N` on a held key where no face hN stands refuses by name and asks nothing", async () => {
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "census", facesLit: [0], facesLocked: [1] };
-    expect(await cmdVault(parseArgs(["vault", "unlock", "--face", "4", "--json"]))).toBe(1);
+    expect(await cmdVault(parseArgs(["vault", "unlock", "face=4", "--json"]))).toBe(1);
     expect(prompts).toBe(0);
     expect(frames.map((f) => f["op"])).toEqual(["custody", "census"]);
     expect(answer().error?.code).toBe("face-not-standing");
@@ -215,7 +216,7 @@ describe("RED vault unlock gathers a route only while custody stays closed", () 
     door = (frame) => frame["op"] === "custody" ? custody(true)
       : frame["op"] === "census" ? { op: "census", facesLit: [0], facesLocked: [1] }
       : { op: "unlock", reading: "opens", slot: "slot-1", held: true, standing: "hearth" };
-    await cmdVault(parseArgs(["vault", "unlock", "--face", "1", "--json"]));
+    await cmdVault(parseArgs(["vault", "unlock", "face=1", "--json"]));
     expect(prompts).toBeGreaterThan(0);
     expect(frames.map((f) => f["op"]).slice(0, 3)).toEqual(["custody", "census", "unlock"]);
   });
@@ -277,13 +278,13 @@ describe("RED a wear flushes every shore before it turns the face (the vessel as
 
   it("WS3 a saves-held refusal prints the vessel's words and the act that lights the face; `--yes` never turns it, and the frame carries no other word", async () => {
     door = (frame) => frame["op"] === "custody" ? custody(true)
-      : { op: "wear", status: "error", errorMessage: "wearing h1 composes the vessel again, which would drop them, so nothing moved. face h2 holds 1 save(s) in memory that no seat has sealed (its light refused); unlock it again (`lares vault unlock --face 2`), and its own seat seals them", refusal: { reason: "saves-held" } };
+      : { op: "wear", status: "error", errorMessage: "wearing h1 composes the vessel again, which would drop them, so nothing moved. face h2 holds 1 save(s) in memory that no seat has sealed (its light refused); unlock it again (`lares vault unlock face=2`), and its own seat seals them", refusal: { reason: "saves-held" } };
     expect(await wear("1", "--yes")).toBe(1);
     expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, yes: true }]);
     expect(prompts, "no word is asked").toBe(0);
     const a = answer();
     expect(a).toMatchObject({ ok: false, error: { code: "saves-held" } });
-    expect(a.error!.message).toContain("lares vault unlock --face 2");
+    expect(a.error!.message).toContain("lares vault unlock face=2");
     expect(a.error!.message).not.toMatch(/accept-loss/);
   });
 

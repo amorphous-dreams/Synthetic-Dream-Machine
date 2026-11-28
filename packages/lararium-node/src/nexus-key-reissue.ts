@@ -61,14 +61,14 @@ export async function runNexusKeyReissue(opts: {
   readonly sealHome: string; readonly nexusAid?: string; readonly repo: Repo; readonly face?: number;
 }): Promise<NexusKeyReissued> {
   const aid = (opts.nexusAid ?? primaryNexusAid(opts.sealHome) ?? "").trim().toLowerCase();
-  if (!aid) throw new NexusKeyReissueRefused("this vessel holds no charter — name the Nexus (--nexus <aid>)");
+  if (!aid) throw new NexusKeyReissueRefused("this vessel holds no charter — name the Nexus (nexus=<aid>)");
   const home = charterHomeFor(opts.sealHome, aid);
   if (!home || foundingRoster(readNexusDoc(home)).sealEpochCid.length === 0) {
     throw new NexusKeyReissueRefused(`this vessel keeps no seated charter for ${aid.slice(0, 18)}… — its gates read no line here`);
   }
   const acting = await resolveFace(opts.face);
   if (!(await personaRootExists(acting))) {
-    throw new NexusKeyReissueRefused(`this vessel holds no root for h${acting} — a face re-issues its own key: name a face it founded (--face N)`);
+    throw new NexusKeyReissueRefused(`this vessel holds no root for h${acting} — a face re-issues its own key: name a face it founded (face=N)`);
   }
   // A re-issue hands the face's standing at a Nexus to a new key: a restored face waits on a party's view first.
   await refuseWhileProvisional(acting, "a key re-issue at a Nexus");

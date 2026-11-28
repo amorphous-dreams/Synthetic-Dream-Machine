@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.draft.lifts"
 
 ! carriage.draft.lifts ~ the count is the confirmation: pending kahua items lift under their faces' grants
 
-`lift-kahua --count <n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's mirror leg again and lifts only where `n` equals the count the preview reads now; a wrong count refuses and lifts nothing. `lares shore` names each pending item (face, title, body digest) beside its own rows, and a face standing shut names the unlock to run first (`lares vault unlock --face N`). The count IS the confirmation, so the verb asks nothing more, and it reads no face (`--face` refuses as usage).
+`lift-kahua --count <n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's mirror leg again and lifts only where `n` equals the count the preview reads now; a wrong count refuses and lifts nothing. `lares shore` names each pending item (face, title, body digest) beside its own rows, and a face standing shut names the unlock to run first (`lares vault unlock face=N`). The count IS the confirmation, so the verb asks nothing more, and it reads no face (`--face` refuses as usage).
 
 `lares kahua lift` lifts one staged row by its title and digest (`face.hand.lifts`); this address lifts the pending set a lay left, by count. The two read one verb word and differ in what they take and what they lift: a title and its row digest against a count, one staged row in the face's local canon against every item the lay's mirror leg previewed, so each holds its own address.
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eGHC7OacuqaM9VBm20EirDvBTf0kKb9D_XsYGACN84k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QUBU4ytbXmUm0GxBR-CYnuErOUxIXYnquunEnRPZV_U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

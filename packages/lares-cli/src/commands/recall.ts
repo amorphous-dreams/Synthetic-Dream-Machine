@@ -9,18 +9,18 @@
  * never a session).
  *
  *   lares sense recall <keywords...>          semantic search (default)
- *   lares sense recall <kw> --wing <w>        filter to one project wing
- *   lares sense recall <kw> --k <n>           cap results (default 5); --limit reads as the same cap
- *   lares sense recall --imago <id>           fetch one imago verbatim
- *   lares sense recall --list [--wing <w>]    list imagines (no query)
+ *   lares sense recall <kw> wing=<w>        filter to one project wing
+ *   lares sense recall <kw> k=<n>           cap results (default 5); limit= reads as the same cap
+ *   lares sense recall imago=<id>           fetch one imago verbatim
+ *   lares sense recall list=true [wing=<w>]    list imagines (no query)
  *
- * The `--k` name mirrors the isomorphic MCP tool arg (`recall(query, k)`). `--limit` names the same cap
- * (operator-kept, 2026-10-11): `--k` wins when both ride one call.
+ * The `k=` name mirrors the isomorphic MCP tool arg (`recall(query, k)`). `limit=` names the same cap
+ * (operator-kept, 2026-10-11): `k=` wins when both ride one call.
  *
- * FILTERS — `--agent` · `--surface` (stream provenance) and `--speaker` · `--channel` · `--function`
+ * FILTERS — `agent=` · `surface=` (stream provenance) and `speaker=` · `channel=` · `function=`
  * (the block taxonomy) ride the verb verbatim to the recall coordinator, whose signature is the one
  * filter home. A filter narrows only the coordinator's search, which needs a query: with no query (or
- * beside `--imago`) a filter, like `--pair`, refuses with a usage pointer, never an unfiltered list.
+ * beside `imago=`) a filter, like `pair=true`, refuses with a usage pointer, never an unfiltered list.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-memory#/shared-mesh
  */
@@ -44,7 +44,7 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
   const query   = args.positional.join(" ").trim();
   const imago   = args.options["imago"];
   const wing    = args.options["wing"];
-  // `--k` mirrors the MCP tool arg; `--limit` names the same cap (`--k` wins).
+  // `k=` mirrors the MCP tool arg; `limit=` names the same cap (`k=` wins).
   const limit   = args.options["k"] ?? args.options["limit"];
   const wantList = args.flags["list"];
   // The provenance filters (agent · surface) + the block-taxonomy filters (speaker · channel · function)
@@ -54,19 +54,19 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
   const filterKeys = ["agent", "surface", "speaker", "channel", "function"] as const;
   const presentFilters = filterKeys.filter((k) => args.options[k] !== undefined);
 
-  // A filter (and the --pair view) narrows only the coordinator's search: the list pages drawers by wing,
+  // A filter (and the pair=true view) narrows only the coordinator's search: the list pages drawers by wing,
   // the imago fetch reads one entry, and no query-less filtered search stands. Refuse rather than answer
   // unfiltered.
   const searchOnly: string[] = [...presentFilters, ...(args.flags["pair"] ? ["pair"] : [])];
   if (searchOnly.length && (!query || imago)) {
-    console.error(`lares sense recall: ${searchOnly.map((k) => `--${k}`).join(" ")} ${searchOnly.length === 1 ? "narrows" : "narrow"} only the search, which needs a query — usage: lares sense recall <keywords...> ${searchOnly.map((k) => `--${k}${k === "pair" ? "" : " <v>"}`).join(" ")}`);
+    console.error(`lares sense recall: ${searchOnly.map((k) => `${k}=`).join(" ")} ${searchOnly.length === 1 ? "narrows" : "narrow"} only the search, which needs a query — usage: lares sense recall <keywords...> ${searchOnly.map((k) => `--${k}${k === "pair" ? "" : " <v>"}`).join(" ")}`);
     return 2;
   }
 
   if (!query && !imago && !wantList) {
-    console.error("usage: lares sense recall <keywords...> | --imago <id> | --list [--wing <w>] [--k <n>]");
-    console.error("  filters (with a query): --agent <id> --surface <claude|codex|copilot-cli|copilot-vscode>");
-    console.error("           --speaker <operator|agent|harness> --channel <speech|thought|tool> --function <steering|surface|scaffold|thinking|action|result>");
+    console.error("usage: lares sense recall <keywords...> | imago=<id> | list=true [wing=<w>] [k=<n>]");
+    console.error("  filters (with a query): agent=<id> surface=<claude|codex|copilot-cli|copilot-vscode>");
+    console.error("           speaker=<operator|agent|harness> channel=<speech|thought|tool> function=<steering|surface|scaffold|thinking|action|result>");
     return 2;
   }
 
@@ -79,7 +79,7 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
   // The addressed sensorium (from `lares sense <sensorium> recall`) — recall that sensorium up the ladder.
   if (typeof args.options["sensorium-root"] === "string") verbArgs["sensoriumRoot"] = args.options["sensorium-root"];
   for (const k of filterKeys) if (args.options[k] !== undefined) verbArgs[k] = args.options[k];
-  // --pair returns the exchange-VIEW: each matched block paired with its turn's siblings (steering
+  // pair=true returns the exchange-VIEW: each matched block paired with its turn's siblings (steering
   // beside surface), the merge done as a read-time view rather than baked into content.
   if (args.flags["pair"]) verbArgs["pair"] = true;
 

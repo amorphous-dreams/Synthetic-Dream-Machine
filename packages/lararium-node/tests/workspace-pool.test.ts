@@ -1,7 +1,7 @@
 /**
  * workspace-pool — A SHARED WIKI'S WORKBENCH SERVES AS A POOL (face-pools; cabal-realm#/the-workbench). A wiki's workbench
  * mirror rests in ONE folder whichever face wears: `<projections>/realms/<realm pet name>/wikis/<slug>/`, or the workspace its share row names
- * (`lares wiki share <wiki> --workspace <name>`, bound at `<root>/workspaces/<name>`). The watch core, the unattended flow-back
+ * (`lares wiki share <wiki> workspace=<name>`, bound at `<root>/workspaces/<name>`). The watch core, the unattended flow-back
  * and the commit seam serve that copy as they serve the worn face's own pool.
  *
  * THE SEAT FOUNDS NO HISTORY: the folder's git tree comes from `lares surface init` (Lares-Alpha's lane, not yet on develop);

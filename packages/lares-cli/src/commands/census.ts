@@ -162,7 +162,7 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   }
   // A FACE STANDING LOCKED under a held key holds memory no census can read: each reads unanswered, by name, with its cure.
   const facesLocked = Array.isArray(custody?.["facesLocked"]) ? (custody!["facesLocked"] as unknown[]).filter((n): n is number => Number.isSafeInteger(n)) : [];
-  for (const n of facesLocked) unanswered.push({ part: `the face h${n}`, why: `h${n} stands locked; unlock it (\`lares vault unlock --face ${n}\`), then down` });
+  for (const n of facesLocked) unanswered.push({ part: `the face h${n}`, why: `h${n} stands locked; unlock it (\`lares vault unlock face=${n}\`), then down` });
   let shore: ShoreCensus;
   try { shore = await lines.shore(); }
   catch (e) { shore = { carriers: [], unanswered: [{ part: "the disk projector", why: e instanceof Error ? e.message : String(e) }] }; }
@@ -214,7 +214,7 @@ export function censusLine(item: CensusItem): string {
     const bound = item.atBound === true ? "  AT ITS CEILING: a further save of this document refuses (held-bound); run any `lares` call under its face, or `lares vault unlock`, so a live session seals what waits" : "";
     const line = `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}${kept}${bound}`;
     // AN UNNAMED DOCUMENT HOLDING CONTENT: no map or roster names it, so the line names the ways on.
-    return item.refusal === "save-unnamed" ? `${line}  (no map or roster names it, and the vessel's key stood out of reach as it arrived: \`lares vault unlock\` rests it in the vessel's inbox; or read who carries it with \`lares vessel census --docs\` and open the bag that owns it so its saves land)` : line;
+    return item.refusal === "save-unnamed" ? `${line}  (no map or roster names it, and the vessel's key stood out of reach as it arrived: \`lares vault unlock\` rests it in the vessel's inbox; or read who carries it with \`lares vessel census docs=true\` and open the bag that owns it so its saves land)` : line;
   }
   if (item.kind === "untracked") return `untracked  ${item.path}  bag ${item.bagId ?? "(none named)"}  island ${item.island}  (an owed commit: commit it, or remove it by hand)`;
   return `carrier  ${item.state}  ${item.uri}  bag ${item.bagId ?? "(none named)"}  island ${item.island}`;

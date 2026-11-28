@@ -2204,7 +2204,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // THE AI SEAT PROPOSES on a one-shot line as on a session: a hand-only verb refuses the seat by its code before it places.
         if (sessionRequestId === undefined && seat !== null && opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand; a seat proposes`, opts.handOnlyCodes?.get(inv.verb) ?? "beyond-profile");
         const opCode = sessionRequestId === undefined && seat !== null ? opts.handOnlyOp?.(inv.verb, inv.args) ?? null : null;
-        if (opCode === "hand-act-only") return fail(handRefusalOf(opCode, { act: `"${inv.verb}" (it settles a stand-off; a seat lists and reads)`, reads: "peer", line: "lares shore <act> <uri> --key <key>" }).message, opCode);
+        if (opCode === "hand-act-only") return fail(handRefusalOf(opCode, { act: `"${inv.verb}" (it settles a stand-off; a seat lists and reads)`, reads: "peer", line: "lares shore <act> <uri> key=<key>" }).message, opCode);
         if (opCode !== null) return fail(`"${inv.verb}" names a routing field of the wrong shape`, opCode);
         // A malformed routing field refuses whoever asks: the handler would refuse it too, and no shape slips the gate.
         if (sessionRequestId === undefined && opts.handOnlyOp?.(inv.verb, inv.args) === "routing-arg-malformed") return fail(`"${inv.verb}" names a routing field of the wrong shape`, "routing-arg-malformed");
@@ -2222,7 +2222,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // THE ONE-SHOT LINE PRESENTS THE WORN FACE ALONE: a line whose `requestedBy` names a lit sibling would present as that
           // face and reach its own lane; a lit sibling acts through a session of its own, which the door binds under this life.
           if (opts.siblingFaceOf?.(inv.requestedBy) !== undefined) {
-            return fail("presenter-rides-a-session: this one-shot line names a lit sibling face as its presenter; the line presents the worn face alone, and a sibling acts on a session of its own (`--face N`)", "presenter-rides-a-session");
+            return fail("presenter-rides-a-session: this one-shot line names a lit sibling face as its presenter; the line presents the worn face alone, and a sibling acts on a session of its own (`face=N`)", "presenter-rides-a-session");
           }
           // A LIT FACE RECEIVES VISITS on the one-shot line too: the face it wears is the mount, and a visit admits on the
           // target's actor (`gateFor`) exactly as a session's does, its answer delivered through that actor's mailbox.

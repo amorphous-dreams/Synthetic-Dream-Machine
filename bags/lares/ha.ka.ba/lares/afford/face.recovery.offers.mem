@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.recovery.offers"
 
 ! face.recovery.offers ~ a recovery contact's key, minted for one face
 
-`lares persona recovery-contact offer --prefix persona-<64 hex>` mints a recovery contact's fresh key for the face that prefix names and prints its card and the offer line the face's holder enrols.
+`lares persona recovery-contact offer prefix=persona-<64 hex>` mints a recovery contact's fresh key for the face that prefix names and prints its card and the offer line the face's holder enrols.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sa9rzbSQNsoB2NUrtlrmxaOlHxXPHIKBSqdVeek0qYU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c4q2ayJ1ocjS-m9xXqNfok_fQS5ZDmRMgWbvQQIHAKc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

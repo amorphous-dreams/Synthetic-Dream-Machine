@@ -158,7 +158,7 @@ export function projectMeme(
   const target = projectTargetOf(to);
   if (recomposeMeme(wiki, uri) === null) throw new Error(`meme project: no carrier root stands under ${uri}`);
   if (target !== "md" && (opts?.dialect || opts?.tongue)) {
-    throw new Error(`meme project: --dialect/--tongue weave the "md" target alone; got "${target}"`);
+    throw new Error(`meme project: dialect=/tongue= weave the "md" target alone; got "${target}"`);
   }
   const route = PROJECT_TARGETS[target];
   const text = renderRoot(wiki, route.template, uri, opts);

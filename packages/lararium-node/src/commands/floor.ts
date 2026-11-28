@@ -10,7 +10,7 @@
  *   · `genesis`  — the oracle island at its deterministic address (`oracleGenesisDocUrl`, the address the boot materializes it
  *                  under): no file names it, so this door reads the same source the standing vessel's composition reads;
  *   · `rows`     — the Nexus's publication board, as this vessel's replica carries it (a member holding the charter reads it);
- *   · `fetchCas` — this vessel's own CAS, then a porch where the person names one (`--porch <origin>`: `<origin>/cas/<cid>`);
+ *   · `fetchCas` — this vessel's own CAS, then a porch where the person names one (`porch=<origin>`: `<origin>/cas/<cid>`);
  *   · `stage`    — this vessel's own CAS, so the next island boot resolves the accepted floor locally;
  *   · `mount`    — no node island swaps its `@oracle` read-face live today, so an accept raises the reboot-pending alert in
  *                  every live wiki through the standing vessel (`floorAlert`); a direct act holds no live wiki and says so.
@@ -242,7 +242,7 @@ export async function runFloorAccept(opts: NodeFloorOptions & { readonly target?
 }
 
 /**
- * `lares vessel floor adopt [--apply | --commit | --revert]` (3d, follow-lei S2): the seed the genesis dir offers, adopted over the
+ * `lares vessel floor adopt [apply=true | commit=true | revert=true]` (3d, follow-lei S2): the seed the genesis dir offers, adopted over the
  * pin's base as a local floor. `seedFloor` names the seed's floor manifest (its genesis witness) and `seedCid` the receipt; the
  * vessel reads both floors from its own CAS (the boot mirrors a newer seed's blobs there). Bare it previews; `apply` lands it.
  */
@@ -252,7 +252,7 @@ export async function runFloorAdopt(opts: NodeFloorOptions & { readonly seedCid:
   return { ...out, alerted: ports.alerted };
 }
 
-/** `floor adopt --commit | --revert`: the local floor settles by the hand's act, a forward row either way. */
+/** `floor adopt commit=true | revert=true`: the local floor settles by the hand's act, a forward row either way. */
 export async function runFloorSettle(opts: NodeFloorOptions & { readonly act: "commit" | "revert" }): Promise<FloorLocalAct & { readonly prior?: FloorPin }> {
   const ports = await nodeFloorPorts(opts);
   return settleLocalFloor(ports, opts.act);

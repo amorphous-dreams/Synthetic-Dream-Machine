@@ -22,7 +22,7 @@
  * rehive as done and answers it again. The row is never absent mid-act.
  *
  * ── WHERE IT RUNS ───────────────────────────────────────────────────────────────────────────────────
- * Through the custody door's `rehive` frame alone (`custody-frames`), sent by `lares vault rehive --face N` from a person's
+ * Through the custody door's `rehive` frame alone (`custody-frames`), sent by `lares vault rehive face=N` from a person's
  * terminal, only on a vessel that holds its own custody (never under a pūlama, whose custody rests elsewhere and lights faces
  * on its own hand), and only while the face stands SHUT. The holder opens the face's key for this act alone
  * (`openFaceForAct`): the face's own per-boot attempt budget, its sealed `face-owner` row and its anchors read against the floor

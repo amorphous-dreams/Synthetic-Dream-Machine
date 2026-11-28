@@ -148,7 +148,7 @@ export function readCas(opts: CasReadOptions): CasRead {
 }
 
 /**
- * `lares bag cas --fetch <cid>` — THE FETCH DOOR's explicit read (basket-one #/the-fetch-door): ask the running
+ * `lares bag cas fetch=<cid>` — THE FETCH DOOR's explicit read (basket-one #/the-fetch-door): ask the running
  * vessel to resolve a cid through its door — local `cid/` first, then the fleet holders over Socket B, verified,
  * write-through. A miss everywhere answers `held: false` and the pointer stays PENDING; nothing is fabricated.
  */
@@ -156,14 +156,14 @@ async function cmdCasFetch(args: ParsedArgs, cid: string): Promise<number> {
   const r = await runVerb("cas-fetch", { cid }, await vesselDid());
   if (r.status === "error") {
     emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "cas-fetch failed" },
-                 human: () => console.error(`lares bag cas --fetch: ${r.errorMessage ?? "failed"}`) });
+                 human: () => console.error(`lares bag cas fetch=true: ${r.errorMessage ?? "failed"}`) });
     return 1;
   }
   const out = summaryOutput(r) ?? {};
   emit(args, {
     ok: true, data: out,
     human: () => {
-      console.log(`lares bag cas --fetch ${cid.slice(0, 16)}… — held ${String(out["held"])} · fetched ${String(out["fetched"])} · ${String(out["bytes"])}B · door ${String(out["door"])} · holders ${String((out["holders"] as string[] | undefined)?.length ?? 0)}`);
+      console.log(`lares bag cas fetch=${cid.slice(0, 16)}… — held ${String(out["held"])} · fetched ${String(out["fetched"])} · ${String(out["bytes"])}B · door ${String(out["door"])} · holders ${String((out["holders"] as string[] | undefined)?.length ?? 0)}`);
       if (out["held"] !== true) console.log("  no fleet holder carried the bytes — the pointer stays PENDING (a later read re-asks)");
     },
   });
@@ -171,17 +171,17 @@ async function cmdCasFetch(args: ParsedArgs, cid: string): Promise<number> {
 }
 
 /**
- * `lares bag cas --sweep [--dry-run]` — THE SWEEP, run where the composite stands (basket-one #/grace-and-pin):
+ * `lares bag cas sweep=true [dry-run=true]` — THE SWEEP, run where the composite stands (basket-one #/grace-and-pin):
  * the daemon derives the live reference count, reads its standing pins and the genesis protect set, and
  * sweeps the unreferenced blobs past their grace. The grace counts ROLLS of the realm's own clock; a realm
- * that has not said two rolls ages nothing, so nothing sweeps. `--dry-run` names what would sweep and moves nothing.
+ * that has not said two rolls ages nothing, so nothing sweeps. `dry-run=true` names what would sweep and moves nothing.
  */
 async function cmdCasSweep(args: ParsedArgs): Promise<number> {
   const dryRun = args.flags["dry-run"] === true;
   const r = await runVerb("cas-sweep", { dryRun }, await vesselDid());
   if (r.status === "error") {
     emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "cas-sweep failed" },
-                 human: () => console.error(`lares bag cas --sweep: ${r.errorMessage ?? "failed"}`) });
+                 human: () => console.error(`lares bag cas sweep=true: ${r.errorMessage ?? "failed"}`) });
     return 1;
   }
   const out = summaryOutput(r) ?? {};
@@ -191,7 +191,7 @@ async function cmdCasSweep(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true, data: { dryRun, swept, pinned, retained, pace: out["pace"] ?? null },
     human: () => {
-      console.log(`lares bag cas --sweep${dryRun ? " --dry-run" : ""} — swept ${swept.length} · pinned ${pinned.length} · retained ${retained.length}` +
+      console.log(`lares bag cas sweep=true${dryRun ? " dry-run=true" : ""} — swept ${swept.length} · pinned ${pinned.length} · retained ${retained.length}` +
                   (typeof out["pace"] === "number" ? ` · realm clock at roll ${String(out["pace"])}` : " · realm clock unread (no pace: nothing aged)"));
       for (const cid of swept) console.log(`  ${dryRun ? "would sweep" : "swept     "} ${cid.slice(0, 16)}…`);
     },
@@ -200,17 +200,17 @@ async function cmdCasSweep(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares bag cas --pin <cid> [--tier <t>] [--holder <name>] [--held]` / `--release <cid>` — PIN at cid
+ * `lares bag cas pin=<cid> [tier=<t>] [holder=<name>] [held=true]` / `release=<cid>` — PIN at cid
  * grain (basket-one #/grace-and-pin): a pin beside the bag's caps holds its blob past any grace until
- * this same vessel explicitly `--release`s it, or re-pins the cid (replace-by-cid). No clock, no expiry
+ * this same vessel explicitly `release=`s it, or re-pins the cid (replace-by-cid). No clock, no expiry
  * flag — a pin's lifetime is an EVENT (pin / release), never a span. Pins live in the CAS dir's
  * `.pins.json` sidecar (a non-hex name the sweep never reads as a blob). Local, no daemon.
  *
- * `--held` stamps the pin with the vessel LIFE the store names at rest (`readVesselLife`, @lararium/node) —
+ * `held=true` stamps the pin with the vessel LIFE the store names at rest (`readVesselLife`, @lararium/node) —
  * a pin that dies with that life: once another life holds the store, the sweep (run where the composite
  * stands, comparing its own current life) lets it go. A store that names no life (never claimed, or torn)
- * gives `--held` nothing to bind to, and the pin refuses by name. A bare `--pin` carries no `life` at all —
- * the operator's own explicit, PRESENCE-ONLY pin, standing until an explicit `--release`.
+ * gives `held=true` nothing to bind to, and the pin refuses by name. A bare `pin=` carries no `life` at all —
+ * the operator's own explicit, PRESENCE-ONLY pin, standing until an explicit `release=`.
  */
 function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
   const casDir = larCasDir();
@@ -223,7 +223,7 @@ function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
     const held = args.flags["held"] === true;
     const life = held ? readVesselLife(larDataDir()) : undefined;
     if (life === null) {
-      emit(args, { ok: false, error: { code: "held-pin-no-life", message: "the store names no vessel life, so a held pin has no life to end with" }, human: () => console.error("lares bag cas --held: the store names no vessel life (no vessel has claimed it, or its life record reads torn), so a held pin has no life to end with; boot the vessel first, or pin without --held") });
+      emit(args, { ok: false, error: { code: "held-pin-no-life", message: "the store names no vessel life, so a held pin has no life to end with" }, human: () => console.error("lares bag cas held=true: the store names no vessel life (no vessel has claimed it, or its life record reads torn), so a held pin has no life to end with; boot the vessel first, or pin without held=true") });
       return 1;
     }
     pins = pinCas(casDir, { cid: pin, tier, holder, ...(life !== undefined ? { life } : {}) });
@@ -233,15 +233,15 @@ function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
     data: { casDir, pins, standing: pins.length },
     human: () => {
       console.log(`lares bag cas — pins in ${casDir}: ${pins.length} standing`);
-      for (const p of pins) console.log(`  pinned  ${p.cid.slice(0, 16)}… tier ${p.tier} · holder ${p.holder} · release with \`lares bag cas --release ${p.cid}\``);
+      for (const p of pins) console.log(`  pinned  ${p.cid.slice(0, 16)}… tier ${p.tier} · holder ${p.holder} · release with \`lares bag cas release=${p.cid}\``);
     },
   });
   return 0;
 }
 
-/** `lares bag cas [--all] [--fetch <cid>] [--pin <cid> | --release <cid>] [--sweep [--dry-run]]` — the summary;
- *  `--all` lists every blob; `--fetch` reads one through the door; `--pin`/`--release` hold or free one past
- *  the grace; `--sweep` runs the sweep where the composite stands. */
+/** `lares bag cas [all=true] [fetch=<cid>] [pin=<cid> | release=<cid>] [sweep=true [dry-run=true]]` — the summary;
+ *  `all=true` lists every blob; `fetch=` reads one through the door; `pin=`/`release=` hold or free one past
+ *  the grace; `sweep=true` runs the sweep where the composite stands. */
 export function cmdCas(args: ParsedArgs): number | Promise<number> {
   const fetchCid = typeof args.options["fetch"] === "string" ? args.options["fetch"] : "";
   if (fetchCid) return cmdCasFetch(args, fetchCid);

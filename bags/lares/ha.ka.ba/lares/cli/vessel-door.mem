@@ -195,7 +195,7 @@ names and prints any private file outside it; `unbind <slot-id> --rotate` moves 
 removes the slot, and its census passes before any byte moves
 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-table`>>).
 
-''THE `vault` DOOR CARRIES A FACE'S BACKUP.'' `lares vault backup --face <N> --out <file>` cuts one face's
+''THE `vault` DOOR CARRIES A FACE'S BACKUP.'' `lares vault backup face=<N> out=<file>` cuts one face's
 backup bundle through the standing vessel's custody door: it reads the vessel's own route and the bundle's new
 route on a terminal, and no flag, environment variable or pipe carries either
 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-cut`>>). `lares vault restore <file>` brings a face back from
@@ -275,6 +275,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dXN45i3_hw8vR8gTQfTxSFGjUKsB12Vtn97fuyE97eM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8hgDJJWfpzbkDCE46mOzqxTY6Zh_li-8Xb8j-cHJezc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

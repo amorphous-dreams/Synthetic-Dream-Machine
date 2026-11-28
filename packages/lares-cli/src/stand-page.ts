@@ -1,5 +1,5 @@
 /**
- * `lares vessel stand --page` -- the explicit act that carries the desk's prepared Web root to the child daemon.
+ * `lares vessel stand page=true` -- the explicit act that carries the desk's prepared Web root to the child daemon.
  *
  * The flag names inputs and declares nothing it was not asked to: the two LAR_PRONAOS_* values ride the child
  * environment only where the caller declared neither, and same origin rides it only where no origin stands
@@ -21,7 +21,7 @@ export function standPageEnv(
   declared: { readonly originDeclared: boolean },
 ): StandPageEnv {
   if (desk === null) {
-    return { env: base, note: "--page found no built Web root with its receipt; run `pnpm build`, then stand again (the node's NO PRONAOS SHORE notice stands until then)" };
+    return { env: base, note: "page=true found no built Web root with its receipt; run `pnpm build`, then stand again (the node's NO PRONAOS SHORE notice stands until then)" };
   }
   const env: NodeJS.ProcessEnv = { ...base };
   const declaredPage = base["LAR_PRONAOS_WEB_ROOT"] !== undefined || base["LAR_PRONAOS_ARTIFACT_RECORD"] !== undefined;

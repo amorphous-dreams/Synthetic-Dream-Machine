@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.chair.views"
 
 ! face.chair.views ~ a chair speaks for the head it sees
 
-`lares persona view <persona-…> --seat-key <64 hex>` signs a Kahu chair's view of a face's head with the seat key it holds here, printing the view line a restore confirms by.
+`lares persona view <persona-…> seat-key=<64 hex>` signs a Kahu chair's view of a face's head with the seat key it holds here, printing the view line a restore confirms by.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l2YXEJrFXA7eLvPWMOmnLGL-80soTrSGw12UmPAI1qE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Nw5lpJwCt6OSD19lkLdvJ5ajGdH2-d5DAAmfn-W03Uw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

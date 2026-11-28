@@ -9,9 +9,9 @@ export const INTENT_VERBS = ["issue", "show", "ask", "answer", "claim", "takeove
 const acts: ReadonlySet<string> = new Set(INTENT_VERBS);
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
-  if (args.flags["face"] !== undefined) throw new Error("face-malformed: --face needs a whole persona index");
+  if (args.flags["face"] !== undefined) throw new Error("face-malformed: face= needs a whole persona index");
   if (raw === undefined) return {};
-  if (!/^(?:0|[1-9][0-9]*)$/.test(raw) || !Number.isSafeInteger(Number(raw))) throw new Error("face-malformed: --face needs a whole persona index from 0");
+  if (!/^(?:0|[1-9][0-9]*)$/.test(raw) || !Number.isSafeInteger(Number(raw))) throw new Error("face-malformed: face= needs a whole persona index from 0");
   return { face: Number(raw) };
 }
 
@@ -23,9 +23,9 @@ export async function cmdIntent(args: ParsedArgs): Promise<number> {
     const root = act === "cancel" || act === "supersede" || act === "release-root" || act === "delegate" || act === "delegate-revoke";
     const steer = act === "claim" || act === "takeover" || act === "release";
     if (act === "keeper-cosign") {
-      // `lares intent keeper-cosign <sha256:D′> --prev <chain head|none> --nonce <64 hex> [--face N]`: the keeper vest's co-sign over
+      // `lares intent keeper-cosign <sha256:D′> prev=<chain head|none> nonce=<64 hex> [face=N]`: the keeper vest's co-sign over
       // one commit; prints the face's carried co-sign as JSON (the host shim gathers each lit face's into the successor).
-      if (!target || args.options["prev"] === undefined || args.options["nonce"] === undefined) throw new Error("keeper-cosign: name the successor closure, --prev <chain head|none> and --nonce <64 hex>");
+      if (!target || args.options["prev"] === undefined || args.options["nonce"] === undefined) throw new Error("keeper-cosign: name the successor closure, prev=<chain head|none> and nonce=<64 hex>");
       const { output } = await storeVerb("intent-ask", { ...face, action: "keeper-cosign", next: target, prev: args.options["prev"], nonce: args.options["nonce"] });
       console.log(JSON.stringify(output["cosign"]));
       return 0;
@@ -35,7 +35,7 @@ export async function cmdIntent(args: ParsedArgs): Promise<number> {
     let jsonArgs: unknown;
     if (args.options["args"] !== undefined) {
       try { jsonArgs = JSON.parse(args.options["args"]!); }
-      catch { throw new Error("args-malformed: --args needs JSON"); }
+      catch { throw new Error("args-malformed: args= needs JSON"); }
     }
     if (!["show", "delegations", "delegate"].includes(act) && !target) throw new Error(`${act}: name ${act === "issue" ? "a verb" : "an id or CID"}`);
     const payload: Record<string, unknown> = { ...face,

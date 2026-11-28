@@ -15,7 +15,7 @@ import { genesisSeedCid } from "@lararium/node";
 import { floorSeedRead, readSeedOffered } from "../src/seed-offered.js";
 import { cmdFloor, floorSeedLines } from "../src/commands/floor.js";
 import { parseArgs } from "../src/parse-args.js";
-import { COMMANDS, unknownFlags } from "../src/bin/lares.js";
+import { COMMANDS, unknownParams } from "../src/bin/lares.js";
 
 const SHIPPED = join(repoRoot, "genesis");
 const shippedBytes = (): Buffer => readFileSync(join(SHIPPED, "seed.json"));
@@ -46,7 +46,7 @@ describe("`lares vessel floor seed` prints the read", () => {
     const write = process.stdout.write.bind(process.stdout);
     process.stdout.write = ((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; }) as typeof process.stdout.write;
     let code: number;
-    try { code = await cmdFloor(parseArgs(["floor", "seed", "--genesis", dir, "--json"])); }
+    try { code = await cmdFloor(parseArgs(["floor", "seed", `genesis=${dir}`, "--json"])); }
     finally { process.stdout.write = write; }
     expect(code).toBe(0);
     const answer = JSON.parse(out.join("").trim().split("\n").at(-1)!) as { ok: boolean; data: Record<string, unknown> };
@@ -75,19 +75,19 @@ describe("`floor seed --image <digest>` prints the whole pūlama frame (the shim
     const dir = genesisDirWith(shippedBytes());
     const cid = genesisSeedCid(new Uint8Array(shippedBytes()));
     const frame = JSON.stringify({ digest: "sha256:abc123", seed: `seed ${cid} offered; the founding record reads at boot` });
-    const bare = await floorRun("seed", "--genesis", dir, "--image", "sha256:abc123");
+    const bare = await floorRun("seed", `genesis=${dir}`, "image=sha256:abc123");
     expect(bare).toEqual({ code: 0, out: `${frame}\n` });
-    const both = await floorRun("seed", "--genesis", dir, "--image", "sha256:abc123", "--json");
+    const both = await floorRun("seed", `genesis=${dir}`, "image=sha256:abc123", "--json");
     expect(both).toEqual({ code: 0, out: `${frame}\n` });
   });
 
   test("CONTROL: an empty --image refuses by name and prints no frame; the vessel row accepts --image", async () => {
     const dir = genesisDirWith(shippedBytes());
-    const empty = await floorRun("seed", "--genesis", dir, "--image", " ", "--json");
+    const empty = await floorRun("seed", `genesis=${dir}`, "image= ", "--json");
     expect(empty.code).toBe(2);
     expect(empty.out).not.toContain("\"digest\"");
     const vessel = COMMANDS.find((c) => c.name === "vessel")!;
-    expect(unknownFlags(vessel, parseArgs(["vessel", "floor", "seed", "--genesis", dir, "--image", "sha256:abc"]))).toEqual([]);
+    expect(unknownParams(vessel, parseArgs(["vessel", "floor", "seed", `genesis=${dir}`, "image=sha256:abc"]))).toEqual([]);
   });
 });
 

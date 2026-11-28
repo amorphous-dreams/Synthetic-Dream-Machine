@@ -127,8 +127,8 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     expect(conflicts[0]!.uri).toBe(URI);
     expect(conflicts[0]!.reason).toContain("both moved past their last agreement");
     // The alert names both doors, each under the standoff's own key.
-    expect(conflicts[0]!.reason).toContain(`lares shore take-disk ${URI} --key ${conflicts[0]!.standoff}`);
-    expect(conflicts[0]!.reason).toContain(`lares shore take-records ${URI} --key ${conflicts[0]!.standoff}`);
+    expect(conflicts[0]!.reason).toContain(`lares shore take-disk ${URI} key=${conflicts[0]!.standoff}`);
+    expect(conflicts[0]!.reason).toContain(`lares shore take-records ${URI} key=${conflicts[0]!.standoff}`);
 
     await stop();
   });

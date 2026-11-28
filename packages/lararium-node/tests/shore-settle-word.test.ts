@@ -1,7 +1,7 @@
 /**
  * THE SETTLE WORD — the projector says when the projection that landed records cause has run.
  *
- * `lares ingest --apply` lands records, often in another island's store, and they reach this wiki by sync
+ * `lares ingest apply=true` lands records, often in another island's store, and they reach this wiki by sync
  * at no instant a caller can name. A scan that followed on a nap read a file the projection still moved.
  * The shore's `settle` act names each carrier with the hash its records render; the projector answers once
  * the wiki holds those records and its reconcile queue drained, so the file already stands as the

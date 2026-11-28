@@ -42,15 +42,15 @@ already mint). On a TTY with no `--detach` it transparently attaches to `watch`;
 off-TTY / `--detach` it returns the id and exits.
 
 <<~ has entity=`Verb` name=`status` params=`lares vessel read <id> ~ one-shot, authoritative current state; emits a pollInterval hint`>>
-<<~ has entity=`Verb` name=`watch` params=`lares vessel request <id> --watch ~ stream progress until terminal; --exit-status mirrors the job result into the CLI exit code (gh/kubectl shape)`>>
+<<~ has entity=`Verb` name=`watch` params=`lares vessel request <id> watch=true ~ stream progress until terminal; an exit-status mirror of the job result into the CLI exit code stays owed (gh/kubectl shape)`>>
 <<~ has entity=`Verb` name=`wait` params=`wait <id> --timeout <s> ~ block until terminal-or-timeout; timeout → structured 'still running + progress', NEVER a hard fail (the work lives in the job, not the call)`>>
-<<~ has entity=`Verb` name=`cancel` params=`lares vessel request <id> --cancel ~ move the job to the cancelled terminal state (distinct from Ctrl-C, which DETACHES — job keeps running, re-attach by id)`>>
+<<~ has entity=`Verb` name=`cancel` params=`lares vessel request <id> cancel=true ~ move the job to the cancelled terminal state (distinct from Ctrl-C, which DETACHES — job keeps running, re-attach by id)`>>
 
 ''As built'' (`packages/lares-cli/src/bin/lares.ts`): `lares vessel request <requestId>` reads a request's
-receipt from the vessel's own ledger and durable outcome doc, dispatching nothing; `lares vessel request <requestId> --cancel`
+receipt from the vessel's own ledger and durable outcome doc, dispatching nothing; `lares vessel request <requestId> cancel=true`
 marks the id abandoned only when no decision already stands, so a later request under that id refuses — it
 stops no running job; and
-`lares ingest --watch` names a source-directory ingest watcher. The four verbs above, the `pollInterval` hint,
+`lares ingest watch=true` names a source-directory ingest watcher. The four verbs above, the `pollInterval` hint,
 exit 124 and the progress event stream read UNBUILT.
 
 Precedent: `gh run watch --exit-status`, `kubectl wait --for=condition --timeout`,
@@ -173,6 +173,6 @@ write toward; it describes no current emission.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IOt_5svKttbKZHoez5f7pK1W0uLYenISlb69W-toWfk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;e_MXBoLC2RmSmK3qAVXChIRZqrwQLEgAZs5SuLSfJn0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

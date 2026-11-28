@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.steward.lists"
 
 ! realm.steward.lists ~ who keeps which realm bag
 
-`lares nexus realm-bags [--realm <id>]` lists the realm bags and their stewards as of the last sync, in the realm the verb names or the charter-derived realm. A listing never enters a realm.
+`lares nexus realm-bags [realm=<id>]` lists the realm bags and their stewards as of the last sync, in the realm the verb names or the charter-derived realm. A listing never enters a realm.
 
 <<~/ahu>>
 
@@ -98,6 +98,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jodSoerRpQFsc9Nbyktz0w2LXnzFDseTNg5s9J9YESk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bY2uHg6rxvYWFwkeBN2-sjiDpJyhgQgj7oPYdCjan7w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

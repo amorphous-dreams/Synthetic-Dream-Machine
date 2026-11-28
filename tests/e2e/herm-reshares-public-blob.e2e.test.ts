@@ -167,7 +167,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     const casA = listCas(A);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     expect(cid, `A's cid/ holds neither sha256(raw) nor sha256(base64); it holds ${casA.map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
-    const decl = await A.cli(["bag", "declare", BOOK_SLUG, "--tier", "public", "--json"]);
+    const decl = await A.cli(["bag", "declare", BOOK_SLUG, "tier=public", "--json"]);
     expect(decl.json?.["ok"], said(decl)).toBe(true);
   }, 120_000);
 
@@ -244,7 +244,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     if (existsSync(held)) rmSync(held, { force: true });
     const direct = await fetch(`${hermShore}/cas/${cid}`);
     const planted = existsSync(join(casDirOf(herm), cid));
-    const r = await C.cli(["bag", "cas", "--fetch", cid, "--json"]);
+    const r = await C.cli(["bag", "cas", `fetch=${cid}`, "--json"]);
     console.error([
       `herm-reshares MEASURE the shut (A dark): GET ${hermShore}/cas/${cid.slice(0, 12)}… → ${direct.status} · Herm cid/ holds it by ⑤b's plant: ${planted}`,
       `  bag cas --fetch → ${said(r).trim().slice(0, 300)}`,
@@ -276,7 +276,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
   }, 30_000);
 
   test("CONTROL: C's fetch of a ghost reads held:false with A dark — no fault, nothing written", async () => {
-    const r = await fleet!.C.cli(["bag", "cas", "--fetch", GHOST, "--json"]);
+    const r = await fleet!.C.cli(["bag", "cas", `fetch=${GHOST}`, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["held"]).toBe(false);
     expect(existsSync(join(casDirOf(fleet!.C), GHOST))).toBe(false);

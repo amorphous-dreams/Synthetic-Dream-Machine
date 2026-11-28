@@ -73,7 +73,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
   test("★ `publish plugins` with no --source refuses through usage, never genesis ★", async () => {
     expect(await cmdNexus(args(["publish", "plugins"], { json: false }))).toBe(2);
     const said = [...errs, ...logs].join("\n");
-    expect(said).toMatch(/--source/);
+    expect(said).toMatch(/source=/);
   });
 
   test("★ `publish plugins --source <dir>` READS the local offering source and builds nothing ★", async () => {
@@ -232,7 +232,7 @@ describe("lares nexus publish under a pūlama — the terms line and the land of
     w.mockRestore();
     const payloads = out.join("").trim().split("\n").map((l) => JSON.parse(l) as { ok: boolean; error?: { code?: string; message?: string } });
     expect(payloads.map((p) => p.error?.code)).toEqual(["usage", "usage"]);
-    expect(payloads[0]?.error?.message).toMatch(/one of --apply, --terms or --land/);
+    expect(payloads[0]?.error?.message).toMatch(/one of apply=true, terms=true or land=/);
     expect(payloads[1]?.error?.message).toMatch(/signed nothing \(face-locked\)/);
   });
 });

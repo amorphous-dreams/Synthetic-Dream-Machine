@@ -2,7 +2,7 @@
 /*
  * PostCompact lands the carry (async: the harness waits on nothing, so this hook bounds itself). The harness hands it
  * `compact_summary`; inside the house, for the pet this session wears, and only where the vessel answers up, the hook pipes
- * the summary whole on stdin to `lares spirit <word> <pet> --file -` (the word: `COMPACTION_WORD`), bearing the instance and the
+ * the summary whole on stdin to `lares spirit <word> <pet> file=-` (the word: `COMPACTION_WORD`), bearing the instance and the
  * wake epoch (an ordering stamp); its instance keys its own lineage. The door guards it (strict, uncut) and lands it with its lineage; hooks never write the card's
  * slots, so the answer hands back the #/instances line, and the session's counter marks it unfiled: the next stop names the `ah`
  * that files it, an instance's own act. A landing that never ran marks the counter too.
@@ -24,14 +24,14 @@ try {
   const summary = typeof input.compact_summary === "string" ? input.compact_summary : "";
   if (pet !== null && summary.trim() !== "" && houseSession(input, import.meta.url)) {
     const run = shimRun(import.meta.url);
-    const byHand = `land it by hand: lares spirit ${COMPACTION_WORD} ${pet} --file <summary path>`;
+    const byHand = `land it by hand: lares spirit ${COMPACTION_WORD} ${pet} file=<summary path>`;
     let unfiled;
     if (!(await vesselUp(run))) unfiled = `the vessel answered no up, so nothing landed; ${byHand}`;
     else {
       const bearing = [
-        ...(typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--instance", input.session_id] : []),
+        ...(typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? [`instance=${input.session_id}`] : []),
       ];
-      const answer = parseAnswer((await settle(run(spiritArgv(COMPACTION_WORD, pet, "--file", "-", ...bearing), summary, LANDING_BUDGET_MS), LANDING_BUDGET_MS))?.stdout);
+      const answer = parseAnswer((await settle(run(spiritArgv(COMPACTION_WORD, pet, "file=-", ...bearing), summary, LANDING_BUDGET_MS), LANDING_BUDGET_MS))?.stdout);
       unfiled = answer?.ok !== true ? String(answer?.error?.message ?? `the door answered nothing; ${byHand}`)
         : answer.data?.filed === false ? String(answer.data?.unfiled ?? "the #/instances line stayed unfiled") : null;
     }

@@ -56,7 +56,7 @@ export interface CabalVouchOptions {
   readonly boundEpoch?: number;
   /** The Nexus the realm stands under, for this vessel's first act there. Absent → the primary charter's. */
   readonly nexusAid?:   string;
-  /** The face that vouches (`--face N`); absent, the one face standing open. */
+  /** The face that vouches (`face=N`); absent, the one face standing open. */
   readonly face?:       number;
   /** The charter DOC's authority home (the door supplies `larSealHome()`). */
   readonly sealHome:    string;

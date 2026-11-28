@@ -12,25 +12,25 @@ const CID = "a".repeat(64);
 
 describe("lares meme offer", () => {
   test("each act names its daemon verb", () => {
-    expect(plan("lar:///ha.ka.ba/x", "lar:///ha.ka.ba/y", "--bag", "lares")).toEqual({ verb: "offer-make", args: { bag: "lares", titles: ["lar:///ha.ka.ba/x", "lar:///ha.ka.ba/y"] } });
-    expect(plan("show", "--bag", "lares", "--all")).toEqual({ verb: "offer-list", args: { bag: "lares", all: true } });
+    expect(plan("lar:///ha.ka.ba/x", "lar:///ha.ka.ba/y", "bag=lares")).toEqual({ verb: "offer-make", args: { bag: "lares", titles: ["lar:///ha.ka.ba/x", "lar:///ha.ka.ba/y"] } });
+    expect(plan("show", "bag=lares", "all=true")).toEqual({ verb: "offer-list", args: { bag: "lares", all: true } });
     expect(plan("show")).toEqual({ verb: "offer-list", args: {} });
     expect(plan("show", CID)).toEqual({ verb: "offer-show", args: { cid: CID } });
     expect(plan("promote", CID)).toEqual({ verb: "offer-promote", args: { cid: CID } });
-    expect(plan("promote", CID, "--over-fresher")).toEqual({ verb: "offer-promote", args: { cid: CID, overFresher: true } });
+    expect(plan("promote", CID, "over-fresher=true")).toEqual({ verb: "offer-promote", args: { cid: CID, overFresher: true } });
   });
 
   test("offer show folds list and item while item refuses list filters", () => {
     expect(plan("show")).toEqual({ verb: "offer-list", args: {} });
     expect(plan("show", CID)).toEqual({ verb: "offer-show", args: { cid: CID } });
-    expect(() => plan("show", CID, "--all")).toThrow(/--all/);
-    expect(() => plan("show", CID, "--bag", "lares")).toThrow(/--bag/);
+    expect(() => plan("show", CID, "all=true")).toThrow(/all=true/);
+    expect(() => plan("show", CID, "bag=lares")).toThrow(/bag=/);
   });
 
   test("a malformed act refuses by name before any socket", () => {
-    expect(() => plan("lar:///ha.ka.ba/x")).toThrow(/--bag/);
+    expect(() => plan("lar:///ha.ka.ba/x")).toThrow(/bag=<slug>/);
     expect(() => plan("promote", "nope")).toThrow(/64 hex/);
-    expect(() => plan("not-a-uri", "--bag", "lares")).toThrow(/lar: uris/);
+    expect(() => plan("not-a-uri", "bag=lares")).toThrow(/lar: uris/);
   });
 });
 

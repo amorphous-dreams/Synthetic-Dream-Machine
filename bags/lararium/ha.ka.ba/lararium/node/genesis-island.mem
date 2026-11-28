@@ -77,7 +77,7 @@ honest about the code its floor rides beside. Dropping the code fields would cha
 ''What reads which.'' The genesis-parity witness reads each code blob against its source, so a plugin or engine edit reads
 DRIFT until a bake or a declaration, and reads the floor against its own coherence (manifest, offering, snapshot rows, the
 seed's floor witness), never against the live tree, so a canon edit reads green. A Nexus moves a standing vessel's floor
-by its own release road (`lares nexus release --cut` from live canon, the accept, a reboot), apart from genesis.
+by its own release road (`lares nexus release cut=true` from live canon, the accept, a reboot), apart from genesis.
 
 <<~/ahu>>
 
@@ -156,6 +156,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;e8UkiPtnAeHgHVUE2iBb5ctlSXmHAy2blj7JFdJXyv0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7mbrcHsbykI3P1pPOUXGLTyP6_1WmGLJbmRw4iz3cds`>>
 
 <<^ code=`&#x0004;` to=`?`>>

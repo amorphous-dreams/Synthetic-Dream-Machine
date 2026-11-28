@@ -1121,14 +1121,14 @@ names a bag declaration inside that shared carrier shape.
 
 <<~ scale name=`carrier` ranks=```complete ~ DOCTYPE + SOH + root TOML + STX + ETX + block check + EOT stand in order -> graded ~ each absent or displaced mark remains visible to the operator -> addressed ~ `uri-path` names a meme -> bag-declaring ~ `bag` names a bag's self-description; its fields and prose travel in the same checked body```>>
 
-`lares meme check --gradient` reads it. It reports each carrier's missing or displaced marks and fails
+`lares meme check gradient=true` reads it. It reports each carrier's missing or displaced marks and fails
 on a fault. A bag-declaring carrier carries STX, ETX, EOT, and a block check so its authoritative fields
 and prose share one integrity scope. A content file declaring itself in a `.meta` beside it travels as a
 sidecar pair, settled where the file list stands known.
 
 ### The graph a carrier points into
 
-A carrier can read whole and point at nothing. `lares meme check --edges` takes that second reading: which
+A carrier can read whole and point at nothing. `lares meme check edges=true` takes that second reading: which
 addresses these carriers name, and which of them any carrier holds. **Run it either side of a move** —
 equal counts prove the weld held, a rise names what broke.
 
@@ -1326,6 +1326,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jsBpuO24nnddRXA_zAnqGGhcUjQiiVkTtNdgERZKf_o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jm8CjEZ0VpYK6joisu0xkhIpkCJ0--lSKqvdZo-C1iA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

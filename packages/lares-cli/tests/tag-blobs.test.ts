@@ -1,5 +1,5 @@
 /**
- * tag-blobs.test.ts — the `lares ingest --tag-blobs` writer proof.
+ * tag-blobs.test.ts — the `lares ingest tag-blobs=true` writer proof.
  *
  * The shore stamps the CAS opt-in flag for utf8 carriers that would hit the fault wall at
  * regenesis (a pointer-kind carrier needs none — kind picks its shape): a `<file>.meta` sidecar for a standalone file, `_lar_cas = "yes"` on

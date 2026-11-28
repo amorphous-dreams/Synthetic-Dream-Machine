@@ -11,7 +11,7 @@
  *            (`proveRoute`); an act that proves no route refuses `hand-unattested`. Unknown never reads as allowed.
  *
  * The same gate serves every hand act on the custody door and the pūlama's hand door, and the rite's abandon (`rite-abandon`, a
- * seat refused `hand-act-only` at the socket; `lares rite land --abandon` reads its own branch through `readOwnHand`).
+ * seat refused `hand-act-only` at the socket; `lares rite land abandon=true` reads its own branch through `readOwnHand`).
  *
  * THE VERB SOCKET'S BOOKED ASKER STANDS AS THIS GATE'S CACHED READING. The socket (`uds-channel`) reads each line's or session's peer
  * once, through the same `peerKindOf` (or the reader a suite names), and books what it read: `ai` books the seat's hand and
@@ -23,8 +23,8 @@
  * re-exported here), naming what the reading looked at (a command's own branch, or a line's peer) and the command the cure runs.
  *
  * A COMMAND WITH NO SOCKET reads its own branch (`readOwnHand`): the sense lifecycle's hand verbs (`lares sense harden`,
- * `retire`, `un-retire`, `purge`, `teardown --confirm`) run direct over the store, so the CLI asks the same three readings of the
- * process that runs the command. A flag the command carries (`--approve`, `--confirm`) names the intent; only this reading
+ * `retire`, `un-retire`, `purge`, `teardown confirm=true`) run direct over the store, so the CLI asks the same three readings of the
+ * process that runs the command. A flag the command carries (`approve=true`, `confirm=true`) names the intent; only this reading
  * approves. Like the peer reading it closes the honest road and the casual omission (a stripped harness mark), not a process
  * that leaves the harness's branch on purpose.
  */

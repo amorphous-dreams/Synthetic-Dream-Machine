@@ -47,7 +47,7 @@ async function recipeToEdit(
 }
 
 /**
- * `lares wiki add-bag <slug> <bag-uri> [--at <position>]` — add a bag to
+ * `lares wiki add-bag <slug> <bag-uri> [at=<position>]` — add a bag to
  * the wiki's recipe at runtime.
  *
  * Idempotent: if the bag URL is already in the recipe stack, returns

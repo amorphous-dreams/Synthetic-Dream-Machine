@@ -13,7 +13,7 @@
 # AN EXPLICIT NEXUS OPENS THE HERM RELAY (the shut-routes house ruling, stable-founding-road #/rulings). A herm stands a floor gate only
 # at a Nexus whose quorum counted its `carry`, and a reader files a herm's floor pin only off a board that counts it.
 # So lararium-a (which seats the founding kahu) stands too, and before the read every herm AND the host reader join
-# A's Nexus by hand: `nexus carry-for` on the place, `nexus carry --floor-pin` on A, `nexus carry-take` on the place.
+# A's Nexus by hand: `nexus carry-for` on the place, `nexus carry floor-pin=` on A, `nexus carry-take` on the place.
 #
 # Usage: node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 lararium-a   (each wave boots against the
 #        pins the earlier wave founded; a bare `compose up` stands peers that knock with no pin and never dial)
@@ -62,21 +62,21 @@ join() {
   elif [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
     # The reader joins twice across the roll. A's charter is a partner's to it, so it lands beside the
     # reader's primary, where the second import moves forward along its seal lineage.
-    out=$("$@" nexus seal import --carry "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import --carry" "$out"
+    out=$("$@" nexus seal import carry="$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import carry=" "$out"
     carried=$(printf '%s' "$out" | grep -oE '"aid":"[^"]+"' | head -1 | cut -d'"' -f4)
-    [ -n "$carried" ] || refused "$label" "nexus seal import --carry (no aid)" "$out"
+    [ -n "$carried" ] || refused "$label" "nexus seal import carry= (no aid)" "$out"
   else
     out=$("$@" nexus seal import "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import" "$out"
   fi
   local at=()
-  if [ "$label" = "host-reader" ] && [ -n "${carried:-}" ]; then at=(--nexus "$carried"); fi
+  if [ "$label" = "host-reader" ] && [ -n "${carried:-}" ]; then at=("nexus=$carried"); fi
   # A --json answer is the door's stdout alone; its log lines ride stderr and stay out of the files A and the place read.
   cf=$("$@" nexus carry-for "${at[@]}" --json 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
   nym=$(printf '%s' "$cf" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4 || true)
   sig=$(printf '%s' "$cf" | grep -oE '"carrierSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4 || true)
   [ -n "$nym" ] && [ -n "$sig" ] || refused "$label" "nexus carry-for (no nym and carrier seal)" "$cf"
   printf '%s' "$cf" | $COMPOSE exec -T lararium-a sh -c "cat > /tmp/carry-for-$label.json" || refused "$label" "the carry-for copy to A" ""
-  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" --carrier "$sig" --floor-pin "/tmp/carry-for-$label.json" --json > "$WORK/bundle-$label.json" 2>"$WORK/bundle-$label.err" \
+  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" carrier="$sig" floor-pin="/tmp/carry-for-$label.json" --json > "$WORK/bundle-$label.json" 2>"$WORK/bundle-$label.err" \
     || refused "$label" "A's nexus carry" "$(cat "$WORK/bundle-$label.json" "$WORK/bundle-$label.err")"
   if [ "$label" = "host-reader" ]; then out=$("$@" nexus carry-take "$WORK/bundle-$label.json" --json 2>&1) || refused "$label" "nexus carry-take" "$out"
   else
@@ -97,7 +97,7 @@ if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
   card=$($COMPOSE logs --no-color lararium-a 2>&1 | grep -oE 'staged seed card: [0-9a-f-]+' | tail -1 | cut -d' ' -f4)
   [ -n "$before" ] && [ -n "$card" ] || refused "lararium-a" "opening head and staged seed card" "$before"
   # The card enters the staged test root's own rite. Its code never prints in the witness log.
-  out=$($COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES nexus seal rotate --cold-key "$card" --threshold 1 --json 2>&1) \
+  out=$($COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES nexus seal rotate cold-key="$card" threshold=1 --json 2>&1) \
     || refused "lararium-a" "nexus seal rotate" "$out"
   unset card
   after=$(printf '%s' "$out" | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)

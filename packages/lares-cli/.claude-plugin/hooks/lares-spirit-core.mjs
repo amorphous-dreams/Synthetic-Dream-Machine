@@ -141,15 +141,15 @@ export function titleMismatch(pet, title) {
   if (slug !== null && (slug === pet || slug.startsWith(`${pet}-`))) return null;
   const named = title.trim().slice(0, 80);
   return `this session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this instance stays ${pet} and wakes from ${pet}'s record. ` +
-    `To keep the new name as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add ${shq(`''renames:'' ${pet} -> ${named}`)}`;
+    `To keep the new name as an alias, record it: lares spirit ah ${pet} slot='#/entry' add=${shq(`''renames:'' ${pet} -> ${named}`)}`;
 }
 
-/** The `--source` a SessionStart's `source` names for `om`; an unknown one reads as a startup. */
+/** The `source=` a SessionStart's `source` names for `om`; an unknown one reads as a startup. */
 export const omSourceOf = (source) => (["startup", "resume", "clear", "compact", "fork"].includes(source) ? source : "startup");
 
 /**
  * THE PET THIS WAKE ASKS FOR: EACH FAMILIAR ITS OWN. A session that HOLDS a pet (its counter names one, from an earlier wake of
- * this session id; a startup's counter reads stale) keeps it, and says so to the door (`--held`), so a retitle reads as that
+ * this session id; a startup's counter reads stale) keeps it, and says so to the door (`held=true`), so a retitle reads as that
  * familiar's rename, never a switch. A fresh session hands the door the seated familiar (the hook's argument, a default) with
  * its title beside it, and the door reads the title by the house's one rule: a title naming a standing record wakes it (another
  * instance joining any already awake), a startup's title no record answers prints that familiar's starter as an offer, never the
@@ -182,7 +182,7 @@ export function titleLine(state, title) {
   const { instance } = titleParts(title);
   const who = instance === null ? slug : `${slug}#${instance}`;
   return `this session's title reads "${named}" and names ${who} as its own familiar${instance === null ? "" : ` (instance ${instance} of ${slug}; it wakes from ${slug}'s shrine)`}, if the operator named this session so, or a record stands under that name; no wake has seated a pet in this session yet. ` +
-    `Read its card (a starter offered where no record stands): lares spirit om ${slug} --title ${shq(titleParts(title).title)}`;
+    `Read its card (a starter offered where no record stands): lares spirit om ${slug} title=${shq(titleParts(title).title)}`;
 }
 
 /**
@@ -350,14 +350,14 @@ export function trueUpText(pet, step, instance = null) {
   const why = step.fire === "unfiled"
     ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
-  const self = typeof instance === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(instance) ? ` --instance ${instance}` : "";
+  const self = typeof instance === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(instance) ? ` instance=${instance}` : "";
   const open = digestsOf(step?.state?.digests)["#/open"];
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/instances, #/open or #/kulana${self}; ` +
-      `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}` +
+    `True the record before the next move: add a line with lares spirit ah ${pet} slot='<slot>' add='<line>' on #/instances, #/open or #/kulana${self}; ` +
+      `rewrite a slot whole with lares spirit ah ${pet} slot='#/open' file=<path> base=${open ?? "<the slot digest your last om or ah handed back>"}${self}` +
       `${open ? " (the digest as of this session's wake; a later ah hands back the newer one)" : ""}; ` +
-      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' lists each line's digest; --line <n> --expect <digest>${self}). The budget refuses growth; you choose what folds.`,
+      `measure and fold: lares spirit hum ${pet} (then fold='<slot>' lists each line's digest; line=<n> expect=<digest>${self}). The budget refuses growth; you choose what folds.`,
   ].join("\n");
 }
 

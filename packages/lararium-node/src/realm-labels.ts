@@ -6,7 +6,7 @@
  * EVERY REALM CARRIES A PET NAME, so nothing waits and no plaintext mirror goes dark. A realm minted with no name takes its
  * wiki's slug (`ensureRealmLabel`: canon stands each wiki as its own realm, so the folder reads `realms/<slug>/wikis/<slug>/`),
  * and a vessel mints that label on first read for every realm standing with none. Naming stays the operator's act and never
- * gates flow: `lares realm rename <current> --to <new>` renames, `lares realm move <slug> --to <pet>` regroups, and the folders move
+ * gates flow: `lares realm rename <current> to=<new>` renames, `lares realm move <slug> to=<pet>` regroups, and the folders move
  * at a quiet point (`settleRealmMoves`), never half-moved.
  *
  * THE RECORD. `<projections>/realm-labels/<pet name>.json` (0600):
@@ -129,7 +129,7 @@ export function realmPetNameRefusal(petName: string, others: readonly string[] =
   const face = faceSegmentRefusal(petName);
   if (face !== null) {
     const code = face.code.replace(/^face-segment-/, "realm-name-") as RealmRefusalCode;
-    return { code, why: face.code === "face-segment-empty" ? "a realm with no pet name makes no folder: give it one (`lares realm rename <current> --to <pet>`)" : face.why.replace("so it names no single folder", "so it names no single realm folder") };
+    return { code, why: face.code === "face-segment-empty" ? "a realm with no pet name makes no folder: give it one (`lares realm rename <current> to=<pet>`)" : face.why.replace("so it names no single folder", "so it names no single realm folder") };
   }
   const twin = others.find((o) => fold(o) === fold(petName));
   if (twin !== undefined) return { code: "realm-name-collision", why: `the pet name ${JSON.stringify(petName.normalize("NFC"))} meets the realm ${JSON.stringify(twin)} (folders compare without case): name it apart` };
@@ -182,7 +182,7 @@ export function placeInRealm(projections: string, petName: string, wiki: { reado
   if (isPrivateProjectionSlug(wiki.slug)) throw new RealmRefused("realm-slug-private", `"${wiki.slug}" holds one face's memory, which rests in that face's root (faces/<pet name>/): it joins no realm`);
   const labels = readRealmLabels(projections);
   const label = labels.find((l) => fold(l.petName) === fold(petName));
-  if (label === undefined) throw new RealmRefused("realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: gather a wiki into it first (\`lares realm move <slug> --to ${petName}\`)`);
+  if (label === undefined) throw new RealmRefused("realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: gather a wiki into it first (\`lares realm move <slug> to=${petName}\`)`);
   let carried: string | null = null;
   for (const other of labels) {
     if (other === label || !(other.realms.some((r) => r.slug === wiki.slug) || other.bags.includes(wiki.slug))) continue;
@@ -204,7 +204,7 @@ export function placeInRealm(projections: string, petName: string, wiki: { reado
 export interface RealmMove { readonly label: RealmLabel; readonly from: string | null; readonly minted: boolean; readonly dropped: readonly string[] }
 
 /**
- * MOVE A WIKI TO A REALM (`lares realm move <slug> --to <pet>`): the wiki (and its canon bag) leaves the label that holds it and
+ * MOVE A WIKI TO A REALM (`lares realm move <slug> to=<pet>`): the wiki (and its canon bag) leaves the label that holds it and
  * joins the realm wearing `petName`, minted now under the pet-name rule where no label wears it. The wiki keeps its canon realm
  * id (the label only gathers it). A label the move empties leaves, named in `dropped`. The folders follow at the next quiet point.
  */
@@ -259,8 +259,8 @@ export function ensureRealmLabel(projections: string, slug: string, id: string |
   const label: RealmLabel = { schema: REALM_LABEL_SCHEMA, petName, realms: [{ slug, id: realmId }], bags: [slug] };
   writeRealmLabel(projections, label);
   const line = petName === slug
-    ? `${slug}: the realm takes its default pet name "${petName}" (its folder: realms/${petName}/); \`lares realm rename ${petName} --to <pet>\` renames it`
-    : `${slug}: the default pet name "${slug}" names another realm already, so this realm takes "${petName}" (the slug plus the shortest ${realmId !== null ? "prefix of its realm id" : "counter"} that names it apart; its folder: realms/${petName}/); \`lares realm rename ${petName} --to <pet>\` renames it`;
+    ? `${slug}: the realm takes its default pet name "${petName}" (its folder: realms/${petName}/); \`lares realm rename ${petName} to=<pet>\` renames it`
+    : `${slug}: the default pet name "${slug}" names another realm already, so this realm takes "${petName}" (the slug plus the shortest ${realmId !== null ? "prefix of its realm id" : "counter"} that names it apart; its folder: realms/${petName}/); \`lares realm rename ${petName} to=<pet>\` renames it`;
   return { label, minted: true, line };
 }
 
@@ -392,7 +392,7 @@ export function settleRealmMoves(projections: string): RealmSettle {
         const ends = { from, to, fromRealm: f, toRealm: l.petName };
         for (const root of [join(realmsDir, f), realmRoot(projections, l.petName)]) {
           try { commitRealmMove(root, plane, slug, ends); }
-          catch (e) { held.push(`${root}: the move stands on disk, and its tree took no commit (${e instanceof Error ? e.message : String(e)}); \`lares surface commit --realm\` keeps it by hand`); }
+          catch (e) { held.push(`${root}: the move stands on disk, and its tree took no commit (${e instanceof Error ? e.message : String(e)}); \`lares surface commit realm=true\` keeps it by hand`); }
         }
       }
     }

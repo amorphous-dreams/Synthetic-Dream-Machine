@@ -7,27 +7,27 @@
  * `tendPoolExclude`), a local author `<pet name> <slug>@face.invalid` with signing off, and a pre-commit hook that runs the pool check. Git always runs here with an empty global config and no system
  * config, so nothing this door writes or reads reaches past the pool.
  *
- *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already". The
+ *   - `init [face=N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already". The
  *     vessel founds the same tree by itself, through the same init (`initFacePool`, `initRealmPool`), wherever it lays an entity
  *     root with none standing (`ensurePoolTree`); `init` re-tends a standing pool's author, exclude block and hook by hand.
- *   - `check [--face N]`: the pool check over the repo standing here (or the named face's pool); exit 1 names each breach.
- *   - `open [--face N] [--launch]`: print (and run) `<editor> -n <face root> <realm pools>`; writes no workspace file. The
+ *   - `check [face=N]`: the pool check over the repo standing here (or the named face's pool); exit 1 names each breach.
+ *   - `open [face=N] [launch=true]`: print (and run) `<editor> -n <face root> <realm pools>`; writes no workspace file. The
  *     editor reads from the house config tiddler `$:/config/lares/surface/Editor` (`<config>/surface-editor.tid`), else the build standing on the PATH.
- *   - `commit [--face N] [-m <seam>]`: stage only the paths whose disk bytes equal the synced base, and commit them under a
+ *   - `commit [face=N] [-m <seam>]`: stage only the paths whose disk bytes equal the synced base, and commit them under a
  *     `lar:` subject naming no face; a path standing off reads apart by name and stays unstaged. Never pushes.
- *   - `face [--face N]`: the face the house resolves and the pet name it wears (the host asks the vessel this alone).
+ *   - `face [face=N]`: the face the house resolves and the pet name it wears (the host asks the vessel this alone).
  *
  * ONE TREE PER ENTITY (operator ruling 2026-11-20: "Approve the new git entity root model."). A nameless entity (a face, a realm,
  * a bound workspace) owns ONE disk root, and that root holds ONE git tree. A wiki several of the operator's own faces share (a
  * cabal of one) rests once, in its REALM's root, named by the realm's local pet name (operator ruling 2026-11-19): the workbench
  * mirror `projections/realms/<realm pet name>/wikis/<slug>/`, a capability of the realm's one tree (`.git` at
- * `realms/<realm pet name>/`), or the workspace its share row names, which holds its own. `init --realm <realm pet name>` makes the
+ * `realms/<realm pet name>/`), or the workspace its share row names, which holds its own. `init realm=<realm pet name>` makes the
  * realm's root a pool under the realm's identity (`<pet name> <folded>@realm.invalid`), never a face's, lifting any tree nested
  * below it with its history kept, and each workspace the realm's wikis bind a pool under the wiki's identity; `check` from one
  * refuses a face root inside it. A pet name binds nothing here: it is the human-scale grip on the crypto identities beneath it, so
  * the check names no pet-name row (an index file, an author, a remote); it guards crypto identity (a signing key two pools share)
  * and structure (one tree per entity root: none nested below a face or realm root, none over several; no repo over the house's
- * homes); `commit --realm <realm pet name>` stages by the synced base as the face commit does, one commit per tree.
+ * homes); `commit realm=<realm pet name>` stages by the synced base as the face commit does, one commit per tree.
  *
  * A HOST VERB. The pools rest on the disk the house's projections rest on, so the door runs where that disk stands and git
  * never runs inside a container for a host pool ({@link surfaceHouse}). Where LAR_ROOT names the root (a dev or scratch
@@ -73,7 +73,7 @@ export interface SurfaceFace { readonly index: number; readonly petname: string 
 
 /** What `lares surface` reads from the house, injectable for a scratch house. */
 export interface SurfaceDoors {
-  /** The face the command acts as: `--face N`, else the worn one. */
+  /** The face the command acts as: `face=N`, else the worn one. */
   face(args: ParsedArgs): Promise<SurfaceFace>;
   /** The house's projections home. */
   projections(): string;
@@ -81,9 +81,9 @@ export interface SurfaceDoors {
   config(): string;
   /** The vessel's Synced tree (the merge bases). */
   tree(): SyncedTree;
-  /** Where the command runs (`check` with no `--face` reads the repo standing here). */
+  /** Where the command runs (`check` with no `face=` reads the repo standing here). */
   cwd(): string;
-  /** Run a command line on this machine (`open --launch`); answers its exit code, {@link EDITOR_ABSENT_EXIT} where no such binary stands. */
+  /** Run a command line on this machine (`open launch=true`); answers its exit code, {@link EDITOR_ABSENT_EXIT} where no such binary stands. */
   launch(argv: readonly string[]): number;
   /** The spelling a synced base carries for a file this door reads (the vessel's own, where it spells the house apart). */
   basePath(file: string): string;
@@ -101,11 +101,11 @@ const dirOrNull = (dir: string): string | null => { try { return statSync(dir).i
 /** The doors over the house LAR_ROOT names: the vessel's own reading, and a dev or scratch house's. */
 export const LIVE_SURFACE_DOORS: SurfaceDoors = {
   face: async (args) => {
-    // THE WORN FACE: with no `--face` the door acts as the face the operator wears (the daemon mount), so several faces
+    // THE WORN FACE: with no `face=` the door acts as the face the operator wears (the daemon mount), so several faces
     // standing open with one worn answer that one; the vessel refuses by name only when none stands worn.
     const index = faceOption(args).face ?? (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face;
     const petname = await ownPersonaPetname(makeFleetPetnameStore(sealedPetnameStore()), index);
-    if (petname === undefined || petname.trim() === "") throw new SurfaceRefused("surface-face-unnamed", `the face h${index} wears no pet name, so it makes no folder under faces/: name it (\`lares persona new ${index} --name <label>\`)`);
+    if (petname === undefined || petname.trim() === "") throw new SurfaceRefused("surface-face-unnamed", `the face h${index} wears no pet name, so it makes no folder under faces/: name it (\`lares persona new ${index} name=<label>\`)`);
     return { index, petname };
   },
   projections: () => larProjectionsHome(),
@@ -213,7 +213,7 @@ export function hostSurfaceDoors(house: string, ask: VesselAsk = SHIM_ASK, env: 
       const named = faceOption(args).face;
       const settled = labelledFace(projections, named);
       if (settled !== null) return settled;
-      const line = ["surface", "face", "--json", ...(named !== undefined ? ["--face", String(named)] : [])];
+      const line = ["surface", "face", "--json", ...(named !== undefined ? [`face=${named}`] : [])];
       const r = ask(line);
       let answer: FaceAnswer | null = null;
       try { answer = JSON.parse(r.out.trim().split("\n").pop() ?? "") as FaceAnswer; } catch { answer = null; }
@@ -222,7 +222,7 @@ export function hostSurfaceDoors(house: string, ask: VesselAsk = SHIM_ASK, env: 
         return { index: data.face, petname: data.petname };
       }
       if (answer?.ok === false && typeof answer.error?.code === "string") throw new SurfaceRefused(answer.error.code, String(answer.error.message ?? ""));
-      throw new SurfaceRefused("surface-face-unanswered", `no face label under ${join(projections, FACE_LABELS_DIR)} settles ${named !== undefined ? `the face h${named}` : "the face"}, and the vessel answered \`lares ${line.join(" ")}\` with ${r.code}: stand the vessel (\`lares up\`), or name a labelled face (\`--face N\`)`);
+      throw new SurfaceRefused("surface-face-unanswered", `no face label under ${join(projections, FACE_LABELS_DIR)} settles ${named !== undefined ? `the face h${named}` : "the face"}, and the vessel answered \`lares ${line.join(" ")}\` with ${r.code}: stand the vessel (\`lares up\`), or name a labelled face (\`face=N\`)`);
     },
     projections: () => projections,
     config: () => join(house, "config"),
@@ -359,7 +359,7 @@ export function surfaceCheck(top: string, projections: string, config: string): 
     if (root !== at && within(at, root)) breaches.push({ code: "surface-nested-tree", message: `the repo at ${at} nests inside the entity root ${root}: that root holds the one tree (its .git at ${root}), never a tree below it` });
   }
   if (entityRoots.includes(at)) {
-    for (const nested of nestedTrees(at)) breaches.push({ code: "surface-nested-tree", message: `a tree stands nested at ${nested} inside the entity root ${at}: the root's one tree holds it (a realm root lifts it at the next re-stand, or by \`lares surface init --realm\`)` });
+    for (const nested of nestedTrees(at)) breaches.push({ code: "surface-nested-tree", message: `a tree stands nested at ${nested} inside the entity root ${at}: the root's one tree holds it (a realm root lifts it at the next re-stand, or by \`lares surface init realm=true\`)` });
   }
   for (const other of houseRealmRoots(projections).map(real)) {
     if (other !== at && within(other, at)) breaches.push({ code: "surface-other-realm", message: `the repo at ${at} holds the realm root ${other}: one tree per realm, at its own root` });
@@ -406,7 +406,7 @@ export function realmPoolsOf(doors: SurfaceDoors, petName: string): { readonly p
     const name = rows.find((r) => r.kind === "wiki" && r.slug === slug)?.workspace?.trim();
     if (name) {
       const dir = doors.workspace(name);
-      if (dir === null) throw new SurfaceRefused("surface-realm-workspace-unbound", `the share row for "${slug}" names the workspace "${name}", and it binds no directory here: bind it (\`--workspace ${name}=<dir>\` at \`up\`, or LARES_WORKSPACES)`);
+      if (dir === null) throw new SurfaceRefused("surface-realm-workspace-unbound", `the share row for "${slug}" names the workspace "${name}", and it binds no directory here: bind it (\`workspace=${name}=<dir>\` at \`up\`, or LARES_WORKSPACES)`);
       workspaces.push({ kind: "workspace", root: dir, slugs: [slug] });
       continue;
     }
@@ -463,7 +463,7 @@ export function surfaceCheckRealm(top: string, name: string, projections: string
  * wiki whose workbench stands (`personal/<slug>/`, `recovery/<slug>/`, empty or not), or where the root holds its own `.git`
  * (a tree the editor's Source Control shows even before a label groups a wiki). A slug whose workbench stands nowhere names no
  * root. Workspace roots stay out: a share row binds one only where the machine names it, so `surface open` leaves them to the
- * realm commands (`commit --realm`) and shows the realm trees every face reaches.
+ * realm commands (`commit realm=`) and shows the realm trees every face reaches.
  */
 export function realmPools(projections: string, root: string): string[] {
   const slugs = new Set<string>();
@@ -649,7 +649,7 @@ export const HAND_SEAM = "by-hand";
  */
 export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAND_SEAM, spell: (file: string) => string = resolve): SurfaceCommitResult {
   if (!SEAM.test(seam)) throw new SurfaceRefused("surface-seam-malformed", `a seam names one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}`);
-  if (!existsSync(join(root, ".git"))) throw new SurfaceRefused("surface-no-pool", `no pool stands at ${root}: run \`lares surface init\` (\`--realm <realm pet name>\` for a realm's wikis)`);
+  if (!existsSync(join(root, ".git"))) throw new SurfaceRefused("surface-no-pool", `no pool stands at ${root}: run \`lares surface init\` (\`realm=<realm pet name>\` for a realm's wikis)`);
   const bases = basesByPath(tree.rows()), shadows = basesByPath(tree.shadows().rows());
   const staged: string[] = [], apart: SurfaceApart[] = [], removed: string[] = [];
   const carriers = new Set<string>(), kapae = new Set<string>();
@@ -737,7 +737,7 @@ async function cmdOpen(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   return code === 0 ? 0 : 1;
 }
 
-/** The seam a commit names (`-m <seam>` or `--message <seam>`, else the hand's), or why the words name none. */
+/** The seam a commit names (`-m <seam>` or `message=<seam>`, else the hand's), or why the words name none. */
 function seamOf(args: ParsedArgs): { readonly seam: string } | { readonly stray: string } {
   const words = args.positional.slice(1);
   const at = words.indexOf("-m");
@@ -749,13 +749,13 @@ function seamOf(args: ParsedArgs): { readonly seam: string } | { readonly stray:
   return SEAM.test(seam) ? { seam } : { stray: `-m names the seam, one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}` };
 }
 
-/** The realm `--realm <realm pet name>` names (null where absent), or why the line names none it can act on (`words`: a word past the verb strays). */
+/** The realm `realm=<realm pet name>` names (null where absent), or why the line names none it can act on (`words`: a word past the verb strays). */
 function realmOption(args: ParsedArgs, words = false): { readonly realm: string | null } | { readonly stray: string } {
   if (words && args.positional.length > 1) return { stray: `unknown word "${args.positional[1]}"` };
   const named = args.options["realm"];
   if (named === undefined) return { realm: null };
-  if (typeof named !== "string" || faceSegmentRefusal(named) !== null) return { stray: `--realm names a realm's pet name (one folder: no '/', '\\', ':' or leading dot), never ${JSON.stringify(named)}` };
-  if (args.options["face"] !== undefined) return { stray: "--realm and --face name two pools: a realm pool belongs to no face, so name one" };
+  if (typeof named !== "string" || faceSegmentRefusal(named) !== null) return { stray: `realm= names a realm's pet name (one folder: no '/', '\\', ':' or leading dot), never ${JSON.stringify(named)}` };
+  if (args.options["face"] !== undefined) return { stray: "realm= and face= name two pools: a realm pool belongs to no face, so name one" };
   return { realm: named };
 }
 
@@ -770,7 +770,7 @@ async function cmdCommit(args: ParsedArgs, doors: SurfaceDoors): Promise<number>
   const roots = named.realm !== null
     ? realmPoolsOf(doors, named.realm).pools.filter((p) => dirOrNull(p.root) !== null).map((p) => p.root)
     : [faceRoot(doors.projections(), (await doors.face(args)).petname)];
-  for (const root of roots) if (!existsSync(join(root, ".git"))) throw new SurfaceRefused("surface-no-pool", `no pool stands at ${root}: run \`lares surface init\` (\`--realm <realm pet name>\` for a realm's wikis)`);
+  for (const root of roots) if (!existsSync(join(root, ".git"))) throw new SurfaceRefused("surface-no-pool", `no pool stands at ${root}: run \`lares surface init\` (\`realm=<realm pet name>\` for a realm's wikis)`);
   const results = roots.map((root) => ({ root, ...surfaceCommit(root, doors.tree(), seam, (file) => doors.basePath(file)) }));
   emit(args, {
     ok: true,
@@ -796,7 +796,7 @@ async function cmdInitRealm(args: ParsedArgs, doors: SurfaceDoors, petName: stri
   const { petName: realm, pools, unlaid } = realmPoolsOf(doors, petName);
   const projections = doors.projections();
   const standing = pools.filter((p) => dirOrNull(p.root) !== null);
-  if (standing.length === 0) throw new SurfaceRefused("surface-realm-unlaid", `no folder of the realm "${realm}" stands yet${pools.every((p) => p.slugs.length === 0) ? " (it holds no wiki: `lares realm move <slug> --to " + realm + "`)" : ` (${pools.map((p) => p.root).join(", ")})`}: the house lays each at the wiki's next mount`);
+  if (standing.length === 0) throw new SurfaceRefused("surface-realm-unlaid", `no folder of the realm "${realm}" stands yet${pools.every((p) => p.slugs.length === 0) ? " (it holds no wiki: `lares realm move <slug> to=" + realm + "`)" : ` (${pools.map((p) => p.root).join(", ")})`}: the house lays each at the wiki's next mount`);
   for (const { root } of standing) {
     for (const face of houseFaceRoots(projections)) {
       if (within(real(root), real(face))) throw new SurfaceRefused("surface-realm-in-face", `${root} rests inside the face root ${face}: a realm pool belongs to no face`);
@@ -836,7 +836,7 @@ const WORKSPACE_NAME = /^[a-z0-9][a-z0-9._-]{0,63}$/;
  */
 function cmdInitWorkspace(args: ParsedArgs, doors: SurfaceDoors, name: string): number {
   const root = doors.workspace(name);
-  if (root === null) throw new SurfaceRefused("surface-workspace-unbound", `the workspace "${name}" binds no directory here: bind it (\`--workspace ${name}=<dir>\` at \`up\`, or LARES_WORKSPACES)`);
+  if (root === null) throw new SurfaceRefused("surface-workspace-unbound", `the workspace "${name}" binds no directory here: bind it (\`workspace=${name}=<dir>\` at \`up\`, or LARES_WORKSPACES)`);
   if (!existsSync(join(root, ".git"))) {
     const above = surfaceGit(root, ["rev-parse", "--is-inside-work-tree"]);
     if (above.code === 0 && above.out.trim() === "true") throw new SurfaceRefused("surface-workspace-in-tree", `${root} rests inside another git work tree; a nested repo would split that history`);
@@ -859,8 +859,8 @@ async function cmdInit(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   if ("stray" in named) return refuseUsage(args, "surface init", helpLines("surface init"), named.stray);
   const workspace = args.options["workspace"];
   if (workspace !== undefined) {
-    if (typeof workspace !== "string" || !WORKSPACE_NAME.test(workspace)) return refuseUsage(args, "surface init", helpLines("surface init"), `--workspace names a bound workspace (lower-case letters, digits, '.', '_' and '-'), never ${JSON.stringify(workspace)}`);
-    if (named.realm !== null || args.options["face"] !== undefined) return refuseUsage(args, "surface init", helpLines("surface init"), "--workspace names one pool: not beside --face or --realm");
+    if (typeof workspace !== "string" || !WORKSPACE_NAME.test(workspace)) return refuseUsage(args, "surface init", helpLines("surface init"), `workspace= names a bound workspace (lower-case letters, digits, '.', '_' and '-'), never ${JSON.stringify(workspace)}`);
+    if (named.realm !== null || args.options["face"] !== undefined) return refuseUsage(args, "surface init", helpLines("surface init"), "workspace= names one pool: not beside face= or realm=");
     return cmdInitWorkspace(args, doors, workspace);
   }
   if (named.realm !== null) return cmdInitRealm(args, doors, named.realm);
@@ -925,7 +925,7 @@ async function cmdCheck(args: ParsedArgs, doors: SurfaceDoors): Promise<number> 
 async function cmdCheckRealm(args: ParsedArgs, doors: SurfaceDoors, petName: string): Promise<number> {
   const { petName: realm, pools } = realmPoolsOf(doors, petName);
   const standing = pools.filter((p) => existsSync(join(p.root, ".git")));
-  if (standing.length === 0) throw new SurfaceRefused("surface-no-pool", `no pool of the realm "${realm}" stands yet: run \`lares surface init --realm ${realm}\``);
+  if (standing.length === 0) throw new SurfaceRefused("surface-no-pool", `no pool of the realm "${realm}" stands yet: run \`lares surface init realm=${realm}\``);
   const read = standing.map((p) => ({ ...p, ...surfaceCheckRealm(p.root, p.kind === "realm" ? realm : p.slugs[0]!, doors.projections(), doors.config()) }));
   const breaches = read.flatMap((r) => r.breaches.map((b) => ({ ...b, pool: r.root })));
   const warnings = read.flatMap((r) => r.warnings);

@@ -21,7 +21,7 @@
  *               each refused by its own name; an AI seat's hand (the atom) never stands in for the grant.
  *   withdraw  — the same two gates, naming a held revision.
  *   carry     — the same two gates, then ONE root-signed act at the current epoch naming the earlier revisions that keep
- *               standing after a rotation (`--all`: each title's head as the history reads it); a batch re-lift.
+ *               standing after a rotation (`all=true`: each title's head as the history reads it); a batch re-lift.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -222,7 +222,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     }
     const s = hand.signed as { signer?: unknown; body?: unknown; sig?: unknown } | null;
     if (typeof s !== "object" || s === null || Array.isArray(s) || typeof s.signer !== "string" || !/^[0-9a-f]{64}$/.test(s.signer) || typeof s.body !== "object" || s.body === null || typeof s.sig !== "string") {
-      throw new KahuaRefused("kahua-hand-malformed: --land takes the record the pūlama's sign door answered (body, signer, sig)");
+      throw new KahuaRefused("kahua-hand-malformed: land= takes the record the pūlama's sign door answered (body, signer, sig)");
     }
     if (!ports.currentSigner(s.signer)) throw new KahuaRefused("operator-grant-absent: the signed record names a signer outside the face's current roster");
     return s.signer;
@@ -352,7 +352,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       if (input.parent !== undefined) parent = input.parent;
       else {
         const item = (await reading()).get(input.title);
-        if (item?.status === "siblings") throw new KahuaRefused(`siblings: "${input.title}" stands as ${item.heads.length} siblings; name --parent <cid> (${item.heads.map((h) => h.cid).join(", ")})`);
+        if (item?.status === "siblings") throw new KahuaRefused(`siblings: "${input.title}" stands as ${item.heads.length} siblings; name parent=<cid> (${item.heads.map((h) => h.cid).join(", ")})`);
         parent = item?.heads[0]?.cid ?? null;
       }
       if (hand) {

@@ -202,7 +202,7 @@ describe("the five drifts, each by its own word, and the one card", () => {
     expect(puts[0]!.text).not.toContain("--yes");
     const lines = floorStatusLines(await readFloorStatus({}, doors)).join("\n");
     expect(lines).toContain("read with: lares vessel read");
-    expect(lines).toContain("cure with: lares nexus release floor-release.json --cut");
+    expect(lines).toContain("cure with: lares nexus release floor-release.json cut=true");
   });
 
   test("RED: the card's title never stands in canon's lares namespace, where an offer or a promote could carry it", async () => {
@@ -230,6 +230,6 @@ describe("the seed offer row names each moved ratchet's stance (follow-lei S0)",
   test("CONTROL: an engine-only move reads held, and its next line reads the seed row", () => {
     const row = seedRow([moved("engine"), same("grammar"), same("lararium"), same("plugins"), same("floor")]);
     expect(row.detail).not.toContain("offer:");
-    expect(row.next).toBe("lares vessel floor status --grain seed");
+    expect(row.next).toBe("lares vessel floor status grain=seed");
   });
 });

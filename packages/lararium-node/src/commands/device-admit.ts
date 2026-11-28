@@ -136,7 +136,7 @@ export class DeviceSetAside extends Error {
     super(
       `[lares fleet join answer] REFUSED: that device stands SET ASIDE from this fleet (its edge reads ${verdict}). ` +
       "A delegation binds nothing under a standing shadow. Lift it first, by the root's own hand " +
-      "(`lares edge un-kapae --device <key>`); the device then takes a fresh seat and no earlier key.",
+      "(`lares edge un-kapae device=<key>`); the device then takes a fresh seat and no earlier key.",
     );
     this.name = "DeviceSetAside";
   }
@@ -210,7 +210,7 @@ export interface DeviceAdmitOptions {
   /** This hearth's own daemon doc — the door the joinee knocks on for its seat. */
   readonly hearthDaemonUrl?: string | null;
   /**
-   * The persona index whose root signs the edge (`lares fleet join --face`); the founding face where absent. The
+   * The persona index whose root signs the edge (`lares fleet join face=true`); the founding face where absent. The
    * founding face reads its pins off the bootstrap and the daemon doc; a face an operator added reads them off its
    * own anchors, since both pin the founding face alone.
    */
@@ -280,7 +280,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!personaGroupId || !meshCabalDocIdHex) {
     throw new Error(
       `[lares fleet join answer] the PersonaGroup or MeshCabal id is missing from social-bootstrap.json.\n` +
-      `  Run \`lares vessel found --force\` to re-establish the founding ceremony.`,
+      `  Run \`lares vessel found force=true\` to re-establish the founding ceremony.`,
     );
   }
   // An admit payload carries the PersonaGroup plane's url, required: a joinee never mints a fresh local
@@ -288,7 +288,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!personaUrl) {
     throw new Error(
       `[lares fleet join answer] the PersonaGroup plane url is missing from social-bootstrap.json.\n` +
-      `  Run \`lares vessel found --force\` to re-found with a recorded plane before admitting a device.`,
+      `  Run \`lares vessel found force=true\` to re-found with a recorded plane before admitting a device.`,
     );
   }
   if (!daemonUrl) {
@@ -304,7 +304,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // The bootstrap and the daemon doc each pin the founding face's group; they name one group, or the founding tore.
   // An added face's group rides its own anchors, which no daemon doc pins.
   if (face === 0 && tiddlerText(tiddlerMap[PERSONA_GROUP_ID_TIDDLER]) !== personaGroupId) {
-    throw new Error(`[lares fleet join answer] the daemon doc pins no PersonaGroup, or another than social-bootstrap.json names — run \`lares vessel found --force\`.`);
+    throw new Error(`[lares fleet join answer] the daemon doc pins no PersonaGroup, or another than social-bootstrap.json names — run \`lares vessel found force=true\`.`);
   }
 
   // The founder's persona-KEL PREFIX (the identifier the joinee will pin) + the chain SNAPSHOT off the
@@ -318,7 +318,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     throw new Error(`[lares fleet join answer] face ${face}'s anchors name no persona-KEL prefix, so this face admits no device here.`);
   }
   if (!personaKelPrefix) {
-    throw new Error(`[lares fleet join answer] persona-KEL prefix missing from daemon doc — run \`lares vessel found --force\`.`);
+    throw new Error(`[lares fleet join answer] persona-KEL prefix missing from daemon doc — run \`lares vessel found force=true\`.`);
   }
   const founderVesselKey = await loadVesselVerifyingKey();
   const boardIsland      = admitBoardIsland(founderVesselKey);
@@ -346,7 +346,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     // The carry above already walked every island BELOW this one and found nothing to move — so this
     // names an identifier no island in the gradient ever seated (a genuinely torn founding), never a
     // sound climbed founder still waiting on a carry: the line above already ran that carry.
-    throw new Error(`[lares fleet join answer] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from ${boardIsland.slice(0, 18)}… and every island below it — the identifier was never seated — run \`lares vessel found --force\`.`);
+    throw new Error(`[lares fleet join answer] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from ${boardIsland.slice(0, 18)}… and every island below it — the identifier was never seated — run \`lares vessel found force=true\`.`);
   }
 
   await repo.flush();
@@ -365,7 +365,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // The joinee's edge binds THIS hearth: the AID of its seed charter, the true name its own face's edge names.
   const hearthTrueName = hearthAid();
   if (!hearthTrueName) {
-    throw new Error("[lares fleet join answer] no seed charter stands here, so no hearth stands to admit a device to — found the hearth with `lares vessel found --hearth`.");
+    throw new Error("[lares fleet join answer] no seed charter stands here, so no hearth stands to admit a device to — found the hearth with `lares vessel found hearth=true`.");
   }
 
   // THE LEASE READ — off the vessel's control document the daemon doc above names (`control-home`), the same fold

@@ -9,7 +9,7 @@
  *   pack.json                  two foreign-titled tiddlers
  *
  *   ENTER   server: the wiki folder's `tiddlers/` (`$tw.loadTiddlersFromPath` reads them at boot)
- *           island: `lares ingest --source <dir> --to lar:///ha.ka.ba/bags/lares --apply --yes`, from a
+ *           island: `lares ingest source=<dir> to=lar:///ha.ka.ba/bags/lares apply=true --yes`, from a
  *                   holding directory BESIDE the bag's mirror (`<root>/bags/parity-in/…`)
  *   LEAVE   server: `tiddlywiki --savewikifolder` — the same `generateTiddlerFileInfo` +
  *                   `saveTiddlerToFileSync` law the filesystem adaptor writes through, under a
@@ -130,7 +130,7 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
     islandDir = join(lar.root, "projections/bags/lares", REL_DIR);
     islandIn = join(lar.root, "projections/bags/parity-in", REL_DIR);
     laySource(islandIn);
-    const r = await lar.cli(["ingest", "--source", islandIn, "--to", BAG_URI, "--apply", "--yes", "--json"]);
+    const r = await lar.cli(["ingest", `source=${islandIn}`, `to=${BAG_URI}`, "apply=true", "--yes", "--json"]);
     if (r.json?.["ok"] !== true) throw new Error(`ingest failed: ${said(r)}`);
     // Settle: the projector lays the sidecar under the mirror in TW5's sorted field order once the record lands.
     const deadline = Date.now() + 90_000;

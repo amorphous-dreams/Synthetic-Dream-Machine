@@ -177,7 +177,7 @@ export interface DaemonVerbProvider {
   /** THE FLOW RUNNER — run a PET-NAMED composed cap-stack (crystal · rhythm · couple) against an explicit
    *  `rows` signal, routing each cap-step by hull (crystallize/couple TS · phase py · mismatch daemon). Bare
    *  (no `petname`) lists the flow-set. The anti-verb-sprawl surface: new capability arrives as a new FLOW,
-   *  never another raw verb. A `--target` without a signal auto-extracts one from the target's child streams
+   *  never another raw verb. A `target=` without a signal auto-extracts one from the target's child streams
    *  (feature-gated: the projector runs now, empty until the re-pour lands child signals). */
   flow(input: { petname?: string; rows?: number[][]; names?: string[]; targets?: string[]; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
   /** RE-DERIVE the sensorium's whole derived layer (rejim rhythm · mempalace projection · worldline slots) in
@@ -438,8 +438,8 @@ export function captureVerbCap(): CapModule {
         registry.register("sweep", async (args) => {
           // BULK backfill — the holder discovers EVERY transcript itself and captures each through its ONE
           // warm stream (no pointer crosses; the holder owns discovery). `surface` `all` (default) folds
-          // claude+codex+copilot; `project`/`limit` narrow. The routed sweep spine `lares sense pour --bulk` /
-          // `pour --all` / the MCP `pour` with `bulk` all reach.
+          // claude+codex+copilot; `project`/`limit` narrow. The routed sweep spine `lares sense pour bulk=true` /
+          // `pour all=true` / the MCP `pour` with `bulk` all reach.
           const surface = typeof args["surface"] === "string" ? args["surface"] : "all";
           const wing = typeof args["wing"] === "string" ? args["wing"] : "";
           if (!wing) throw new Error("sweep: args.wing (a non-empty string) required");

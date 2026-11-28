@@ -68,7 +68,7 @@ export async function faceRootKey(face: number): Promise<string | undefined> {
  */
 export async function bookFace(face: number): Promise<number> {
   if (!(await readPersonaRoots()).roots.some((r) => r.handleIndex === face)) {
-    throw new Error(`recognition keeps its book in a face whose root this vessel holds, and it holds none at h${face}: name a face it founded (--face N)`);
+    throw new Error(`recognition keeps its book in a face whose root this vessel holds, and it holds none at h${face}: name a face it founded (face=N)`);
   }
   return face;
 }

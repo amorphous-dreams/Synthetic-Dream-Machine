@@ -26,7 +26,7 @@ describe("lares home undo — the operator's hand, at a terminal or by --yes", (
   it.each([
     [["home", "undo"]],
     [["home", "undo", "3"]],
-    [["home", "--force", "undo"]],
+    [["home", "force=true", "undo"]],
     [["home", "--json", "undo"]],
     [["home", "undo", "--yes"]],
   ])("RED: an AI seat's %j refuses hand-act-only by name and names the cure", async (argv) => {

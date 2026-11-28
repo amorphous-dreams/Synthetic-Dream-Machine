@@ -48,6 +48,6 @@ export function rosterStanding(r: { seated: number; threshold: number }): Roster
            reading: `${r.threshold} of ${r.seated} seated kahu — EVERY chair must sign, so the quorum `
                   + "survives no loss at all. One seat gone and nothing can be signed again, including "
                   + "the rotation that would repair it. One more seat buys the first loss back — "
-                  + "`lares persona new <n> --name '<label>' --handle '<Handle>' --seat`, then "
+                  + "`lares persona new <n> name='<label>' handle='<Handle>' seat=true`, then "
                   + "`lares nexus seal seat`." };
 }

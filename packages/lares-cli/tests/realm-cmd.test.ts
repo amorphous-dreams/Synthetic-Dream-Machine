@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ensureRealmLabel, readRealmLabels, writeFaceLabel } from "@lararium/node";
 import { cmdRealm, ensureWikiRealm, placeWikiInRealm, type RealmDoors } from "../src/commands/realm.js";
-import { COMMANDS, dispatch } from "../src/bin/lares.js";
+import { COMMANDS, dispatch, doorTakes } from "../src/bin/lares.js";
 import { packDoor, packRoute } from "@lararium/tw5/affordance-pack";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -86,9 +86,9 @@ describe("lares realm", () => {
     const err: string[] = [];
     vi.spyOn(console, "error").mockImplementation((...a) => { err.push(a.map(String).join(" ")); });
     expect(await run(["rename", "notes"])).toBe(2);
-    expect(err.join("\n")).toContain("lares realm rename <current pet> --to <new pet>");
+    expect(err.join("\n")).toContain("lares realm rename <current pet> to=<new pet>");
     expect(await run(["move", "notes"])).toBe(2);
-    expect(err.join("\n")).toContain("lares realm move <wiki slug> --to <realm pet>");
+    expect(err.join("\n")).toContain("lares realm move <wiki slug> to=<realm pet>");
     expect(await run(["list", "stray"])).toBe(2);
     expect(await run(["name", "Garden"]), "no alias for the retired verb").toBe(2);
     expect(await run(["add", "Garden", "notes"]), "no alias for the retired verb").toBe(2);
@@ -124,7 +124,7 @@ describe("lares realm", () => {
   test("RC5 the help keeps its row: one line for the door on the list, depth on the unfold", async () => {
     const row = COMMANDS.find((c) => c.name === "realm");
     expect(row).toBeDefined();
-    expect(row!.accepts).toEqual(["to"]);
+    expect(doorTakes(row!.name)).toEqual(["to"]);
     // The realm door flipped to its carriers (comms landings 10 + 23): the pack holds its words, no registry beside it.
     expect(packDoor("realm"), "the realm door reads its carriers").toBeDefined();
     for (const verb of ["realm rename", "realm move", "realm list"]) {

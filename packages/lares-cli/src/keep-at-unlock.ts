@@ -44,7 +44,7 @@ export interface KeepOfferOutcome {
   readonly faceBy?: KeepFaceBy;
 }
 
-const byHand = (ws: string, face?: number): string => `lares lei kui --rite ${RITE_KEEP} --branch ${ws} --returns <n>${face === undefined ? "" : ` --face ${face}`}`;
+const byHand = (ws: string, face?: number): string => `lares lei kui rite=${RITE_KEEP} branch=${ws} returns=<n>${face === undefined ? "" : ` face=${face}`}`;
 
 export async function offerKeepLei(ports: KeepOfferPorts, opts: { readonly workspace: string | null; readonly route: readonly Credential[] | null }): Promise<KeepOfferOutcome> {
   const ws = opts.workspace;
@@ -67,7 +67,7 @@ export async function offerKeepLei(ports: KeepOfferPorts, opts: { readonly works
   const lei = (line.output["lei"] ?? {}) as { standing?: boolean; returnsLeft?: number; after?: string | null; forks?: string[] };
   if (lei.standing === true && Number(lei.returnsLeft ?? 0) > 0) return { offered: false, strung: false, workspace: ws, why: "standing", ...acting };
   if (Array.isArray(lei.forks) && lei.forks.length > 0) {
-    ports.say(`keep: the keep line for workspace "${ws}" stands forked; settle it by hand (lares lei show --rite ${RITE_KEEP} --branch ${ws} --face ${acting.face})`);
+    ports.say(`keep: the keep line for workspace "${ws}" stands forked; settle it by hand (lares lei show rite=${RITE_KEEP} branch=${ws} face=${acting.face})`);
     return { offered: false, strung: false, workspace: ws, why: "forked", ...acting };
   }
   if (!(await ports.ask(`string a keep lei for workspace "${ws}" (${KEEP_LEI_RETURNS} returns${as}) under this same passphrase, as face h${keep.face}'s ward?`))) {
@@ -80,6 +80,6 @@ export async function offerKeepLei(ports: KeepOfferPorts, opts: { readonly works
     return { offered: true, strung: false, workspace: ws, why: "refused", ...acting };
   }
   const cid = typeof strung.output["cid"] === "string" ? strung.output["cid"] : undefined;
-  ports.say(`keep: a keep lei of ${KEEP_LEI_RETURNS} returns stands for workspace "${ws}"${cid ? ` (${cid.slice(0, 12)})` : ""}; \`lares rite keep --workspace ${ws}\` spends one, as h${acting.face}`);
+  ports.say(`keep: a keep lei of ${KEEP_LEI_RETURNS} returns stands for workspace "${ws}"${cid ? ` (${cid.slice(0, 12)})` : ""}; \`lares rite keep workspace=${ws}\` spends one, as h${acting.face}`);
   return { offered: true, strung: true, workspace: ws, ...(cid ? { lei: cid } : {}), ...acting };
 }

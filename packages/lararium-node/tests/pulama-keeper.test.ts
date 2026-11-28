@@ -514,7 +514,7 @@ describe("RED the vest over the REAL rite: every face the keeper would seal stan
     const out = await vestOver(h, [{ group: "group-keeper-real-partial", devices: 1 }, { group: "group-keeper-real-partial-h1", devices: 1 }]);
     expect(h.begins).toEqual(["group-keeper-real-partial"]);
     const half = sha("begun-group-keeper-real-partial-1");
-    expect(out.vest).toMatchObject({ reading: "kukulu-lei-spent", detail: expect.stringMatching(new RegExp(`${half}[\\s\\S]*lares rite receipts --rite kukulu`)) });
+    expect(out.vest).toMatchObject({ reading: "kukulu-lei-spent", detail: expect.stringMatching(new RegExp(`${half}[\\s\\S]*lares rite receipts rite=kukulu`)) });
     const by = await pulamaSignerOf(fx!.kept);
     const [mark] = (await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"));
     expect(verifiedPulamaRecord(await h.records.read(mark!), by.key)!.body).toMatchObject({ act: "keeper-lapsed", reason: "kukulu-lei-spent", halves: [half] });

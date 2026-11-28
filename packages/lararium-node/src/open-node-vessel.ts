@@ -851,7 +851,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   facePoolStandDown: () => Promise<void>;
   /** The census of saves this vessel's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves: () => readonly HeldSaves[];
-  /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
+  /** The document census of this vessel's stores, read-only (`lares vessel census docs=true`). */
   docCensus: () => Promise<DocCensusReading>;
   /** Ask every island that mounts a disk shore to flush (`shore` op `flush`), each on its own road (`flushEveryShore`). */
   shoreFlush: () => Promise<ShoreFlushReading>;
@@ -892,7 +892,7 @@ export interface NodeHermResult {
   backupDoor:      BackupDoor;
   /** The census of saves this herm's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves:       () => readonly HeldSaves[];
-  /** The document census of this herm's stores, read-only (`lares vessel census --docs`). */
+  /** The document census of this herm's stores, read-only (`lares vessel census docs=true`). */
   docCensus:       () => Promise<DocCensusReading>;
   /** The floor's rest key as this composition began with it: `stands` on an unlocked veil floor, else the floor's refusal. */
   floorKey:        "stands" | "vessel-locked" | "floor-unkeyed";
@@ -962,7 +962,7 @@ interface NodeBootPrep {
   heldSaves: () => readonly HeldSaves[];
   /** Ask every island that mounts a disk shore to flush (`shore` op `flush`): the daemon island and each resident wiki island. */
   shoreFlush: () => Promise<ShoreFlushReading>;
-  /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
+  /** The document census of this vessel's stores, read-only (`lares vessel census docs=true`). */
   docCensus: () => Promise<DocCensusReading>;
   /** The floor's rest key as this composition began with it (`standFloorKey`). */
   floorKey: "stands" | "vessel-locked" | "floor-unkeyed";
@@ -1103,7 +1103,7 @@ async function prepareNodeBootOn(
   // Its growth re-asks the Repo's cached verdicts once the Repo stands (`reverdictLater`, set beside `reverdict` below).
   let reverdictLater: () => void = () => {};
   const vesselPrivate = vesselPrivateBook({ bootstrapPath, onGrow: () => reverdictLater() });
-  // THE FACE THE COMPOSITION MOUNTS: the one the unlock named (`lares vault unlock --face N`), else the one face standing
+  // THE FACE THE COMPOSITION MOUNTS: the one the unlock named (`lares vault unlock face=N`), else the one face standing
   // open. The daemon doc's singular mount pins were written by the FOUNDING face and never move again; a mounted
   // non-founding face carries its own mount material in its anchors — the pins below default to it. Null means no
   // switch is owed (h0, nothing mounted, or anchors without the material).
@@ -1238,7 +1238,7 @@ async function prepareNodeBootOn(
    *  custody read, the face takes its Archive write while the island stands its hive and the light still reads live (the
    *  sibling's archive floor rests after its card, before its session stands). Only the light that opened a window shuts it. */
   const lightingCustody = new Map<string, () => boolean>();
-  /** THE FACES WHOSE NEXT LIGHT RECARDS (`lares vault recard --face N`, the custody door arms it): one use, taken the moment that
+  /** THE FACES WHOSE NEXT LIGHT RECARDS (`lares vault recard face=N`, the custody door arms it): one use, taken the moment that
    *  light starts, and cleared at the face's drop, its hold before a lock, or a whole close (`recard-arms`). */
   const recardArmed = recardArms();
   /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
@@ -3728,7 +3728,7 @@ async function prepareNodeBootOn(
               // The panel carries no ward route (its verbs ride the daemon document), so a bound commit refuses by name, toward the terminal.
               wardSigner: async () => {
                 const held = takeSummonedWard(ward);
-                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares trust commit <digest> --wiki ${wiki}\` at a terminal)`);
+                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares trust commit <digest> wiki=${wiki}\` at a terminal)`);
                 return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
               },
               face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false },

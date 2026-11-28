@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.purges"
 
 ! sense.sensorium.purges ~ a sensorium's store leaves
 
-`lares sense purge <name> --approve` runs on a person's hand at a real terminal and purges the named sensorium's store.
+`lares sense purge <name> approve=true` runs on a person's hand at a real terminal and purges the named sensorium's store.
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;34MXMAXLBzbfmUmXHbXzUKbpkw6NnsejuQE5nhM5Mnc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N3PdE-QFDGoQQ3z8t1nvzzsunm3i9r5eKXkXjG16QTg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

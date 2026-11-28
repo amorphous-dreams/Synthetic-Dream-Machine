@@ -187,7 +187,7 @@ export async function resolveOwnerBurnHand(opts: {
       ownerBurn: { ownerAuthMemberPrefix: opts.personaKelPrefix, ownerAuthKeyDid: opts.headOpKeyDid, sign: custodied },
     };
   }
-  return { ok: false, reason: "owner-burn on a ROTATED persona wants the current op-key's custody (unreachable on this replica) — use `lares handle burn --self`" };
+  return { ok: false, reason: "owner-burn on a ROTATED persona wants the current op-key's custody (unreachable on this replica) — use `lares handle burn self=true`" };
 }
 
 export interface HandleBurnOptions {
@@ -206,7 +206,7 @@ export interface HandleBurnOptions {
  * name). Resolve the vessel's own published nym for the chosen persona, resolve one settled verified chain from the WHO
  * board, mint a terminal burn conditioned on that head, and re-announce the burned card. A reader refuses the
  * burned chain before ever checking the card's signature, so recognition ends structurally at the burn. The
- * owner-burn hand (the persona buries the face from above, `--from-persona`) rides a later increment — it
+ * owner-burn hand (the persona buries the face from above, `from-persona=true`) rides a later increment — it
  * wants the persona head op-key signer wired.
  */
 export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard> {
@@ -228,9 +228,9 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
   if (opts.fromPersona) {
     // OWNER-burn: the owning persona buries the face from above. Its prefix and verified head op-key come from the
     // sealed anchor through the door, then the pure hand-resolver decides whether the root seed may sign.
-    const { personaKelPrefix, headOpKeyDid } = await readHandleOwner(face.repo, face.handleIndex, face.boardIsland, "burn --from-persona");
+    const { personaKelPrefix, headOpKeyDid } = await readHandleOwner(face.repo, face.handleIndex, face.boardIsland, "burn from-persona=true");
     const resolved     = await resolveOwnerBurnHand({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
-    if (!resolved.ok) throw new Error(`[lares handle burn --from-persona] ${resolved.reason}`);
+    if (!resolved.ok) throw new Error(`[lares handle burn from-persona=true] ${resolved.reason}`);
     hand = { board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid, ownerBurn: resolved.ownerBurn, buildCard };
   } else {
     // SELF-burn: the seated handle key closes its own name.

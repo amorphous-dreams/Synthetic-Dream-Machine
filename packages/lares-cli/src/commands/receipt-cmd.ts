@@ -1,11 +1,11 @@
 /**
- * `lares vessel request <requestId> [--cancel]` — the one door a verb's outcome names when it tells an
+ * `lares vessel request <requestId> [cancel=true]` — the one door a verb's outcome names when it tells an
  * operator to check a request (outcome-unknown, `request-abandoned`), and the one that withdraws it.
  *
  *   request <requestId>            — a READ (`queryReceipt`). Never dispatches anything; answers from the
  *                           vessel's own ledger + durable outcome doc exactly as a `runVerb` read-back
  *                           would, without running a second attempt.
- *   request <requestId> --cancel  — the OPERATOR's own explicit withdrawal (`cancelRequest`). Marks the id
+ *   request <requestId> cancel=true  — the OPERATOR's own explicit withdrawal (`cancelRequest`). Marks the id
  *                           abandoned on the vessel's ledger so a LATER line under the same id (a stray
  *                           retry, a re-run) refuses rather than running. No automated path sends it on
  *                           a bare timeout: a caller's own local wait ending withdraws nothing; only this
@@ -29,7 +29,7 @@ import { refusalCode, refusalHint } from "../verb-call.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 function printReceiptUsage(verb: "receipt" | "cancel"): void {
-  console.error(verb === "cancel" ? "usage: lares vessel request <requestId> --cancel" : "usage: lares vessel request <requestId> [--cancel]");
+  console.error(verb === "cancel" ? "usage: lares vessel request <requestId> cancel=true" : "usage: lares vessel request <requestId> [cancel=true]");
 }
 
 /**
@@ -77,7 +77,7 @@ function hintFor(code: string, requestId: string, state: ReceiptAnswer["state"])
     return `the vessel gave no answer, so the cancel may or may not have reached its ledger. \`lares vessel request ${requestId}\` reads which.`;
   }
   if (code === "request-interrupted") {
-    return "the vessel stopped while this request ran, so its effect may have landed in part. If the original gesture carried a `--change-id`, re-run it with that same id: the effect index answers what landed without running it twice.";
+    return "the vessel stopped while this request ran, so its effect may have landed in part. If the original gesture carried a `change-id=`, re-run it with that same id: the effect index answers what landed without running it twice.";
   }
   return refusalHint(code, undefined);
 }
@@ -98,10 +98,10 @@ async function runReadOnlyDoor(
     const code = err instanceof UdsUnreachable ? "daemon-unreachable" : "verb-error";
     emit(args, {
       ok: false, requestId,
-      error: { code, message: msg, ...(code === "daemon-unreachable" ? { hint: "Start the daemon with `lares vessel stand --foreground` and try again." } : {}) },
+      error: { code, message: msg, ...(code === "daemon-unreachable" ? { hint: "Start the daemon with `lares vessel stand foreground=true` and try again." } : {}) },
       human: () => {
         console.error(`lares vessel request: ${msg}`);
-        if (code === "daemon-unreachable") console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
+        if (code === "daemon-unreachable") console.error("  Start the daemon with `lares vessel stand foreground=true` and try again.");
       },
     });
     return exitFor(code);
@@ -150,7 +150,7 @@ export async function cmdCancel(args: ParsedArgs): Promise<number> {
   return await runReadOnlyDoor("cancel", args, (requestId) => cancelRequest(requestId));
 }
 
-/** `vessel request <requestId>` reads the receipt; `--cancel` alone withdraws, by the operator's own hand. */
+/** `vessel request <requestId>` reads the receipt; `cancel=true` alone withdraws, by the operator's own hand. */
 export async function cmdRequest(args: ParsedArgs): Promise<number> {
   return args.flags["cancel"] === true ? await cmdCancel(args) : await cmdReceipt(args);
 }

@@ -237,11 +237,11 @@ test("R9 A STALE FACE'S CLEARING LINE NAMES THE RECARD: a face dark for want of 
   const cause = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
   const [lent] = servedDark([{ ordinal: 2, cause }], [0, 2], true);
   expect(lent!.note).toContain("tools/lares-container.sh pulama recard 2");
-  expect(lent!.note).toContain("lares vault recard --face 2");
-  expect(lent!.note.indexOf("pulama recard 2")).toBeLessThan(lent!.note.indexOf("lares vault recard --face 2"));
+  expect(lent!.note).toContain("lares vault recard face=2");
+  expect(lent!.note.indexOf("pulama recard 2")).toBeLessThan(lent!.note.indexOf("lares vault recard face=2"));
   expect(lent!.note).not.toContain("lares vault unlock");
   const [own] = servedDark([{ ordinal: 2, cause }], [0, 2]);
-  expect(own!.note).toContain("lares vault recard --face 2");
+  expect(own!.note).toContain("lares vault recard face=2");
   expect(own!.note).not.toContain("pulama recard");
   expect(own!.note).not.toContain("lares vault unlock");
 });
@@ -271,7 +271,7 @@ test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses b
   const words = String(answer["errorMessage"]);
   expect(words).toContain("h2");
   expect(words).toContain("1 save(s)");
-  expect(words).toContain("lares vault recard --face 2");
+  expect(words).toContain("lares vault recard face=2");
   expect(words, "no word drops them").not.toContain("accept-loss");
   expect(h.lock).not.toHaveBeenCalled();
   expect(h.recompose).not.toHaveBeenCalled();
@@ -282,7 +282,7 @@ test("F6 A FACE LOCK GATES ONLY WHERE IT WOULD COMPOSE AGAIN: the mounted face's
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1"); h.open.add("2");
   const mount = await h.send({ op: "lock", face: 0 });
   expect(mount).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
-  expect(String(mount["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(String(mount["errorMessage"])).toContain("lares vault recard face=2");
   expect(h.dropFace, "no close ran ahead of the refused lock").not.toHaveBeenCalled();
   expect(h.open.has("0")).toBe(true);
   expect(await h.send({ op: "lock", face: 2 })).toMatchObject({ op: "lock", locked: true, face: 2 });
@@ -293,7 +293,7 @@ test("F1 AN UNLOCK THAT WOULD COMPOSE AGAIN REFUSES BEFORE ANYTHING MOVES: no fa
   setMountedFace(0); const h = harness({ heldSaves: HELD });
   const answer = await h.send({ op: "unlock", face: 1, credentials: [{ kind: "passphrase", passphrase: "x" }] });
   expect(answer).toMatchObject({ op: "unlock", status: "error", refusal: { reason: "saves-held" } });
-  expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(String(answer["errorMessage"])).toContain("lares vault recard face=2");
   expect(h.open.has("1"), "no key opened under a refused unlock").toBe(false);
   expect(mountedFaceOrdinal(), "the mount stays").toBe(0);
   expect(h.recompose).not.toHaveBeenCalled();
@@ -320,7 +320,7 @@ test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cur
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
   const answer = await h.send({ op: "wear", face: 1 });
   expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "saves-held" } });
-  expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(String(answer["errorMessage"])).toContain("lares vault recard face=2");
   expect(String(answer["errorMessage"])).not.toContain("accept-loss");
   expect(String(answer["errorMessage"])).not.toContain("--yes");
   // THE SHIM'S WORD: `yes` turns over records the shore's flush left unwritten, and never drops a held save.
@@ -349,7 +349,7 @@ test("R9 THE DARK ROW NAMES ITS HELD SAVES: a refused face whose saves wait in m
   const [row] = servedDark([{ ordinal: 2, cause, heldSaves: 1 }], [0, 2], true);
   expect(row).toMatchObject({ face: 2, cause, heldSaves: 1 });
   expect(row!.note).toContain("1 save(s) of its own wait held in memory");
-  expect(row!.note).toContain("lares vault recard --face 2");
+  expect(row!.note).toContain("lares vault recard face=2");
   const [bare] = servedDark([{ ordinal: 2, cause, heldSaves: 0 }], [0, 2], true);
   expect(bare!.note).not.toContain("held in memory");
   expect(doorDarkLine(() => [{ ordinal: 2, cause, heldSaves: 1 }], true)(2)).toBe(row!.note);
@@ -360,7 +360,7 @@ test("R9 A REFUSED FACE THAT HOLDS CLOSING NAMES ITSELF: the census and the door
   const [row] = servedDark([], [0, 2], true, [{ ordinal: 2, cause }]);
   expect(row).toMatchObject({ face: 2, cause });
   expect(row!.note).toContain("closing here");
-  expect(row!.note).toContain("lares vault lock --face 2");
+  expect(row!.note).toContain("lares vault lock face=2");
   expect(servedDark([], [0], true, [{ ordinal: 2, cause }]), "a face the custody does not serve reads nowhere").toEqual([]);
   const line = doorDarkLine(() => [], true, () => [{ ordinal: 2, cause }]);
   expect(line(2)).toBe(row!.note);

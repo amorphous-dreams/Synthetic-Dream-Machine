@@ -52,7 +52,7 @@ const answer = (): { ok: boolean; error?: { code: string; message: string } } =>
 describe("RED unlock-offline-beside-a-pulama-refuses-by-name", () => {
   it("the daemon down and a pūlama named: refuse `offline-beside-pulama`, ask nothing, open nothing around it", async () => {
     process.env["LARES_PULAMA"] = "1";
-    expect(await run("--passphrase")).toBe(1);
+    expect(await run("passphrase=true")).toBe(1);
     expect(prompts).toBe(0);
     expect(frames).toEqual([]);
     expect(answer().error?.code).toBe("offline-beside-pulama");
@@ -61,7 +61,7 @@ describe("RED unlock-offline-beside-a-pulama-refuses-by-name", () => {
   });
 
   it("CONTROL: no pūlama named, the offline unlock still gathers its route and proves it against the slot tree", async () => {
-    await run("--passphrase");
+    await run("passphrase=true");
     expect(prompts).toBeGreaterThan(0);
     expect(answer().error?.code).not.toBe("offline-beside-pulama");
   });

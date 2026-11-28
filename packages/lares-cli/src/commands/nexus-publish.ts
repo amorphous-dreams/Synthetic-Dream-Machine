@@ -21,11 +21,11 @@
  * another door. `plugins` stands first because the region already exists and already gets folded.
  *
  * ── UNDER A PŪLAMA THE HAND SIGNS AT THE PŪLAMA'S HAND DOOR ──────────────────────────────────────
- * The vessel under a pūlama holds no face root, so `--apply` there finds no ward to open. The signing runs in the lei
+ * The vessel under a pūlama holds no face root, so `apply=true` there finds no ward to open. The signing runs in the lei
  * pattern, and the host shim walks it for `--apply` (`tools/lares-container.sh nexus publish plugins …`): `--terms` prints
  * ONE stdout line (the face and the CLOSED descriptor the root signs: offeror, pluginsCid, blobs), signing nothing and asking
  * no route; the pūlama's `publish '<terms>'` reads the route on the operator's terminal and its face root signs that one
- * descriptor; `--land '<answer>'` lands the signed offering, where the vessel derives the descriptor afresh from the same
+ * descriptor; `land='<answer>'` lands the signed offering, where the vessel derives the descriptor afresh from the same
  * source and announces it only over a byte-equal signed preimage.
  */
 
@@ -41,7 +41,7 @@ import type { ParsedArgs } from "../parse-args.js";
 export const PUBLISHABLE = ["plugins"] as const;
 
 const PUBLISH_USAGE: readonly string[] = [
-  "usage: lares nexus publish plugins --source <dir> [--face N] [--apply | --terms | --land '<pūlama answer>']",
+  "usage: lares nexus publish plugins source=<dir> [face=N] [apply=true | terms=true | land='<pūlama answer>']",
   "",
   "  THE OFFERING DOOR — what THIS operator publishes for others to take. Held apart from",
   "  `nexus kahuli`, which overturns what the MESH must agree on (engine · grammar).",
@@ -50,20 +50,20 @@ const PUBLISH_USAGE: readonly string[] = [
   "             bytes beside it, either a signed gift (kept exactly as signed) or an unsigned",
   "             descriptor this persona signs fresh, as PUBLISHER.",
   "",
-  "  --source   the offering source directory (required).",
-  "  --apply    sign the offering (when unsigned) + announce it on the Nexus's publication board.",
-  "  --terms    (under a pūlama) print ONE line: the face and the descriptor the pūlama's hand signs",
+  "  source=   the offering source directory (required).",
+  "  apply=true    sign the offering (when unsigned) + announce it on the Nexus's publication board.",
+  "  terms=true    (under a pūlama) print ONE line: the face and the descriptor the pūlama's hand signs",
   "             (`pulama-main.js publish '<terms>'`); signs nothing, asks no route.",
-  "  --land     land the offering the pūlama's hand signed over this source's own descriptor.",
+  "  land=     land the offering the pūlama's hand signed over this source's own descriptor.",
 ];
 
 /** One pūlama `publish` answer's signed offering and the face it signed for; a refusal or another act lands nothing. */
 export function publishLanding(raw: string, named: number | undefined): { readonly offering: Record<string, unknown>; readonly face: number } | { readonly usage: string } {
   let read: unknown;
-  try { read = JSON.parse(raw); } catch { return { usage: "--land's answer reads as no JSON" }; }
-  if (typeof read !== "object" || read === null || Array.isArray(read)) return { usage: "--land's answer reads as no object" };
+  try { read = JSON.parse(raw); } catch { return { usage: "land='s answer reads as no JSON" }; }
+  if (typeof read !== "object" || read === null || Array.isArray(read)) return { usage: "land='s answer reads as no object" };
   const r = read as Record<string, unknown>;
-  if (r["op"] !== "publish") return { usage: "--land takes the pūlama's publish answer" };
+  if (r["op"] !== "publish") return { usage: "land= takes the pūlama's publish answer" };
   if (r["reading"] !== "signed") return { usage: `the pūlama signed nothing (${String(r["reading"])}), so nothing lands` };
   const face = r["face"], offering = r["offering"];
   if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || typeof offering !== "object" || offering === null || Array.isArray(offering)) return { usage: "the pūlama's answer names no face and no signed offering" };
@@ -72,23 +72,23 @@ export function publishLanding(raw: string, named: number | undefined): { readon
 }
 
 /**
- * `lares nexus publish plugins --source <dir>` — READ a local offering source.
+ * `lares nexus publish plugins source=<dir>` — READ a local offering source.
  *
  * The read names the region a FRESH fold of `<dir>`'s blobs would carry, and the blobs themselves. A
- * read never bakes, signs, or touches bytes on disk beyond `<dir>` itself — it reports what `--apply`
+ * read never bakes, signs, or touches bytes on disk beyond `<dir>` itself — it reports what `apply=true`
  * WOULD announce, never genesis's own region (H3: genesis carries the boot set alone and names no
  * registry of what an operator may offer).
  */
 async function publishPlugins(args: ParsedArgs): Promise<number> {
   const source = args.options["source"];
-  if (!source) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "publishing plugins needs --source <dir>");
+  if (!source) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "publishing plugins needs source=<dir>");
 
   const rawFace = args.options["face"];
   const named = typeof rawFace === "string" ? (/^(?:0|[1-9][0-9]*)$/.test(rawFace.trim()) ? Number(rawFace.trim()) : NaN) : undefined;
-  if (named !== undefined && !Number.isSafeInteger(named)) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "--face takes a whole count from 0");
+  if (named !== undefined && !Number.isSafeInteger(named)) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "face= takes a whole count from 0");
   const land = args.options["land"];
   const modes = [args.flags["apply"] === true, args.flags["terms"] === true, typeof land === "string"].filter(Boolean).length;
-  if (modes > 1) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "name one of --apply, --terms or --land");
+  if (modes > 1) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "name one of apply=true, terms=true or land=");
 
   // THE TERMS LINE (under a pūlama): exactly one stdout line, the terms `pulama-main.js publish` takes, unless `--json` asks the envelope.
   if (args.flags["terms"] === true) {
@@ -157,7 +157,7 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
   const parsed = JSON.parse(readFileSync(descriptorPath, "utf8")) as { blobs?: readonly { id: string; version: string; sha256: string }[]; sig?: string; pluginsCid?: string };
   const blobs = parsed.blobs ?? [];
   // A SIGNED gift already carries its own declared region; an unsigned descriptor's fold is computed
-  // fresh — the SAME fold `--apply` would sign, so a read never drifts from what applying would do.
+  // fresh — the SAME fold `apply=true` would sign, so a read never drifts from what applying would do.
   const pluginsCid = typeof parsed.sig === "string" && typeof parsed.pluginsCid === "string" ? parsed.pluginsCid : computePluginsCid(blobs);
 
   // L-d: this read routes through the ONE choke point every other door answers through, so `--json`

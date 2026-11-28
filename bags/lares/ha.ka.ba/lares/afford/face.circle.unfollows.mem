@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.circle.unfollows"
 
 ! face.circle.unfollows ~ the unfollow: a nym leaves a circle
 
-`lares circle remove <nym> --to <circle>` drops the nym from the circle. The handle-book's memory of it stays; nothing crosses the wire.
+`lares circle remove <nym> to=<circle>` drops the nym from the circle. The handle-book's memory of it stays; nothing crosses the wire.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WKqGZWyByxlETTx6GWOd205lmELq8CntWkCjI9A2Hnw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Brs2Egzk8QeoGvJAh184KTDPF-HxsEiyHNrP4vsbRS4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -3,14 +3,14 @@
  *
  * A joinee founded by a fleet-join landing (`lares fleet join land`) boots for years after it spent its answer,
  * and the one address it cannot derive from anything it holds is where its hearth LISTENS: the `ws://` sync
- * url the hearth's `fleet join answer --sync-url` named, and the hearth's gate key — the anti-relay binding the
+ * url the hearth's `fleet join answer sync-url=` named, and the hearth's gate key — the anti-relay binding the
  * gate proof commits to, known out-of-band (the root-signed answer carries both; a key read off the wire would
  * bind the proof to whoever answered). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC
  * url (an `automerge:` address) and dials nothing.
  *
  * So the two ride the bootstrap beside the sentinel ids, packed at admission (`hearthDialTiddlers`) and read
  * at boot (`readHearthDialPin`): the hearth the dial names (an explicit option outranks it). Beside them rides the
- * document the admit named for the dial to ask for (`fleet join answer --doc-url`), at open and on each return.
+ * document the admit named for the dial to ask for (`fleet join answer doc-url=`), at open and on each return.
  * Absent on a vessel that founded its own face — such a vessel IS the hearth. FAIL CLOSED: a torn pin (one
  * half), a malformed key, an unreadable bootstrap → no pin → no dial (byte-identical to a vessel never admitted).
  *

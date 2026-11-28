@@ -35,7 +35,7 @@ describe("the Kahu predicate at a write door", () => {
   test("the refusal names the act that cures it: wear the steward's face", async () => {
     const err = await refusalOf(async () => requireKahuReach(BAG_IDS.lares, await strangerHand("joined-without-admission"), "offer promote"));
     // The refusal names the face by its relation (the one the Kahu cabal admitted), never by an index it cannot know.
-    expect(String((err as Error).message)).toContain("wear the steward's face: `lares vault unlock --face <n>`, the face the Kahu cabal admitted");
+    expect(String((err as Error).message)).toContain("wear the steward's face: `lares vault unlock face=<n>`, the face the Kahu cabal admitted");
     expect(String((err as Error).message)).not.toMatch(/--face \d/);
     // CONTROL: the admission state the fold read still rides the refusal.
     expect(String((err as Error).message)).toContain("joined-without-admission");

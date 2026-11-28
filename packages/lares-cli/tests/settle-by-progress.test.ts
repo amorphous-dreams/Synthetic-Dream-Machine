@@ -3,7 +3,7 @@
  * through a large bag answers some pages after this caller's own per-page wait ran out (`LocalWaitExpired`).
  * Such a page goes back on a retry queue and the settle keeps asking while pages keep settling; it stops only
  * where no page newly settled for the stall window (`SETTLE_STALL_MS`), names what still waits, and leaves a
- * resumable record under the house's run dir that `lares shore settle --bag <bag> --pending` picks up.
+ * resumable record under the house's run dir that `lares shore settle bag=<bag> pending=true` picks up.
  *
  * The islands stand as functions over the pages they get; the clock comes injected, so no test waits out a
  * real window.
@@ -20,7 +20,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 
 type RunVerb = (name: string, args: Record<string, unknown>, did: string, opts: { timeoutMs: number }) => Promise<SubmitResult>;
 
-// `lares shore settle --pending` reaches the vessel through `runVerb`; the test hands it a fake vessel.
+// `lares shore settle pending=true` reaches the vessel through `runVerb`; the test hands it a fake vessel.
 const hoisted = vi.hoisted(() => ({ run: null as null | RunVerb }));
 vi.mock("../src/verb-call.js", async (importOriginal) => {
   const real = await importOriginal<typeof import("../src/verb-call.js")>();
@@ -132,7 +132,7 @@ describe("settle keeps waiting while the projector makes progress", () => {
   });
 });
 
-describe("(c) lares shore settle --pending resumes from the record", () => {
+describe("(c) lares shore settle pending=true resumes from the record", () => {
   test("a resumed settle that completes prints the counts and clears the record", async () => {
     const carriers = carriersOf(100);
     const stuck = vessel((first) => (first === uriOf(0) ? "settle" : "wait"), 10);

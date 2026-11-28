@@ -31,7 +31,7 @@
  *
  * ── ONE KŪKULU, ONE OFFER ───────────────────────────────────────────────────────────────────────
  * A later rite writes over the file, so the newest offer supersedes the last, ONLY over the base it read: the overwrite names the
- * hash of the resting file (`kukuluOfferBase`, what `rite receipts --rite kukulu` answers as `offerBase`), and a resting file
+ * hash of the resting file (`kukuluOfferBase`, what `rite receipts rite=kukulu` answers as `offerBase`), and a resting file
  * that reads otherwise refuses `conflict`, so no seat swaps a good offer for its own between the read and the lowering. The vessel that the pūlama serves removes
  * the file once its session stands (`consumeKukuluOffer`): a plain restart afterwards finds no offer and wears nothing. A
  * hello the pūlama refuses leaves the file, so the same offer rides the next dial (after the operator lights the pūlama).
@@ -122,7 +122,7 @@ export async function writeKukuluOffer(a: {
   if (!IMAGE_DIGEST.test(a.image)) throw new SwarmRefused("rite-offer-malformed", "an offer names the image by its digest, `<algorithm>:<hex>`");
   const lei: SignedSwarmAct[] = [], unstrung: unknown[] = [], waits: string[] = [];
   const nameOf = (face: KukuluOfferFace): string => face.name ?? face.group;
-  const kui = `lares lei kui --rite kukulu --branch ${a.branch} --returns <n> --all`;
+  const kui = `lares lei kui rite=kukulu branch=${a.branch} returns=<n> all=true`;
   for (const face of a.faces) {
     const chain = await readLeiChain(a.wiki, { rite: "kukulu", branch: a.branch }, face.trust, face.group, face.ward);
     if (chain.cosigned.length === 0) { waits.push(nameOf(face)); continue; }
@@ -171,7 +171,7 @@ export async function writeKukuluOffer(a: {
   // THE BASE, COMPARED AND SWAPPED: read after every await, so from this read to the rename nothing else in this process runs.
   const resting = kukuluOfferBase(a.path);
   if (resting !== null && resting !== (a.base ?? null)) {
-    throw new SwarmRefused("conflict", `an offer rests at ${a.path} as ${resting}, and this offer names ${a.base ? `base ${a.base}` : "no base"}; read it again (\`lares rite receipts --rite kukulu --branch ${a.branch}\` answers its offerBase) and offer over that base, or run \`lares rite kukulu\`, which reads it first`);
+    throw new SwarmRefused("conflict", `an offer rests at ${a.path} as ${resting}, and this offer names ${a.base ? `base ${a.base}` : "no base"}; read it again (\`lares rite receipts rite=kukulu branch=${a.branch}\` answers its offerBase) and offer over that base, or run \`lares rite kukulu\`, which reads it first`);
   }
   mkdirSync(dirname(a.path), { recursive: true });
   const tmp = `${a.path}.${process.pid}.tmp`;

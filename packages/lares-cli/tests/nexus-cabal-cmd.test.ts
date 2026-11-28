@@ -64,7 +64,7 @@ describe("lares nexus cabal", () => {
     const carried = join(root, "partial.json");
     writeFileSync(carried, "{}");
     const { code, out } = await answer(run(["cabal", "cosign", carried]));
-    expect(out).toMatch(/--act/);
+    expect(out).toMatch(/act=<cid>/);
     expect(code).toBe(2);
   });
 
@@ -80,7 +80,7 @@ describe("lares nexus cabal", () => {
     expect((await answer(run(["cabal", "admit", GROUP], { out: dir }))).out).toMatch(/names a directory; name a file/);
     const carried = join(root, "p.json");
     writeFileSync(carried, "{}");
-    expect((await answer(run(["cabal", "cosign", carried], { act: "ef".repeat(32), out: carried }))).out).toMatch(/--out names the partial you carried/);
+    expect((await answer(run(["cabal", "cosign", carried], { act: "ef".repeat(32), out: carried }))).out).toMatch(/out= names the partial you carried/);
   });
 
   test("C6 — CONTROL: an unknown sub-verb refuses with the door's usage", async () => {

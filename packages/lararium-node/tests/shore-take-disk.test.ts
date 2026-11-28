@@ -82,8 +82,8 @@ describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk und
     const alert = rig.conflicts.filter((c) => c.uri === uri);
     expect(alert).toHaveLength(1);
     expect(alert[0]!.reason).toMatch(/both-moved/);
-    expect(alert[0]!.reason, "the alert names no door that lands the disk's words").toContain(`lares shore take-disk ${uri} --key ${key}`);
-    expect(alert[0]!.reason).toContain(`lares shore take-records ${uri} --key ${key}`);
+    expect(alert[0]!.reason, "the alert names no door that lands the disk's words").toContain(`lares shore take-disk ${uri} key=${key}`);
+    expect(alert[0]!.reason).toContain(`lares shore take-records ${uri} key=${key}`);
     expect(wikiSays(uri, HOLDING_LINE)).toBe(true);
     expect(wikiSays(uri, HAND_LINE)).toBe(false);
   });

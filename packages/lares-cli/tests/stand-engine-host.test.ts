@@ -69,7 +69,7 @@ describe("vessel stand and the host-held engine", () => {
   it("observe carries the standing verdict without acting", async () => {
     vi.stubEnv("LAR_ENGINE", "host");
     const { cmdStand } = await import("../src/commands/stand.js");
-    expect(await cmdStand(parseArgs(["vessel", "stand", "--observe", "--json"])) ).toBe(0);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "observe=true", "--json"])) ).toBe(0);
     expect(emitted.at(-1)?.data).toMatchObject({ standing: { act: "restand", reason: "face lit after boot" } });
     // CONTROL: an observing stand refuses nothing, so `ok` answers for the vessel alone.
     expect(emitted.at(-1)).toMatchObject({ ok: true });

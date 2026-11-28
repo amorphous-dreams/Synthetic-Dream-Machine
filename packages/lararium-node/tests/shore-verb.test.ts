@@ -100,7 +100,7 @@ describe("settling a stand-off stays a hand act", () => {
     const s = await stand();
     const seat = await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key }, "seat");
     expect(seat).toMatchObject({ ok: false, refusal: "hand-act-only" });
-    expect(String(seat["why"])).toContain(`lares shore take-records ${URI} --key ${s.key}`);
+    expect(String(seat["why"])).toContain(`lares shore take-records ${URI} key=${s.key}`);
     expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key })).toMatchObject({ ok: false, refusal: "hand-unattested" });
     expect(await answerShore(s.projector, { op: "keep-both", uri: URI, key: s.key }, "seat")).toMatchObject({ ok: false, refusal: "hand-act-only" });
     expect(readFileSync(s.file, "utf-8")).toBe(HAND);
@@ -112,8 +112,8 @@ describe("settling a stand-off stays a hand act", () => {
     s.projector.standoffKeeper = { draftsOf: () => [], keep: async () => [] } as unknown as NonNullable<typeof s.projector.standoffKeeper>;
     const answer = await answerShore(s.projector, { op: "keep-both", uri: URI, key: s.key }, "cli");
     expect(answer).toMatchObject({ ok: false, refusal: "no-drafts-to-keep" });
-    expect(String(answer["why"])).toContain(`lares shore keep-disk ${URI} --key ${s.key}`);
-    expect(String(answer["why"])).toContain(`lares shore keep-records ${URI} --key ${s.key}`);
+    expect(String(answer["why"])).toContain(`lares shore keep-disk ${URI} key=${s.key}`);
+    expect(String(answer["why"])).toContain(`lares shore keep-records ${URI} key=${s.key}`);
     expect(readFileSync(s.file, "utf-8")).toBe(HAND);
     expect(s.resolved).toEqual([]);
   });

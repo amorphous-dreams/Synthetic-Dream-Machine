@@ -52,7 +52,7 @@ import { DoorUsage } from "../src/commands/door-call.js";
 import { cmdWiki, wikiRenderPlan } from "../src/commands/wiki.js";
 import { cmdKahua } from "../src/commands/kahua.js";
 import { cmdMeme } from "../src/commands/meme.js";
-import { COMMANDS, dispatch, unknownFlags } from "../src/bin/lares.js";
+import { COMMANDS, dispatch, unknownParams, doorTakes } from "../src/bin/lares.js";
 import { parseArgs, type ParsedArgs } from "../src/parse-args.js";
 
 interface Row {
@@ -148,7 +148,7 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
     });
 
     test(`${row.tool}: every option and flag the row spells stands in its command's accepts row`, () => {
-      const accepts = new Set(COMMANDS.find((c) => c.name === row.cli.command)?.accepts ?? []);
+      const accepts = new Set(doorTakes(row.cli.command));
       for (const name of [...Object.keys(row.cli.options), ...Object.keys(row.cli.flags)]) expect(accepts.has(name), `${row.cli.command} accepts --${name}`).toBe(true);
     });
   }
@@ -280,26 +280,29 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
   test("★ an old flag on a call verb refuses by name before anything runs; the burned `tiddler` door answers unknown command ★", async () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      for (const [tokens, flag] of [[["get", "--meme"], "--meme"], [["get", "title=T", "--skinny"], "--skinny"], [["put", "title=T", "--text", "w"], "--text"],
-        [["delete", "title=T", "--family"], "--family"], [["get", "title=T", "--recipe", "default"], "--recipe"], [["put", "title=T", "--create"], "--create"]] as const) {
+      for (const [tokens, reading] of [[["get", "title=T", "--skinny"], "--skinny reads as aperture=measure"], [["put", "title=T", "--text", "w"], "--text reads as text=w"],
+        [["delete", "title=T", "--family"], "--family reads as family=true"], [["get", "title=T", "--recipe", "default"], "--recipe reads as recipe=default"], [["put", "title=T", "--create"], "--create reads as create=true"]] as const) {
         err.mockClear();
         expect(await dispatch([...tokens]), tokens.join(" ")).toBe(2);
-        expect(err.mock.calls.flat().join(" "), tokens.join(" ")).toContain(`unknown flag ${flag} for \`lares ${tokens[0]}\``);
+        expect(err.mock.calls.flat().join(" "), tokens.join(" ")).toContain(`dash-flag-burned: ${reading}`);
       }
       err.mockClear();
-      expect(await dispatch(["tiddler", "get", "lar:///t/x", "--recipe", "default"])).toBe(2);
+      expect(await dispatch(["tiddler", "get", "lar:///t/x", "recipe=default"])).toBe(2);
       expect(err.mock.calls.flat().join(" ")).toContain('unknown command "tiddler"');
       expect(h.calls).toEqual([]);
     } finally { err.mockRestore(); }
   });
 
-  test("each call verb's row reads no flag of its own: params alone, and the global flags", () => {
+  test("each call verb's row reads no param of its own: the call door binds them in the VM, beside the global flags", () => {
     for (const name of ["get", "put", "delete", "rename", "watch"]) {
       const row = COMMANDS.find((c) => c.name === name)!;
-      expect(row.accepts, name).toEqual([]);
       expect(row.handler, name).toBe(cmdCall);
-      expect(unknownFlags(row, line(name, "title=T", "--yes"))).toEqual([]);
-      expect(unknownFlags(row, parseArgs([name, "title=T", "--face", "1"])).map((u) => u.name), name).toEqual(["face"]);
+      expect(unknownParams(row, line(name, "title=T", "--yes"))).toEqual([]);
+      // A call head keeps its params as written: this side folds none, so none refuses here; the carrier's #/takes binds them.
+      const parsed = parseArgs([name, "title=T", "face=1"]);
+      expect(parsed.positional, name).toEqual(["title=T", "face=1"]);
+      expect(parsed.options, name).toEqual({});
+      expect(unknownParams(row, parsed), name).toEqual([]);
     }
   });
 });
@@ -325,16 +328,16 @@ describe("the wiki door keeps its engine verbs; a filter pages through `get filt
   test("wiki render output flags reach only the output path", () => {
     const row = COMMANDS.find((c) => c.name === "wiki")!;
     const output = argv("wiki", ["render", "[tag[export]]"], { recipe: "default", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html" });
-    expect(unknownFlags(row, output)).toEqual([]);
+    expect(unknownParams(row, output)).toEqual([]);
     for (const sub of ["status"]) {
-      expect(unknownFlags(row, argv("wiki", [sub], { output: "workbench" })).map((x) => x.name)).toEqual(["output"]);
+      expect(unknownParams(row, argv("wiki", [sub], { output: "workbench" })).map((x) => x.name)).toEqual(["output"]);
     }
   });
   test("the normal CLI entry refuses output on a read path before dispatch", async () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      expect(await dispatch(["wiki", "status", "--recipe", "default", "--output", "workbench"])).toBe(2);
-      expect(error.mock.calls.flat().join(" ")).toContain("unknown flag --output");
+      expect(await dispatch(["wiki", "status", "recipe=default", "output=workbench"])).toBe(2);
+      expect(error.mock.calls.flat().join(" ")).toContain("unknown param output=");
       expect(h.calls).toEqual([]);
     } finally { error.mockRestore(); }
   });
@@ -357,11 +360,11 @@ describe("the wiki door keeps its engine verbs; a filter pages through `get filt
 });
 
 describe("a bag names one store and no wiki", () => {
-  test("RED: the engine verbs refuse --bag before the wire and name the call that reads a bag; CONTROL: get, put and delete bag= ride the call", async () => {
+  test("RED: the engine verbs refuse bag= before the wire and name the call that reads a bag; CONTROL: get, put and delete bag= ride the call", async () => {
     for (const positional of [["render", "T"], ["status"]]) {
       const r = await run(argv("wiki", [...positional], { bag: "lares" }));
       expect(r.exit).toBe(2);
-      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*lares get title=<title> bag=<slug>.*aperture=arc.*lares get meme=true bag=<slug>.*--recipe <slug>/s) } });
+      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*lares get title=<title> bag=<slug>.*aperture=arc.*lares get meme=true bag=<slug>.*recipe=<slug>/s) } });
     }
     expect(h.calls).toEqual([]);
     h.reply = { bag: "lar:///ha.ka.ba/bags/lares", title: "T", tiddler: { fields: { title: "T", text: "words" }, hash: "sha256-x", textHash: "sha256-y", bag: "lar:///ha.ka.ba/bags/lares", position: "plain" }, ...by("engine.record.reads") };

@@ -29,7 +29,7 @@ test('RED: an unknown door, a word outside its table, and a dead third word each
 
 test('a pass-through door hands its words on; a leading argument reads through only where a verb follows it', () => {
   assert.equal(deadDoor('lares mempalace search <q>'), null);
-  assert.equal(deadDoor('lares sense memory pour --all'), null);
+  assert.equal(deadDoor('lares sense memory pour all=true'), null);
   assert.notEqual(deadDoor('lares sense memory zz-no-such-name'), null);
   assert.notEqual(deadDoor('lares sense zz-no-such-name'), null);
 });
@@ -75,7 +75,17 @@ test('the one act: `act` and a bare address ride the call door by a carrier addr
     'lares act --help', 'lares act REPACK: request abandoned', 'lares act ${verb}: bag= required', 'lares act lar:///<address> … yes=true']) {
     assert.equal(deadDoor(line), null, line);
   }
-  for (const line of ['lares act MOVE --title x --from a --to b', 'lares act', 'lares act --in-wiki', 'lares act … --yes']) {
+  for (const line of ['lares act MOVE title=x from=a to=b', 'lares act', 'lares act … --yes']) {
     assert.match(deadDoor(line) ?? '', /takes a carrier address/, line);
+  }
+  assert.match(deadDoor('lares act --in-wiki') ?? '', /--in-wiki burned into params/);
+});
+
+test('a dash spelling outside the global flags reads red on every door line, naming its param; the shim keeps its own', () => {
+  for (const line of ['lares vessel request <id> --cancel', 'lares wear 2 --face 1', 'lares mu=_0 --all', 'lares sense pour [--all]']) {
+    assert.match(deadDoor(line) ?? '', /burned into params: spell it [a-z-]+=…/, line);
+  }
+  for (const line of ['lares vessel request <id> cancel=true --json', 'lares wear 2 --yes', 'lares mempalace setup -- --raw', 'lares up --capture <dir>']) {
+    assert.equal(deadDoor(line), null, line);
   }
 });

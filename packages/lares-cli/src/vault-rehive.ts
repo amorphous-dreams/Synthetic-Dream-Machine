@@ -1,5 +1,5 @@
 /**
- * `lares vault rehive --face N` — a SHUT face whose veil-archive row holds ANOTHER identity's Archive stands its hive again from
+ * `lares vault rehive face=N` — a SHUT face whose veil-archive row holds ANOTHER identity's Archive stands its hive again from
  * its own seed.
  *
  * The verb runs from the operator's terminal alone: it reads the face's own route on a TTY (no flag, variable or pipe carries
@@ -24,11 +24,11 @@ export function rehiveLines(a: CustodyDoorAnswer): string[] {
 /** A rehive's usage refusal, in the vault door's own words; the caller renders it. */
 export class RehiveUsage extends Error {}
 
-/** `vault rehive --face <N>`. */
+/** `vault rehive face=<N>`. */
 export async function vaultRehive(args: ParsedArgs): Promise<number> {
   const raw = args.options["face"];
   if (typeof raw !== "string" || !/^(0|[1-9]\d*)$/.test(raw) || !Number.isSafeInteger(Number(raw))) {
-    throw new RehiveUsage("rehive names the face's handle-index: `lares vault rehive --face <N>` (indices print under `lares persona list`)");
+    throw new RehiveUsage("rehive names the face's handle-index: `lares vault rehive face=<N>` (indices print under `lares persona list`)");
   }
   const face = Number(raw);
   const refuse = (code: string, message: string, data?: CustodyDoorAnswer): number => {
@@ -41,7 +41,7 @@ export async function vaultRehive(args: ParsedArgs): Promise<number> {
   const door = await sendCustodyFrame({ op: "custody" });
   if (door === null || door["op"] !== "custody") return refuse("daemon-unreachable", "no vessel answers its custody door: stand it (`lares vessel stand`), leaving the face to rehive shut");
   // THE FACE'S OWN ROUTE, read on this terminal alone: a person who holds the face stands at this act.
-  const credentials = await gatherCredentials(`lares vault rehive --face ${face}`, { kind: "face", ordinal: face });
+  const credentials = await gatherCredentials(`lares vault rehive face=${face}`, { kind: "face", ordinal: face });
   const a = await sendCustodyFrame({ op: "rehive", credentials, face });
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the rehive answered: read `lares vault status`, then rehive again");
   if (a["status"] === "error") {

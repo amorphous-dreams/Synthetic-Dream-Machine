@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.approval.signs"
 
 ! realm.approval.signs ~ a person names the digest before the seats sign
 
-`lares nexus approve sign <approval> --confirm-statement <digest> [--confirm-hash <hash>] [--nexus <aid>] --out <approval>` adds the seats held in this vault to an approval, once the person names the statement digest `open` printed (and may name the bytes hash).
+`lares nexus approve sign <approval> confirm-statement=<digest> [confirm-hash=<hash>] [nexus=<aid>] out=<approval>` adds the seats held in this vault to an approval, once the person names the statement digest `open` printed (and may name the bytes hash).
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kaJSZa9La-V-_2SN4I-GdDOcpqC6amQIZEFgNz_itRI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d36ogjdnZp9W5zDCmHgRB5ICLAi6XCKZEMOuuZ8xOqk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

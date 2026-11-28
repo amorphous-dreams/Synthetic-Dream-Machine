@@ -1,7 +1,7 @@
 /**
  * `lares vessel found` — bootstrap a new Lararium node.
  *
- * Thin shim over `runInit` from @lararium/node. Idempotent; pass --force to
+ * Thin shim over `runInit` from @lararium/node. Idempotent; pass force=true to
  * re-seed when the social bootstrap already lives on disk (<root>/hearth/vessel — see larBootstrapPath).
  *
  * A FOUNDING RUNS WITH NO VESSEL STANDING. It holds the store for its act (`ownedStore`), so a vessel standing
@@ -10,20 +10,20 @@
  * The human route is read on a TTY (passphrase and/or paper pin); with no TTY the founding refuses by name.
  *
  * Flags:
- *   --force          Re-seed even when bootstrap artifact exists.
- *   --root DIR       (or --root=DIR) Isolate storage + genesis under DIR (overrides LAR_ROOT env).
- *   --storage DIR    Explicit override for Automerge NodeFS storage directory.
- *   --genesis DIR    Explicit override for genesis/ directory (else LAR_GENESIS, else <root>/genesis).
- *   --hearth         THE STABLE FOUNDING ACT: the place, persona zero, its one-seat PRIVATE seed charter (the seat's
+ *   force=true          Re-seed even when bootstrap artifact exists.
+ *   root=DIR       (or root=DIR) Isolate storage + genesis under DIR (overrides LAR_ROOT env).
+ *   storage=DIR    Explicit override for Automerge NodeFS storage directory.
+ *   genesis=DIR    Explicit override for genesis/ directory (else LAR_GENESIS, else <root>/genesis).
+ *   hearth=true         THE STABLE FOUNDING ACT: the place, persona zero, its one-seat PRIVATE seed charter (the seat's
  *                    own key, its cold next key printed on a card and read back), and the face that binds the
- *                    charter's Nexus AID. Needs --name '<label>' (persona zero's private label); --chair '<label>'
+ *                    charter's Nexus AID. Needs name='<label>' (persona zero's private label); chair='<label>'
  *                    names the chair privately.
- *   --restore FILE   (with --hearth) A RESTORE AS PERSONA ZERO: the act lands the face a backup bundle carries as
+ *   restore=FILE   (with hearth=true) A RESTORE AS PERSONA ZERO: the act lands the face a backup bundle carries as
  *                    persona zero, at a fresh seed charter and a fresh chair, instead of minting a fresh root. The
- *                    bundle's own route reads on a terminal; --name may stay off (the bundle's pet-name lands).
+ *                    bundle's own route reads on a terminal; name= may stay off (the bundle's pet-name lands).
  *
  * TWO ROADS, ONE VERB. Bare, it founds a PLACE with no face (a herm's rite, or a vessel about to join a face by
- * `lares fleet join`); `--hearth` runs the Stable founding act. A face founds at a hearth alone: `persona new 0` on
+ * `lares fleet join`); `hearth=true` runs the Stable founding act. A face founds at a hearth alone: `persona new 0` on
  * a place with no seed charter refuses by name.
  */
 
@@ -61,11 +61,11 @@ export function setFoundingRoute(gather: FoundingRoute): void { gatherRoute = ga
  * on a TTY by default. A test installs its own; no flag and no env var carries it.
  */
 export type BundleRoute = () => Promise<readonly Credential[]>;
-let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found --hearth --restore", { kind: "bundle" });
+let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found hearth=true restore=true", { kind: "bundle" });
 export function setFoundingBundleRoute(gather: BundleRoute): void { gatherBundle = gather; }
 
 /**
- * THE HAND BEHIND A RE-SEED. `--force` over a standing custody tree re-seeds the bootstrap and asks no route (a standing tree
+ * THE HAND BEHIND A RE-SEED. `force=true` over a standing custody tree re-seeds the bootstrap and asks no route (a standing tree
  * needs none), so nothing in the act itself proves a person. This seam reads the process running it through the house hand
  * gate (`readOwnHand`): a harness mark in its environment or a harness on its parent chain refuses `hand-act-only`, a chain
  * that nothing reads refuses `hand-unattested` (an unread chain never reads as a person; the shim and the host bridge hand the
@@ -105,11 +105,11 @@ function foundingRefusal(err: unknown): { name: string; advice: string } | null 
 
 export async function cmdFound(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
-  // ONLY an explicit --root sets LAR_ROOT (never a default — that would defeat the ~/.lares uplift).
+  // ONLY an explicit root= sets LAR_ROOT (never a default — that would defeat the ~/.lares uplift).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
   // storage (runtime) → <root>/hearth/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
   const storageDir = args.options["storage"] ?? larDataDir();
-  const genesisDir = args.options["genesis"] ?? larGenesisDir();   // --genesis → LAR_GENESIS → <root>/genesis
+  const genesisDir = args.options["genesis"] ?? larGenesisDir();   // genesis= → LAR_GENESIS → <root>/genesis
   try {
     const homes = { identity: larIdentityDir(), storage: storageDir, seal: larSealHome() };
     const io = new FsCustodyIo(homes);
@@ -118,8 +118,8 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
     const stands = await custodyTreeStands(io, homes);
     const hand = stands && args.flags["force"] === true ? readHandOfFounding() : null;
     if (hand !== null && "refusal" in hand) {
-      // Bare, through `lares vessel rite founding --force`, or through the shim: the same gate, the same sentence.
-      const refused = handRefusalOf(hand.refusal, { act: "`--force` over a founded hearth (it re-seeds the bootstrap and asks no route)", reads: "branch", line: "lares vessel found --force" });
+      // Bare, through `lares vessel rite founding force=true`, or through the shim: the same gate, the same sentence.
+      const refused = handRefusalOf(hand.refusal, { act: "`force=true` over a founded hearth (it re-seeds the bootstrap and asks no route)", reads: "branch", line: "lares vessel found force=true" });
       console.error(`[lares vessel found] refused: ${refused.message} The act writes nothing.`);
       return 1;
     }
@@ -158,7 +158,7 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
 async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDir: string; slots: readonly SlotSpec[] }): Promise<number> {
   const name = typeof args.options["name"] === "string" ? args.options["name"].trim() : "";
   const restoreFile = typeof args.options["restore"] === "string" ? args.options["restore"] : undefined;
-  if (name.length === 0 && restoreFile === undefined) throw new HearthFoundingRefused("persona zero needs a private label: --name '<label>'. Nothing landed on disk.");
+  if (name.length === 0 && restoreFile === undefined) throw new HearthFoundingRefused("persona zero needs a private label: name='<label>'. Nothing landed on disk.");
   const restore = restoreFile === undefined ? undefined : await openRestoreBundle(restoreFile);
   const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";
   // The card's terminal read-back rides the one cold-card printer. It loads here, at the act, so a founding's
@@ -190,7 +190,7 @@ async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDi
       ...(restored ? { restored } : {}),
     },
     human: () => {
-      console.log(`[lares vessel found --hearth] the hearth stands: ${founded.nexusAid}`);
+      console.log(`[lares vessel found hearth=true] the hearth stands: ${founded.nexusAid}`);
       console.log(`  seed charter  one seat, threshold one, PRIVATE${founded.charterSeated ? "" : " (it stood from an earlier run)"}`);
       if (founded.seatKey) console.log(`  seat          ${seatFingerprint(founded.seatKey)}  (its key rests sealed here; its next key rests on the card alone)`);
       if (restored) {

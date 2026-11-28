@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.release.publishes"
 
 ! realm.release.publishes ~ one porch body naming the released floor manifest
 
-`lares nexus release <manifest-file> --approval <file> [--nexus <aid>]` seals the floor release as steward with the seats' approval of the manifest's exact bytes attached; it lands on the publication board once it counts, and a release that counts nothing lands nothing and says why. `--cut` cuts a release manifest instead (`--thin` names what it leaves out). A herm signs none.
+`lares nexus release <manifest-file> approval=<file> [nexus=<aid>]` seals the floor release as steward with the seats' approval of the manifest's exact bytes attached; it lands on the publication board once it counts, and a release that counts nothing lands nothing and says why. `--cut` cuts a release manifest instead (`--thin` names what it leaves out). A herm signs none.
 
 <<~/ahu>>
 
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hEnptVVxK1bTlYMSvQdcqZ8e29bdzD7KkZyhIpPnmnA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pMavnKdfTtKTZryoPBJDndeZ9HvGsqml-D5mWnSfois`>>
 
 <<^ code=`&#x0004;` to=`?`>>

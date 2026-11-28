@@ -8,15 +8,15 @@
  *   lei      `lei kui|restring|unstring '<terms>'`: read the route on a real terminal, hand it to the hand door with the lei's
  *            terms (one JSON object: `face`, `rite`, `branch`, and `returns` · `reach` · `head` · `after` · `confirm` · `lei`
  *            as the act needs): the face root signs one record there, and the answer carries it for the vessel to land. Terms
- *            of `{ "faces": [ … ] }` (one terms object per face, `lares lei terms kui --all`) read the route ONCE and sign one
+ *            of `{ "faces": [ … ] }` (one terms object per face, `lares lei terms kui all=true`) read the route ONCE and sign one
  *            record per face, each by that face's own root, stopping at the first face that refuses; the answer lists each
  *            face's (`faces`)
- *   publish  `publish '<terms>'`: the terms `lares nexus publish plugins --source <dir> --face N --terms` prints (`face` and the
+ *   publish  `publish '<terms>'`: the terms `lares nexus publish plugins source=<dir> face=N terms=true` prints (`face` and the
  *            closed `offering` descriptor: offeror, pluginsCid, blobs). The descriptor's shape reads first (`offeringTermsOf`, the
  *            door's own check), then the door (an unlit pūlama asks no route), then the route on a real terminal, naming the face,
  *            the region and the blob count; the face root signs that one offering at the door, and the answer carries it for the
- *            vessel to land (`lares nexus publish plugins --source <dir> --land '<answer>'`)
- *   sign     `sign '<terms>'`: the terms a ward act's `--terms` prints under a pūlama (`lares kahua lift|withdraw|carry --terms`):
+ *            vessel to land (`lares nexus publish plugins source=<dir> land='<answer>'`)
+ *   sign     `sign '<terms>'`: the terms a ward act's `--terms` prints under a pūlama (`lares kahua lift|withdraw|carry terms=true`):
  *            the face, the record's kind (`pulama-sign`'s closed table) and the one record. The door checks every rule it holds
  *            first (`check`: the kind, the record's shape, the face's root and group), then the route reads on a real terminal,
  *            naming what the root signs; the root signs that one record, and the answer carries it for the vessel to land

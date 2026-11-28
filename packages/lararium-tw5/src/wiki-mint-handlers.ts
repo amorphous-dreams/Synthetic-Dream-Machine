@@ -245,7 +245,7 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
     }
     const { seats, shares } = await opts.shell.shared(slug);
     if (seats.length > 0 || shares.length > 0) {
-      throw new WikiRetireRefusal("wiki-shared", `"${slug}" is reached by ${seats.length} other face seat${seats.length === 1 ? "" : "s"} and ${shares.length} share row${shares.length === 1 ? "" : "s"}; nothing retired. Remove the shares first (\`lares wiki share ${slug} --remove\`, which revokes each seat), then retire`);
+      throw new WikiRetireRefusal("wiki-shared", `"${slug}" is reached by ${seats.length} other face seat${seats.length === 1 ? "" : "s"} and ${shares.length} share row${shares.length === 1 ? "" : "s"}; nothing retired. Remove the shares first (\`lares wiki share ${slug} remove=true\`, which revokes each seat), then retire`);
     }
 
     const counts = await opts.shell.contents(slug);
@@ -259,7 +259,7 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
       throw new WikiRetireRefusal("wiki-not-empty", `"${slug}" holds records in its working, draft or personal layer; nothing retired. Carry them out first`);
     }
     if (total > 0 && args["count"] === undefined) {
-      throw new WikiRetireRefusal("retire-count-missing", `a forced retire of "${slug}" names the record count it destroys (\`--count\`); nothing retired`);
+      throw new WikiRetireRefusal("retire-count-missing", `a forced retire of "${slug}" names the record count it destroys (\`count=\`); nothing retired`);
     }
     if (total > 0 && Number(args["count"]) !== total) {
       throw new WikiRetireRefusal("retire-count-moved", `the confirmation named ${String(args["count"])} records and "${slug}" holds another count; nothing retired`);

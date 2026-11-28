@@ -93,8 +93,8 @@ function isolate(): EngineWatch { return (isolateWatch ??= createEngineWatch());
 export const ENGINE_HAND_ACT =
   "restart the vessel once (`lares vessel stop`, then `lares vessel stand`); if its load traps again, stop: `lares vessel read` "
   + "names the resting falls and held ids with the engine down; preserve the hearth (copy it aside), then repair "
-  + "(`lares vessel read vessel` probes, `lares vessel lay --apply --yes` lays a torn document again) or restore from the keep onto a new house (founding runbook 11a: "
-  + "`lares up --workspace house-backup=<keep checkout>`, then `lares import /lar/workspaces/house-backup/house --apply` per face)";
+  + "(`lares vessel read vessel` probes, `lares vessel lay apply=true --yes` lays a torn document again) or restore from the keep onto a new house (founding runbook 11a: "
+  + "`lares up --workspace house-backup=<keep checkout>`, then `lares import /lar/workspaces/house-backup/house apply=true` per face)";
 
 const MODULE_TERMINATED = /\bModule terminated\b/;
 const UNSAFE_ALIASING = /recursive use of an object detected which would lead to unsafe aliasing/;

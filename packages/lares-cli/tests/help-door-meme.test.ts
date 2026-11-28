@@ -40,10 +40,10 @@ function wellFormed(uri: string): boolean {
 }
 
 describe("★ a door's help names the meme behind it, in its carriers' law lines ★", () => {
-  test("store verbs name their container on the carrier: `meme project --help` reads --recipe and --bag", () => {
+  test("store verbs name their container on the carrier: `meme project --help` reads recipe= and bag=", () => {
     const text = helpLines("meme project").join("\n");
-    expect(text).toMatch(/--recipe/);
-    expect(text).toMatch(/--bag/);
+    expect(text).toMatch(/\[recipe=<word>\]/);
+    expect(text).toMatch(/\[bag=<word>\]/);
     // The family verbs moved to the call door: no meme line teaches a retired spelling.
     for (const verb of ["put", "patch", "list", "delete"]) expect(helpLines("meme").join("\n"), `meme ${verb}`).not.toMatch(new RegExp(`\\blares meme ${verb}\\b`));
   });

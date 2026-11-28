@@ -1,6 +1,6 @@
 /**
- * `lares sense analyze --lens <lens>` — ONE door for every read instrument. Five lenses read the poured sensorium
- * (changes · rhythm · couple · cohere · square); three read a signal matrix the caller hands in with `--signal`
+ * `lares sense analyze lens=<lens>` — ONE door for every read instrument. Five lenses read the poured sensorium
+ * (changes · rhythm · couple · cohere · square); three read a signal matrix the caller hands in with `signal=`
  * (lead · forecast · mismatch), and touch no plane at all.
  *
  * The eight instruments read different things and compute different things, so nothing here merges them: the LENS chooses which
@@ -9,9 +9,9 @@
  * every lens when the one asked for stands nowhere.
  *
  *   lares sense analyze                          the lenses, one line each (a usage refusal, exit 2)
- *   lares sense analyze --lens changes           where the content changes hands (change-points)
- *   lares sense analyze --lens couple            do coupled peers reconcile (the H¹ coupling gate)
- *   lares sense analyze --lens forecast --signal series.ndjson
+ *   lares sense analyze lens=changes           where the content changes hands (change-points)
+ *   lares sense analyze lens=couple            do coupled peers reconcile (the H¹ coupling gate)
+ *   lares sense analyze lens=forecast signal=series.ndjson
  *
  * Every answer names the lens it applied (`data.lens`, and the first human line). A lens spelled by its
  * house name (`ki`, `li`) answers only where canon pins that name (li-ki-integrities names the two
@@ -45,14 +45,14 @@ export interface SenseLens {
 
 /** The lenses, in the order the help lists them. Each name reads as plain English; `wire` names the daemon verb it rides. */
 export const SENSE_LENSES: Readonly<Record<string, SenseLens>> = {
-  changes:  { brief: "where the poured content changes hands (change-points; --spectral, --halves, --span)", wire: "analyze", reads: ["spectral", "halves", "span"], run: cmdAnalyze },
-  rhythm:   { brief: "the landed regimes and their couples (--repour re-derives first; --channel)", wire: "rejim", reads: ["repour", "channel"], run: cmdRejim },
+  changes:  { brief: "where the poured content changes hands (change-points; spectral=true, halves=, span=)", wire: "analyze", reads: ["spectral", "halves", "span"], run: cmdAnalyze },
+  rhythm:   { brief: "the landed regimes and their couples (repour=true re-derives first; channel=)", wire: "rejim", reads: ["repour", "channel"], run: cmdRejim },
   couple:   { brief: "do the sensorium's coupled peers reconcile (the H¹ coupling gate)", wire: "ki", reads: [], run: cmdKi },
   cohere:   { brief: "do the sensorium's planes glue into one section (li-radius + the H¹ gate)", wire: "li", reads: [], run: cmdLi },
   square:   { brief: "do a child-host's lobes round-trip to one self (default: the mesh)", wire: "jing", reads: [], run: cmdJing },
-  lead:     { brief: "who leads whom across signals (the R transfer-entropy reference; --signal, --names)", wire: "couple-r", reads: ["signal", "names"], run: cmdCoupleR },
-  forecast: { brief: "does a regime shift approach (the R early-warning read; --signal)", wire: "forecast", reads: ["signal"], run: cmdForecast },
-  mismatch: { brief: "do `couple` and `lead` agree over the same signals (--signal, --names)", wire: "mismatch", reads: ["signal", "names"], run: cmdMismatch },
+  lead:     { brief: "who leads whom across signals (the R transfer-entropy reference; signal=, names=)", wire: "couple-r", reads: ["signal", "names"], run: cmdCoupleR },
+  forecast: { brief: "does a regime shift approach (the R early-warning read; signal=)", wire: "forecast", reads: ["signal"], run: cmdForecast },
+  mismatch: { brief: "do `couple` and `lead` agree over the same signals (signal=, names=)", wire: "mismatch", reads: ["signal", "names"], run: cmdMismatch },
 };
 
 /** House names canon pins (li-ki-integrities: the two postures `li` and `ki`), each flowing to its plain lens. */
@@ -75,8 +75,8 @@ export async function cmdSenseAnalyze(args: ParsedArgs): Promise<number> {
     return refuseUsage(args, "sense analyze", helpLines("sense analyze"), `no lens named '${asked}'; the lenses: ${names}`);
   }
   if (args.positional.length > 0) {
-    return refuseUsage(args, "sense analyze", helpLines("sense analyze"), `--lens ${lens} takes no word after it (got '${args.positional.join(" ")}')`);
+    return refuseUsage(args, "sense analyze", helpLines("sense analyze"), `lens=${lens} takes no word after it (got '${args.positional.join(" ")}')`);
   }
-  // A flag the lens does not read never reaches here: the door's `pathAccepts` (sensePathAccepts) refuses it by name.
+  // A param the lens does not read never reaches here: the door's fold (senseFoldTakes) refuses it by name.
   return await SENSE_LENSES[lens]!.run(args);
 }

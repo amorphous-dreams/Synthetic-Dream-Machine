@@ -6,14 +6,14 @@
  *
  *   lares host                                     what this hearth hosts: per Nexus, the live epochs, the cap,
  *                                                  and how many invites were redeemed (counts, never rows)
- *   lares host roll   [--nexus <aid>] [--cap <n>]  roll the hosting epoch: a new signed act, landed on this
+ *   lares host roll   [nexus=<aid>] [cap=<n>]  roll the hosting epoch: a new signed act, landed on this
  *                                                  hearth's hosting doc in the Nexus; rolling twice is the hard roll
- *   lares host invite [--nexus <aid>] [--relay <ws-url>]
+ *   lares host invite [nexus=<aid>] [relay=<ws-url>]
  *                                                  mint this hearth's own invite at the current epoch and print
  *                                                  the one string to carry; nothing about it is kept here
  *
- * Without `--nexus` a door acts on this hearth's own charter. A hearth hosts only in a Nexus it carries, and
- * only as one face: the face that holds its hosting there, else (at the first roll) `--face N`, else the one face
+ * Without `nexus=` a door acts on this hearth's own charter. A hearth hosts only in a Nexus it carries, and
+ * only as one face: the face that holds its hosting there, else (at the first roll) `face=N`, else the one face
  * standing open.
  *
  * THE CUSTODY DOOR. The hosting state, its spend rows and its carriage rest sealed under the vessel key, so each
@@ -95,7 +95,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
   const capRaw = args.options["cap"];
   const cap = capRaw === undefined ? undefined : Number(capRaw);
   if (cap !== undefined && (!Number.isSafeInteger(cap) || cap < 1)) {
-    return refuseUsage(args, "host", helpLines("host"), `--cap takes a whole number of at least 1 (got "${String(capRaw)}")`);
+    return refuseUsage(args, "host", helpLines("host"), `cap= takes a whole number of at least 1 (got "${String(capRaw)}")`);
   }
   try {
     const nexusAid = nexusOf(args);

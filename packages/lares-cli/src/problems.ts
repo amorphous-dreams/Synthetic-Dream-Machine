@@ -3,7 +3,7 @@
  *
  *   path:line:col: severity: code: message
  *
- * `lares meme check --format=problems` speaks this shape so a refusal reaches VS Code's Problems panel
+ * `lares meme check format=problems` speaks this shape so a refusal reaches VS Code's Problems panel
  * through a `tasks.json` problem matcher, with no extension in the loop. The line and column count from
  * 1 against the file's own text as it sits on disk (never the normalized text), the column in UTF-16 code
  * units, the unit VS Code's matcher reads. A diagnostic the reader cannot place reports `path:1:1`.

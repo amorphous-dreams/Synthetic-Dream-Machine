@@ -9,12 +9,12 @@
  * land on the next capture, and a later refresh re-derives the view (forward capture keeps it current).
  *
  * The pave reads by VOLUME — the authored voice, skipping the low-volume harness/thinking murmur —
- * unless `--all-strata` indexes every stratum.
+ * unless `all-strata=true` indexes every stratum.
  *
  *   lares sense refresh                      re-pave the projection
  *   lares sense refresh <query...>           re-pave, then witness a recall
- *   lares sense refresh <query> --k <n>      cap the witness hits (default 5)
- *   lares sense refresh --all-strata         index every stratum (incl. the low-volume murmur)
+ *   lares sense refresh <query> k=<n>      cap the witness hits (default 5)
+ *   lares sense refresh all-strata=true         index every stratum (incl. the low-volume murmur)
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-memory#/two-organs
  */

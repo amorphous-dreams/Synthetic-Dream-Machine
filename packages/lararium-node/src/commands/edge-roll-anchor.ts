@@ -104,7 +104,7 @@ export async function runEdgeRollAnchors(opts: {
   readonly opened:   KahuQuorumSeats;
   readonly openedEpoch: SealEpoch;
   readonly repo:     Repo;
-  /** The face the roll acts as (`--face N`); absent, the one face standing open. */
+  /** The face the roll acts as (`face=N`); absent, the one face standing open. */
   readonly face?:    number;
 }): Promise<readonly EdgeRollAnchorOutcome[]> {
   const repo = opts.repo;

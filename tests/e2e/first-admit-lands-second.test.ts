@@ -33,7 +33,7 @@ beforeAll(async () => {
     // A's second face, so B can ask to join both.
     riteA: async (cli) => {
       cliA = cli;
-      const second = await cli(["persona", "new", "1", "--name", "second-face", "--json"]);
+      const second = await cli(["persona", "new", "1", "name=second-face", "--json"]);
       if (second.code !== 0) throw new Error(`A: persona new 1 failed (${second.code})\n${second.stderr.slice(-800)}`);
     },
     // B already asked to join face 0 (its h0 stands reserved and pending). It asks for face 1 too (h1), A answers that ask,
@@ -43,11 +43,11 @@ beforeAll(async () => {
       const offer1 = join(dir, "fleet-offer-1.json"), request1 = join(dir, "fleet-request-1.json"), answer1 = join(dir, "fleet-answer-1.json");
       const syncUrl = /ws:\/\/127\.0\.0\.1:\d+\/ws/.exec(readFileSync(files.answer, "utf8"))?.[0];
       if (!syncUrl) throw new Error("the face 0 answer names no sync url to reuse");
-      const offer = await cliA!(["fleet", "join", "offer", "--face", "1", "--out", offer1]);
+      const offer = await cliA!(["fleet", "join", "offer", "face=1", `out=${offer1}`]);
       if (offer.code !== 0) throw new Error(`A: offer for face 1 failed (${offer.code})\n${offer.stderr.slice(-1500)}`);
-      const request = await cliB(["fleet", "join", "request", offer1, "--out", request1]);
+      const request = await cliB(["fleet", "join", "request", offer1, `out=${request1}`]);
       if (request.code !== 0) throw new Error(`B: request for face 1 failed (${request.code})\n${request.stderr.slice(-1500)}`);
-      const answer = await cliA!(["fleet", "join", "answer", request1, "--face", "1", "--sync-url", syncUrl, "--out", answer1]);
+      const answer = await cliA!(["fleet", "join", "answer", request1, "face=1", `sync-url=${syncUrl}`, `out=${answer1}`]);
       if (answer.code !== 0) throw new Error(`A: answer for face 1 failed (${answer.code})\n${answer.stderr.slice(-1500)}`);
       answer0 = join(dir, "fleet-answer-0.json");
       writeFileSync(answer0, readFileSync(files.answer));
@@ -77,7 +77,7 @@ describe("e2e/first-admit-lands-second", () => {
     // THE OPERATOR'S OWN LOCK, through the CLI: it composes the vessel again, down to the floor, and where its line closes with the
     // sovereign composition it leaves, it confirms by a fresh census and exits 0 (`lock-receipt`).
     const cliB = cliFor({ LAR_ROOT: joinee.rootB, LAR_PORT: String(joinee.portB) });
-    const locked = await cliB(["vault", "lock", "--face", "1", "--json"]);
+    const locked = await cliB(["vault", "lock", "face=1", "--json"]);
     expect(locked.code, `${locked.stdout.slice(-800)}\n${locked.stderr.slice(-800)}`).toBe(0);
     expect(JSON.stringify(locked.json)).toContain('"locked":true');
     expect(B!.bootLog()).toContain("no open face holding anchors takes h1's mount; the vessel stands at the floor");

@@ -73,10 +73,10 @@ describe("lares wiki list", () => {
 
   test("EACH HAT REACHED BY NAME: `--face 1` lists through a session of face h1 (never the one-shot) and names the face; a shut face refuses `face-not-open`", async () => {
     const c = capture();
-    expect(await cmdWikiList(parseArgs(["wiki", "--face", "1", "--json"]))).toBe(0);
+    expect(await cmdWikiList(parseArgs(["wiki", "face=1", "--json"]))).toBe(0);
     expect(asFace).toEqual([{ name: "list-wikis", face: 1 }]);
     expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: true, data: { ...ANSWER, face: 1 } });
-    expect(await cmdWikiList(parseArgs(["wiki", "--face", "3", "--json"]))).not.toBe(0);
+    expect(await cmdWikiList(parseArgs(["wiki", "face=3", "--json"]))).not.toBe(0);
     expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: false, error: { code: "face-not-open" } });
   });
 

@@ -220,8 +220,8 @@ describe("the alert stays truthful", () => {
     expect(standoffActions(URI, KEY, true).map((a) => a.action)).toEqual(["keep-disk", "keep-records", "keep-both", "open-drafts"]);
     const none = standoffAlertWords({ standoff: KEY, bagId: BAG, uri: URI, path: PATH, drafts: [], why: "no rule" });
     expect(none.reason).not.toContain("keep-both");
-    expect(none.reason).toContain(`lares shore keep-disk ${URI} --key ${KEY}`);
+    expect(none.reason).toContain(`lares shore keep-disk ${URI} key=${KEY}`);
     const some = standoffAlertWords({ standoff: KEY, bagId: BAG, uri: URI, path: PATH, drafts: ["Draft of 'x' by disk"], why: "no rule" });
-    expect(some.reason).toContain(`lares shore keep-both ${URI} --key ${KEY}`);
+    expect(some.reason).toContain(`lares shore keep-both ${URI} key=${KEY}`);
   });
 });

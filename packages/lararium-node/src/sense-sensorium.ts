@@ -307,7 +307,7 @@ export function reapOrphans(): string[] {
 export interface RunSensoriumOptions extends Omit<OpenSensoriumOptions, "ephemeral"> {
   /** an optional analysis query run against the fresh sensorium before dissolution. */
   readonly analysis?: string;
-  /** --keep: retain the sensorium (promote to durable) instead of dissolving on exit. Default false. */
+  /** keep=true: retain the sensorium (promote to durable) instead of dissolving on exit. Default false. */
   readonly keep?: boolean;
   /** test/override shore: the search leg (defaults to {@link defaultSensoriumSearch}). */
   readonly search?: SensoriumSearch;
@@ -330,7 +330,7 @@ export interface RunSensoriumResult {
 
 /**
  * The `docker run --rm` gesture: open an EPHEMERAL sensorium, (optionally) analyze it, then DISSOLVE on
- * exit — success OR error (the try/finally guarantee). `--keep` lands it durable instead. A hard
+ * exit — success OR error (the try/finally guarantee). `keep=true` lands it durable instead. A hard
  * interrupt (SIGINT/crash) between open and the finally hits the process-exit guard wired
  * here, so the scratch never leaks even on a kill.
  */

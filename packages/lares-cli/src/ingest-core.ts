@@ -149,7 +149,7 @@ export function scanSource(
  *
  * THE BLOB LAW (cas-stage.ts): a pointer-kind `type` (the `.meta` declaration first, else TW5's registry by extension) or the
  * `_lar_cas` flag stages the body to the corpus CAS and rides a skinny `textCid`; a utf8 body under the wall rides INLINE.
- * `--in-wiki` wraps the INGEST so it runs IN the active wiki island over its composite (where working lives).
+ * `in-wiki=true` wraps the INGEST so it runs IN the active wiki island over its composite (where working lives).
  */
 /** A wave's wait ended and its receipt read no outcome: what the vessel holds for it, by its request id. */
 export class WaveWaitEnded extends LocalWaitExpired {

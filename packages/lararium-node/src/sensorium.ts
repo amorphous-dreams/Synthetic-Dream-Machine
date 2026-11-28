@@ -357,7 +357,7 @@ export interface BuildSensoriumOptions {
   readonly apertures?: Readonly<Record<string, string>>;
   readonly ephemeral?: boolean;
   /** the DECLARED lifecycle state; absent → derived from ephemeral+halfLife ({@link deriveLifecycle}).
-   *  A fresh `build --ephemeral` passes `pioneer`; most mints let it derive. */
+   *  A fresh `build ephemeral=true` passes `pioneer`; most mints let it derive. */
   readonly lifecycle?: SensoriumLifecycleState;
   /** override the mint time (tests); defaults to now. */
   readonly created?: string;

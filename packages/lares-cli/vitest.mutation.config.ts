@@ -6,8 +6,6 @@
 import { defineConfig, mergeConfig } from "vitest/config";
 import laws from "./vitest.law-mutants.config";
 
-export const READS_SOURCE_TEXT = [
-  "tests/laws/accepts-track-the-handlers.law.test.ts",
-];
+export const READS_SOURCE_TEXT: string[] = [];
 
 export default mergeConfig(laws, defineConfig({ test: { exclude: [...READS_SOURCE_TEXT, "**/node_modules/**"] } }));

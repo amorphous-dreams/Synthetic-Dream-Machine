@@ -15,7 +15,7 @@
  *   4. stand    — `mempalace init` + pin `hooks.auto_save = false`.
  *   5. harvest  — the vanilla mine over every transcript surface (`lares mempalace harvest`).
  *
- * Preview by default. `--confirm` enacts. `--keep-hooks` leaves the hooks paused afterward (the
+ * Preview by default. `confirm=true` enacts. `keep-hooks=true` leaves the hooks paused afterward (the
  * default resumes them, since the rite paused them).
  *
  * This tears the GUEST only. The sovereign sensorium keeps its own cadence (`lares sense teardown`),
@@ -90,7 +90,7 @@ function refusals(guest: string): string[] {
   return out;
 }
 
-/** `lares mempalace repave` — preview by default; `--confirm` enacts. */
+/** `lares mempalace repave` — preview by default; `confirm=true` enacts. */
 export async function cmdMempalaceRepave(args: ParsedArgs): Promise<number> {
   const guest = guestRoot();
   const confirm = args.flags["confirm"] === true;
@@ -115,7 +115,7 @@ export async function cmdMempalaceRepave(args: ParsedArgs): Promise<number> {
       ok: blocked.length === 0,
       data: { guest, bytes, present: existsSync(guest), refusals: blocked, dryRun: true },
       human: () => {
-        console.log(`lares mempalace repave — PREVIEW (pass --confirm to enact)\n`);
+        console.log(`lares mempalace repave — PREVIEW (pass confirm=true to enact)\n`);
         console.log(`  guest: ${guest}${existsSync(guest) ? `  (${human(bytes)})` : "  (absent)"}\n`);
         console.log("  1. quiesce   pause hooks + drain every holder");
         console.log("  2. verify    refuse while anything holds it, or while the worldline KG sits inside it");
@@ -170,7 +170,7 @@ export async function cmdMempalaceRepave(args: ParsedArgs): Promise<number> {
     resumeHooks();
     steps.push({ step: "hooks", ok: true, detail: "resumed" });
   } else {
-    steps.push({ step: "hooks", ok: true, detail: "left paused (--keep-hooks)" });
+    steps.push({ step: "hooks", ok: true, detail: "left paused (keep-hooks=true)" });
   }
 
   const ok = steps.every((s) => s.ok);

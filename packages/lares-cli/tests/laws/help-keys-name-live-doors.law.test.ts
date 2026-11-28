@@ -39,8 +39,8 @@ describe("the per-command help, read off the pack", () => {
   test("meme help names the store target its project takes", async () => {
     const r = await said(["meme", "project", "--help"]);
     expect(r.code).toBe(0);
-    expect(r.out).toMatch(/--recipe/);
-    expect(r.out).toMatch(/--bag/);
+    expect(r.out).toMatch(/\[recipe=<word>\]/);
+    expect(r.out).toMatch(/\[bag=<word>\]/);
   });
 
   test("every verb the host shim answers holds a help row: `lares <shim verb> --help` reads it, never `unknown command`", async () => {
@@ -71,7 +71,7 @@ describe("the per-command help, read off the pack", () => {
     const r = await said(["herm", "--help"]);
     expect(r.out).not.toMatch(/no detailed help yet/);
     expect(r.out).toMatch(/relay-rotate/);
-    expect(affordancePack().carriers[packRoute("cli", "herm")!]!.takes["cli"]).toEqual(expect.arrayContaining(["--port", "--relay-port"]));
+    expect(affordancePack().carriers[packRoute("cli", "herm")!]!.takes["cli"]).toEqual(expect.arrayContaining(["port", "relay-port"]));
   });
 
   test("the top-level ✍ mark says which of kahua's sub-verbs hold a key: the hand-only rows the store door names, no others", async () => {

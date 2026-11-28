@@ -37,9 +37,9 @@ Ordered by how much they touch — reach for the //least// that fixes your case:
 <<~ scale name=`reach` ranks=`stand --foreground -> stand --restart -> rite rebuild -> rite refresh -> rite founding`>>
 
 <<~ has entity=`Cure` name=`refresh` params=```after/CODE-CHANGED does/`lares vessel rite refresh` — `pnpm build` (recompile every dist + stamp the source digest) THEN stop the incumbent on the port + stand ~ THE post-edit cure```>>
-<<~ has entity=`Cure` name=`restart` params=```after/just-converge does/`lares vessel stand --restart` — stop the incumbent on the port (graceful SIGTERM waited out, by port-access, no PID file) + serve ~ no rebuild, no wipe```>>
+<<~ has entity=`Cure` name=`restart` params=```after/just-converge does/`lares vessel stand restart=true` — stop the incumbent on the port (graceful SIGTERM waited out, by port-access, no PID file) + serve ~ no rebuild, no wipe```>>
 <<~ has entity=`Cure` name=`rebuild` params=```after/DEP-BUMP does/`lares vessel rite rebuild` — stop the incumbent + re-bake the genesis engine under current deps + serve ~ NO wipe, identity-safe (the serde-skew cure)```>>
-<<~ has entity=`Cure` name=`foreground` params=```after/boot-only does/`lares vessel stand --foreground` — run the dist node, fail-fast ~ no convergence, no rebuild```>>
+<<~ has entity=`Cure` name=`foreground` params=```after/boot-only does/`lares vessel stand foreground=true` — run the dist node, fail-fast ~ no convergence, no rebuild```>>
 <<~ has entity=`Cure` name=`founding` params=```after/nothing-stands does/`lares vessel rite founding` — found · stand · lay, halting at the first step that refuses```>>
 <<~ has entity=`Cure` name=`stand` params=```after/standup does/`lares vessel stand` — attach when the published standing matches the face on disk, re-stand when it differs, or start detached when down; REPORT and hydrate; `--init` founds where the root holds none and writes `LAR_ROOT` alone, while `lares home tend` keeps the operator's homes```>>
 
@@ -114,6 +114,6 @@ would put the house inside the checkout.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uVqxkmrWhHHDAz00wxxUpndpj-mheutjPPBW5is5VTs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lq4nNofhlRjpAIJOutnugfoAwDQoCHISuQX3vQ0OmGI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

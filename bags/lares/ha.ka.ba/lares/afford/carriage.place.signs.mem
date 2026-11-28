@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.place.signs"
 
 ! carriage.place.signs ~ a herm signs with its vessel key alone
 
-`lares nexus carry-for [--nexus <aid>] [--out <file>]` runs on the joining place: it reads the vessel key and nothing else (a herm holds no persona root) and mints the carrier seal the kahu supply to `nexus carry --carrier`. `--out` writes the floor pin claim and its KEL rows for `carry --floor-pin`.
+`lares nexus carry-for [nexus=<aid>] [out=<file>]` runs on the joining place: it reads the vessel key and nothing else (a herm holds no persona root) and mints the carrier seal the kahu supply to `nexus carry --carrier`. `--out` writes the floor pin claim and its KEL rows for `carry --floor-pin`.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1kEiuyxNOlRFbVbEbvTjl2eZgiWs6myx8OCfFZdrS6Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gw1u5K5y4J1e_4vyx5qE6atFetDWYOjq6Lw_J-1k3uo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

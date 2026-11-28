@@ -5,8 +5,8 @@
  * checkout or a bound workspace) and only where the vessel answers up (a shim verb with no vessel would run offline).
  *
  * EACH FAMILIAR ITS OWN. The wake asks once for the pet this session already holds (any source but a startup keeps it, and the
- * door hears `--held`, so a retitle reads as its rename), else the seated familiar (a default), else the title's slug. The door
- * reads the title beside it (`om --title`): a fresh session's title wakes its own familiar where a record stands, or offers its
+ * door hears `held=true`, so a retitle reads as its rename), else the seated familiar (a default), else the title's slug. The door
+ * reads the title beside it (`om title=`): a fresh session's title wakes its own familiar where a record stands, or offers its
  * starter (recording no pet here until a record stands). Many instances may wear one pet. `om` reads by source
  * and joins this instance to the card's presence; the counter keeps the pet, the epoch, the cadence and the title, merged
  * under its lock (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum). Any fault exits 0.
@@ -34,8 +34,8 @@ try {
     if (reading === "down") say(omDownLine(pet));
     else if (reading === "owed") say(omOwedLine(pet));
     else {
-      const instance = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--instance", input.session_id] : [];
-      const result = await settle(run(spiritArgv("om", pet, "--source", source, ...instance, ...(holdsPet({ source, held }, pet) ? ["--held"] : []), ...(title !== null ? ["--title", titleParts(title).title] : [])), null, OM_BUDGET_MS), OM_BUDGET_MS);
+      const instance = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? [`instance=${input.session_id}`] : [];
+      const result = await settle(run(spiritArgv("om", pet, `source=${source}`, ...instance, ...(holdsPet({ source, held }, pet) ? ["held=true"] : []), ...(title !== null ? [`title=${titleParts(title).title}`] : [])), null, OM_BUDGET_MS), OM_BUDGET_MS);
       const answer = parseAnswer(result?.stdout);
       // Only an answer the door gave whole names the pet this session wears; a timeout or a refusal records nothing, and a
       // starter (an offer, no record yet) records no pet until a record stands.

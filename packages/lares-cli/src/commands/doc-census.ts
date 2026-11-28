@@ -1,5 +1,5 @@
 /**
- * `lares vessel census --docs` — EVERY DOCUMENT THE STORES HOLD, AND WHO NAMES IT, read before any sweep.
+ * `lares vessel census docs=true` — EVERY DOCUMENT THE STORES HOLD, AND WHO NAMES IT, read before any sweep.
  *
  * The vessel reads its own stores (the root and each island store standing beside it) through the custody door's
  * `doc-census` frame, read-only and asking no custody: each document by id, its store, bytes, clear and sealed chunks,

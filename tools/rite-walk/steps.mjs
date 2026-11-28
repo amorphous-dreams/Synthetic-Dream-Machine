@@ -296,7 +296,7 @@ const wear = (face, all = false) => async (ctx) => {
   return { ok: a?.held !== false && a?.switchRefused === undefined && a?.wears === face && (!all || lit === 3), answer: JSON.stringify(a) };
 };
 const lay = async (ctx) => {
-  const r = await ctx.cli(["vessel", "lay", "--apply", "--yes", "--no-json"]);
+  const r = await ctx.cli(["vessel", "lay", "apply=true", "--yes", "--no-json"]);
   const text = `${r.stdout}\n${r.stderr}`;
   // The count the WORN face's lay previewed; an item waiting on another face's wear names no count here.
   const preview = /kahua: (\d+) item\(s\) stand pending/.exec(text);
@@ -310,11 +310,11 @@ const lay = async (ctx) => {
 const liftKahua = async (ctx) => {
   const n = ctx.vars.liftKahua ?? 0;
   if (n === 0) return { ok: true, answer: "the worn face's lay previewed no kahua item; nothing to lift" };
-  return await cli(["vessel", "lay", "--apply", "--lift-kahua", String(n), "--no-json"])(ctx);
+  return await cli(["vessel", "lay", "apply=true", `lift-kahua=${String(n)}`, "--no-json"])(ctx);
 };
 /** Whether the engineer's kahua stage reads the walk's pre-export item. */
 const engineerReads = async (ctx) => {
-  const list = await ctx.cli(["kahua", "get", "--face", "1", "--json"]);
+  const list = await ctx.cli(["kahua", "get", "face=1", "--json"]);
   return list.code === 0 && `${list.stdout}`.includes(STAGED);
 };
 /** The engineer's lift knows the item the walk staged before the export: its lay previews it (and the lift lands it), or the stage already reads it. Zero previews with no item standing fails by name. */
@@ -328,17 +328,17 @@ const liftKahuaEngineer = async (ctx) => {
   if (await engineerReads(ctx)) return { ok: true, answer: `the engineer's stage already reads ${STAGED}` };
   return { ok: false, answer: `the engineer's pre-export kahua item ${STAGED} neither previewed at the engineer's lay (${n} pending) nor stands on its stage` };
 };
-const found = cli((ctx) => ["vessel", "found", "--hearth", "--name", FACES.steward, "--chair", "dreamnet-kahu-0", "--root", ctx.root, "--skip-build", "--no-json"], "the hearth stands");
+const found = cli((ctx) => ["vessel", "found", "hearth=true", `name=${FACES.steward}`, "chair=dreamnet-kahu-0", `root=${ctx.root}`, "--skip-build", "--no-json"], "the hearth stands");
 const up = async (ctx) => ({ ok: true, answer: await ctx.up() });
 const down = async (ctx) => ({ ok: true, answer: await ctx.down() });
-const persona = (n, name) => cli(["persona", "new", String(n), "--name", name, "--no-json"], `persona h${n} minted`);
+const persona = (n, name) => cli(["persona", "new", String(n), `name=${name}`, "--no-json"], `persona h${n} minted`);
 const hold = cli(["wiki", "keep", "notes", "--no-json"]);
 
-const FOUND = "lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'";
-const LAY = "lares vessel lay --apply --yes";
-const LIFT = "lares vessel lay --apply --lift-kahua <N>";
-const P1 = "lares persona new 1 --name 'joshua-fontany-engineer'";
-const P2 = "lares persona new 2 --name 'joshua-fontany-referee'";
+const FOUND = "lares found hearth=true name='joshua-fontany' chair='dreamnet-kahu-0'";
+const LAY = "lares vessel lay apply=true --yes";
+const LIFT = "lares vessel lay apply=true lift-kahua=<N>";
+const P1 = "lares persona new 1 name='joshua-fontany-engineer'";
+const P2 = "lares persona new 2 name='joshua-fontany-referee'";
 const SC = "staged-custody";
 const MEMORY_LINE = "the rite walk wrote this stage meme through the seat";
 
@@ -352,11 +352,11 @@ export const STEPS = Object.freeze([
   { id: "floor-status", fence: "lares vessel floor status", needs: ["up"], expect: "genesis floor", quoted: ["the pin reads the genesis floor"], run: cli(["vessel", "floor", "status", "--no-json"], "genesis floor") },
   { id: "persona-engineer", fence: P1, via: SC, needs: ["up"], expect: "persona h1 minted", run: persona(1, FACES.engineer) },
   { id: "persona-referee", fence: P2, via: SC, needs: ["up"], expect: "persona h2 minted", run: persona(2, FACES.referee) },
-  { id: "unlock-all", fence: "lares vault unlock --all --face 1", via: SC, needs: ["persona-engineer", "persona-referee"], expect: "wears 1", run: wear(1, true) },
-  { id: "wear-steward", fence: "lares vault unlock --face 0", via: SC, needs: ["unlock-all"], expect: "wears 0", run: wear(0) },
-  { id: "share-lares", fence: "lares wiki share lares --write joshua-fontany-engineer --read joshua-fontany-referee", needs: ["wear-steward"],
+  { id: "unlock-all", fence: "lares vault unlock all=true face=1", via: SC, needs: ["persona-engineer", "persona-referee"], expect: "wears 1", run: wear(1, true) },
+  { id: "wear-steward", fence: "lares vault unlock face=0", via: SC, needs: ["unlock-all"], expect: "wears 0", run: wear(0) },
+  { id: "share-lares", fence: "lares wiki share lares write=joshua-fontany-engineer read=joshua-fontany-referee", needs: ["wear-steward"],
     expect: "workbench: wiki lares rides realm … (2 member face(s))", quoted: ["workbench: wiki lares rides realm … (2 member face(s))"],
-    run: cli(["wiki", "share", "lares", "--write", FACES.engineer, "--read", FACES.referee, "--no-json"], ["workbench: wiki lares rides realm", "(2 member face(s))"]) },
+    run: cli(["wiki", "share", "lares", `write=${FACES.engineer}`, `read=${FACES.referee}`, "--no-json"], ["workbench: wiki lares rides realm", "(2 member face(s))"]) },
 
   // Memory, the lift, another face.
   { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "put lands a stage meme; get(aperture=arc) reads it back",
@@ -376,10 +376,10 @@ export const STEPS = Object.freeze([
     run: async (ctx) => {
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
-      const staged = await ctx.cli(["kahua", "stage", STAGED, "--face", "1", "--text", "the rite walk staged this row", "--json"]);
+      const staged = await ctx.cli(["kahua", "stage", STAGED, "face=1", "text=the rite walk staged this row", "--json"]);
       const digest = /"digest"\s*:\s*"(?:sha256:)?([0-9a-f]{8,})"/.exec(staged.stdout)?.[1];
       if (staged.code !== 0 || !digest) return { ok: false, answer: `kahua stage: ${staged.code === 0 ? "answered no digest" : refusalOf(staged)}` };
-      const lifted = await ctx.cli(["kahua", "lift", STAGED, "--face", "1", "--taint", "none", "--digest", digest, "--no-json"]);
+      const lifted = await ctx.cli(["kahua", "lift", STAGED, "face=1", "taint=none", `digest=${digest}`, "--no-json"]);
       return lifted.code === 0 ? { ok: true, answer: `staged ${digest.slice(0, 8)} · ${lineOf(lifted.stdout, "lift")}` } : { ok: false, answer: refusalOf(lifted) };
     } },
   { id: "wear-referee", prose: "''Wearing another face.''", via: SC, needs: ["unlock-all"], expect: "wears 2", run: wear(2) },
@@ -387,9 +387,9 @@ export const STEPS = Object.freeze([
   // A shared workbench.
   { id: "notes-init", fence: "lares wiki init notes", needs: ["unlock-all"], expect: "status: minted",
     run: async (ctx) => { await ctx.wear(0); return await cli(["wiki", "init", "notes", "--no-json"], "minted")(ctx); } },
-  { id: "notes-share", fence: "lares wiki share notes --write joshua-fontany-engineer --read joshua-fontany-referee --face 0", needs: ["notes-init"], expect: "workbench: wiki notes rides realm",
-    run: cli(["wiki", "share", "notes", "--write", FACES.engineer, "--read", FACES.referee, "--face", "0", "--no-json"], "workbench: wiki notes rides realm") },
-  { id: "notes-list", fence: "lares wiki share notes --list", needs: ["notes-share"], expect: "wiki notes:", run: cli(["wiki", "share", "notes", "--list", "--no-json"], "wiki notes:") },
+  { id: "notes-share", fence: "lares wiki share notes write=joshua-fontany-engineer read=joshua-fontany-referee face=0", needs: ["notes-init"], expect: "workbench: wiki notes rides realm",
+    run: cli(["wiki", "share", "notes", `write=${FACES.engineer}`, `read=${FACES.referee}`, "face=0", "--no-json"], "workbench: wiki notes rides realm") },
+  { id: "notes-list", fence: "lares wiki share notes list=true", needs: ["notes-share"], expect: "wiki notes:", run: cli(["wiki", "share", "notes", "list=true", "--no-json"], "wiki notes:") },
   { id: "two-face-put", prose: "Write from two faces and watch one merged working layer", via: SC, needs: ["notes-share"],
     expect: "layer: working · layer: personal", quoted: ["`layer: working` for a seated writer", "`layer: personal` for the referee"],
     run: async (ctx) => {
@@ -398,7 +398,7 @@ export const STEPS = Object.freeze([
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
         const file = ctx.file(`note-${name}.mem`, memeText(NOTE(name), `the ${name} wrote this page`));
-        const put = await ctx.cli(["tiddler", "put", NOTE(name), "--recipe", "notes", "--file", file, "--json"]);
+        const put = await ctx.cli(["tiddler", "put", NOTE(name), "recipe=notes", `file=${file}`, "--json"]);
         said.push(`${name}: ${put.code === 0 ? landing(put) : refusalOf(put)}`);
         if (put.code !== 0 || !landing(put).startsWith(layer)) return { ok: false, answer: said.join(" · ") };
       }
@@ -412,38 +412,38 @@ export const STEPS = Object.freeze([
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
       const file = ctx.file("offered.mem", memeText(OFFERED, "the engineer offers this record to house canon"));
-      const put = await ctx.cli(["tiddler", "put", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
+      const put = await ctx.cli(["tiddler", "put", OFFERED, "recipe=lares", `file=${file}`, "--json"]);
       if (put.code !== 0 || !landing(put).startsWith("layer: working")) return { ok: false, answer: `tiddler put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
-      const offer = await ctx.cli(["meme", "offer", OFFERED, "--bag", "lares", "--no-json"]);
+      const offer = await ctx.cli(["meme", "offer", OFFERED, "bag=lares", "--no-json"]);
       return { ok: offer.code === 0, answer: `${landing(put)} · ${offer.code === 0 ? lineOf(`${offer.stdout}\n${offer.stderr}`, "offer") : refusalOf(offer)}` };
     } },
-  { id: "promote", prose: "Wearing the steward (`lares vault unlock --face 0`, the passphrase again)", via: SC, needs: ["offer"], expect: "the offer shows; the promotion writes the Kahu realm's standing document",
+  { id: "promote", prose: "Wearing the steward (`lares vault unlock face=0`, the passphrase again)", via: SC, needs: ["offer"], expect: "the offer shows; the promotion writes the Kahu realm's standing document",
     run: async (ctx) => {
       const worn = await ctx.wear(0);
       if (worn?.wears !== 0) return { ok: false, answer: `the steward never stood worn: ${JSON.stringify(worn)}` };
-      const list = await ctx.cli(["meme", "offer", "show", "--bag", "lares", "--json"]);
+      const list = await ctx.cli(["meme", "offer", "show", "bag=lares", "--json"]);
       const cid = /"cid"\s*:\s*"([^"]+)"/.exec(list.stdout)?.[1];
       if (list.code !== 0 || !cid) return { ok: false, answer: `meme offer show: ${list.code === 0 ? "names no offer" : refusalOf(list)}` };
       const promoted = await ctx.cli(["meme", "offer", "promote", cid, "--yes", "--no-json"]);
       return promoted.code === 0 ? { ok: true, answer: lineOf(promoted.stdout) } : { ok: false, answer: refusalOf(promoted) };
     } },
-  { id: "release-cut", fence: "lares nexus release floor.json --cut", needs: ["lay", "wear-steward"], expect: "the manifest cuts from live canon",
-    run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "--cut", "--no-json"]) },
+  { id: "release-cut", fence: "lares nexus release floor.json cut=true", needs: ["lay", "wear-steward"], expect: "the manifest cuts from live canon",
+    run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "cut=true", "--no-json"]) },
   { id: "down-to-sign", fence: "lares down", needs: ["up"], expect: "the vessel stops", run: down },
-  { id: "promote-open", fence: "lares nexus approve open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json", via: SC, needs: ["release-cut", "down-to-sign"],
+  { id: "promote-open", fence: "lares nexus approve open floor.json purpose=floor-release surface=floor-release class=high-impact out=approval.json", via: SC, needs: ["release-cut", "down-to-sign"],
     expect: "ok — 1 of 1 seats", quoted: ["ok — 1 of 1 seats"],
-    run: cli((ctx) => ["nexus", "approve", "open", ctx.path("floor.json"), "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", ctx.path("approval.json"), "--no-json"], "1 of 1 seats") },
+    run: cli((ctx) => ["nexus", "approve", "open", ctx.path("floor.json"), "purpose=floor-release", "surface=floor-release", "class=high-impact", `out=${ctx.path("approval.json")}`, "--no-json"], "1 of 1 seats") },
   { id: "up-to-release", fence: "lares up", nth: 1, via: SC, needs: ["down-to-sign"], expect: "phase → live, then the unlock", run: up },
-  { id: "release-land", fence: "lares nexus release floor.json --approval approval.json", needs: ["promote-open", "up-to-release"], expect: "the release lands on the publication board",
-    run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "--approval", ctx.path("approval.json"), "--no-json"]) },
+  { id: "release-land", fence: "lares nexus release floor.json approval=approval.json", needs: ["promote-open", "up-to-release"], expect: "the release lands on the publication board",
+    run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), `approval=${ctx.path("approval.json")}`, "--no-json"]) },
   { id: "floor-accept", prose: "Then `lares vessel floor accept`", needs: ["release-land"], expect: "the pin walks to the release", run: cli(["vessel", "floor", "accept", "--yes", "--no-json"]) },
 
   { id: "browser", prose: "''A browser crosses in.''", unreached: "browser" },
 
   // Carry across a re-founding.
-  { id: "hold-wear-referee", fence: "lares vault unlock --face 2", via: SC, needs: ["up-to-release"], expect: "wears 2", run: wear(2) },
+  { id: "hold-wear-referee", fence: "lares vault unlock face=2", via: SC, needs: ["up-to-release"], expect: "wears 2", run: wear(2) },
   { id: "hold-referee", fence: "lares wiki keep notes", needs: ["hold-wear-referee", "notes-share"], run: hold },
-  { id: "hold-wear-steward", fence: "lares vault unlock --face 0", nth: 1, via: SC, needs: ["up-to-release"], expect: "wears 0", run: wear(0) },
+  { id: "hold-wear-steward", fence: "lares vault unlock face=0", nth: 1, via: SC, needs: ["up-to-release"], expect: "wears 0", run: wear(0) },
   { id: "hold-steward", fence: "lares wiki keep notes", nth: 1, needs: ["hold-wear-steward", "notes-share"], run: hold },
   { id: "export", fence: "lares export ~/.lares/config/carry-2", needs: ["hold-wear-steward"], expect: "the bundle reads back against its manifest",
     run: cli((ctx) => ["export", ctx.carry(), "--no-json"]) },
@@ -453,14 +453,14 @@ export const STEPS = Object.freeze([
   { id: "up-refounded", fence: "lares up", nth: 2, via: SC, needs: ["refound"], expect: "phase → live, then the unlock", run: up },
   { id: "persona-engineer-again", fence: P1, nth: 1, via: SC, needs: ["up-refounded"], expect: "persona h1 minted", run: persona(1, FACES.engineer) },
   { id: "persona-referee-again", fence: P2, nth: 1, via: SC, needs: ["up-refounded"], expect: "persona h2 minted", run: persona(2, FACES.referee) },
-  { id: "unlock-all-again", fence: "lares vault unlock --all --face 1", nth: 1, via: SC, needs: ["persona-engineer-again", "persona-referee-again"], expect: "wears 1", run: wear(1, true) },
-  { id: "lay-wear-steward", fence: "lares vault unlock --face 0", nth: 2, via: SC, needs: ["unlock-all-again"], expect: "wears 0", run: wear(0) },
+  { id: "unlock-all-again", fence: "lares vault unlock all=true face=1", nth: 1, via: SC, needs: ["persona-engineer-again", "persona-referee-again"], expect: "wears 1", run: wear(1, true) },
+  { id: "lay-wear-steward", fence: "lares vault unlock face=0", nth: 2, via: SC, needs: ["unlock-all-again"], expect: "wears 0", run: wear(0) },
   { id: "lay-steward", fence: LAY, nth: 1, needs: ["lay-wear-steward"], run: lay },
   { id: "lift-kahua-steward", fence: LIFT, via: SC, needs: ["lay-steward"], run: liftKahua },
-  { id: "lay-wear-engineer", fence: "lares vault unlock --face 1", via: SC, needs: ["unlock-all-again"], expect: "wears 1", run: wear(1) },
+  { id: "lay-wear-engineer", fence: "lares vault unlock face=1", via: SC, needs: ["unlock-all-again"], expect: "wears 1", run: wear(1) },
   { id: "lay-engineer", fence: LAY, nth: 2, needs: ["lay-wear-engineer"], run: lay },
   { id: "lift-kahua-engineer", fence: LIFT, nth: 1, via: SC, needs: ["lay-engineer"], run: liftKahuaEngineer },
-  { id: "lay-wear-referee", fence: "lares vault unlock --face 2", nth: 1, via: SC, needs: ["unlock-all-again"], expect: "wears 2", run: wear(2) },
+  { id: "lay-wear-referee", fence: "lares vault unlock face=2", nth: 1, via: SC, needs: ["unlock-all-again"], expect: "wears 2", run: wear(2) },
   { id: "lay-referee", fence: LAY, nth: 3, needs: ["lay-wear-referee"], run: lay },
 
   // The read-backs.
@@ -470,25 +470,25 @@ export const STEPS = Object.freeze([
       for (const [face, name] of [[1, "engineer"], [2, "referee"]]) {
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
-        const got = await ctx.cli(["tiddler", "get", NOTE(name), "--recipe", "notes", "--meme", "--all", "--no-json"]);
+        const got = await ctx.cli(["tiddler", "get", NOTE(name), "recipe=notes", "--meme", "all=true", "--no-json"]);
         const ok = got.code === 0 && got.stdout.includes(`the ${name} wrote this page`);
         said.push(`${name}: ${ok ? "its page reads back" : refusalOf(got)}`);
         if (!ok) return { ok: false, answer: said.join(" · ") };
       }
       return { ok: true, answer: said.join(" · ") };
     } },
-  { id: "import", prose: "Then `lares import ~/.lares/config/carry-2 --apply`", needs: ["export", "lay-referee"], expect: "lands nothing and counts every record as `already` or `waiting`",
+  { id: "import", prose: "Then `lares import ~/.lares/config/carry-2 apply=true`", needs: ["export", "lay-referee"], expect: "lands nothing and counts every record as `already` or `waiting`",
     quoted: ["lands nothing and counts every record as `already`"],
     run: async (ctx) => {
       // The engineer's kahua head re-lifts at its own wear: import worn as the engineer first, and its stage must read the item.
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
-      const own = await ctx.cli(["import", ctx.carry(), "--apply", "--no-json"]);
+      const own = await ctx.cli(["import", ctx.carry(), "apply=true", "--no-json"]);
       if (own.code !== 0) return { ok: false, answer: `engineer's import: ${refusalOf(own)}` };
       if (!(await engineerReads(ctx))) return { ok: false, answer: `after the engineer's import its kahua stage never reads ${STAGED}` };
       const back = await ctx.wear(2);
       if (back?.wears !== 2) return { ok: false, answer: `the referee never stood worn: ${JSON.stringify(back)}` };
-      const r = await ctx.cli(["import", ctx.carry(), "--apply", "--no-json"]);
+      const r = await ctx.cli(["import", ctx.carry(), "apply=true", "--no-json"]);
       if (r.code !== 0) return { ok: false, answer: refusalOf(r) };
       const counts = r.stdout.split("\n").map((l) => l.trim()).filter((l) => /\blanded \d+/.test(l));
       return { ok: counts.length > 0 && counts.every((l) => /\blanded 0\b/.test(l)), answer: counts.join(" · ") || lineOf(r.stdout) };

@@ -90,7 +90,7 @@ export interface EdgePartialOptions {
   readonly raised:   boolean;
   /** The Nexus the realm stands under, for this vessel's first act there. Absent → the primary charter's. */
   readonly nexusAid?: string;
-  /** The face whose ledger stands the realm here (`--face N`); absent, the one face standing open. */
+  /** The face whose ledger stands the realm here (`face=N`); absent, the one face standing open. */
   readonly face?:    number;
   readonly sealHome: string;
   readonly repo:     Repo;
@@ -108,19 +108,19 @@ export interface EdgePartialResult {
 /** Sign a quorum edge act with the seats this vessel holds, and hand it back as a partial. Writes no board. */
 export async function runEdgePartial(opts: EdgePartialOptions): Promise<EdgePartialResult> {
   const realm = bare(opts.realm);
-  if (!HEX64.test(realm)) throw new EdgeCosignError(`--realm expects a 64-hex realm id, got "${opts.realm}".`);
+  if (!HEX64.test(realm)) throw new EdgeCosignError(`realm= expects a 64-hex realm id, got "${opts.realm}".`);
   const subject: EdgePartialSubject | null =
     opts.member !== undefined && opts.voucher === undefined && opts.joiner === undefined ? { kind: "member", member: bare(opts.member) }
     : opts.member === undefined && opts.voucher !== undefined && opts.joiner !== undefined ? { kind: "vouch", voucher: bare(opts.voucher), joiner: bare(opts.joiner) }
     : null;
-  if (subject === null) throw new EdgeCosignError("name ONE relationship in plain keys: --member <key>, or --voucher <key> with --joiner <key>.");
+  if (subject === null) throw new EdgeCosignError("name ONE relationship in plain keys: member=<key>, or voucher=<key> with joiner=<key>.");
   const edgeId = edgeIdOfSubject(realm, subject);
   if (edgeId === null) throw new EdgeCosignError("the keys that name the relationship read as no 64-hex key.");
   const { charter, read, note, vesselKey, aid } = await readRealm(opts.repo, realm, opts.sealHome, opts.nexusAid, opts.face);
   const signers = await heldSeatSigners(charter.head);
   if (signers.length === 0) throw new EdgeCosignError("REFUSED: this vessel holds no seat of the charter's quorum, so it signs no part of a quorum act.");
   if (signers.length >= charter.head.threshold) {
-    throw new EdgeCosignError("this vessel holds a whole quorum — sign the act outright with `lares edge kapae … --quorum`; a partial serves seats on separate vessels.");
+    throw new EdgeCosignError("this vessel holds a whole quorum — sign the act outright with `lares edge kapae … quorum=true`; a partial serves seats on separate vessels.");
   }
   const before = await read();
   const parents = edgeLineHeads(before.counted.acts, edgeId, "quorum");

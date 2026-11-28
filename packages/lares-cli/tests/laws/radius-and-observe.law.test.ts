@@ -166,7 +166,7 @@ describe("L4 · an observing verb leaves every tree it can reach unchanged", () 
     process.env["LAR_ROOT"] = root;
     try {
       const before = snapshot(root);
-      const r = await door(["vessel", "read", "--root", root, "--json", "--skip-build"]);
+      const r = await door(["vessel", "read", `root=${root}`, "--json", "--skip-build"]);
       expect(r.code).toBe(0);
       expect(changed(before, snapshot(root))).toEqual([]);
     } finally {
@@ -186,7 +186,7 @@ describe("L4 · an observing verb leaves every tree it can reach unchanged", () 
     });
     const wake = (flags: Record<string, boolean>) =>
       ({ command: "vessel", positional: ["stand"], flags, options: {} } as unknown as ParsedArgs);
-    expect(await freshBuildGate(["vessel", "stand", "--observe"], wake({ observe: true }), deps(true, true))).toBeNull();
+    expect(await freshBuildGate(["vessel", "stand", "observe=true"], wake({ observe: true }), deps(true, true))).toBeNull();
     expect(reached).toEqual([]);
     // CONTROL: the same wake without the cap asks the socket and the tree, so the zero above reads the cap
     // alone. The tree answers current here, so the control never takes the build lock or writes a stamp.

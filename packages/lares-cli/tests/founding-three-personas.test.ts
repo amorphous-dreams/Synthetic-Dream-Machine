@@ -1,6 +1,6 @@
 /**
  * founding-three-personas — a HEARTH'S three founding faces, driven end-to-end through the REAL CLI doors: the
- * Stable founding act (`lares vessel found --hearth`), `lares persona new`, and the roll that grows the seed charter
+ * Stable founding act (`lares vessel found hearth=true`), `lares persona new`, and the roll that grows the seed charter
  * (`lares nexus seal rotate`), over a genuine vault + petname/declaration stores.
  *
  * The Stable founding act founds persona zero and seats its ONE chair in the hearth's seed charter. Two more faces

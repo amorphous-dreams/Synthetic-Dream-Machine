@@ -206,7 +206,7 @@ export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, 
   // this is where that promise gets kept.
   if (args.flags["observe"]) return null;
   // SOCKET FIRST. A daemon that answers turns `stand` into a reading — it attaches and reports — and a
-  // reading never earns a rebuild (the same promise as `--observe`, kept by asking the socket rather than
+  // reading never earns a rebuild (the same promise as `observe=`, kept by asking the socket rather than
   // the caller). The tree is asked only on a MISS, where standing would boot.
   if (attachesWhenAlive(args) && await deps.alive()) return null;
   if (!(await deps.stale())) return null;      // dist clearly current — run the handler in-process

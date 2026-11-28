@@ -8,7 +8,7 @@ cacheable  = true
 hydrate    = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-role       = "the TENDING rite — the sensorium's operational lifecycle, sibling to the founding rite and deliberately NOT it. Stand up · feed · read · survive catastrophe · tear down and re-sweep · know the ceiling · hand it to a stranger. The founding's cardinal sin loses a KEY; this rite's loses a BASELINE. Carries the measure-first law (one clean before/after boundary per re-pour), six catastrophe drills each with a detector, and the honest-limits section that names what a reading CANNOT claim. The two surfaces SLICE DIFFERENTLY and neither is a subset of the other: `lares sense` holds one wide door over one sensorium, while the MCP roster spans several CLI doors at once (vault_* · wiki · kapae answer at `lares vault`/`wiki`/`edge`). Alignment means naming the slicing rather than widening one to match — and a name shared is not a motion shared, so a door and its tool agree on what they WRITE. The movement runs as `lares sense pour --all`; the destroying step stays the operator's own hand. Carries the SITING LAW (#/the-planes): one named house root (`LAR_ROOT`), and a sensorium stands at `<root>/sensoriums/<name>` (`larSensoriumsHome()` / `house_root.sensoriums_home()`, one string in both tongues); an unnamed root refuses, so a scratch root isolates a rehearsal whole. The teardown preflight names the one reach that stays INTENDED: the operator's own hand."
+role       = "the TENDING rite — the sensorium's operational lifecycle, sibling to the founding rite and deliberately NOT it. Stand up · feed · read · survive catastrophe · tear down and re-sweep · know the ceiling · hand it to a stranger. The founding's cardinal sin loses a KEY; this rite's loses a BASELINE. Carries the measure-first law (one clean before/after boundary per re-pour), six catastrophe drills each with a detector, and the honest-limits section that names what a reading CANNOT claim. The two surfaces SLICE DIFFERENTLY and neither is a subset of the other: `lares sense` holds one wide door over one sensorium, while the MCP roster spans several CLI doors at once (vault_* · wiki · kapae answer at `lares vault`/`wiki`/`edge`). Alignment means naming the slicing rather than widening one to match — and a name shared is not a motion shared, so a door and its tool agree on what they WRITE. The movement runs as `lares sense pour all=true`; the destroying step stays the operator's own hand. Carries the SITING LAW (#/the-planes): one named house root (`LAR_ROOT`), and a sensorium stands at `<root>/sensoriums/<name>` (`larSensoriumsHome()` / `house_root.sensoriums_home()`, one string in both tongues); an unnamed root refuses, so a scratch root isolates a rehearsal whole. The teardown preflight names the one reach that stays INTENDED: the operator's own hand."
 status-why = "the tending rite; its verb surface stands verified against the live roster"
 tags       = ["api/pono/li-ki-integrities", "api/pono/sensorium-machina", "lararium/mesh/founding-runbook", "api/pono/causal-islands", "api/lararium/living-grammar-palace", "kind/rite"]
 title      = "lar:///ha.ka.ba/lararium/api/sensorium-runbook"
@@ -206,7 +206,7 @@ information than a number would; a gauge that returned 0.0 against an unfed plan
 !! Ⓒ Read it ~ what a figure claims, and over what
 
 ''Every reading names a plane and a grain, or it names nothing.'' The read instruments answer through ONE
-verb on both surfaces: `lares sense analyze --lens <lens>`, and the MCP `analyze` tool with `lens`. The lens
+verb on both surfaces: `lares sense analyze lens=<lens>`, and the MCP `analyze` tool with `lens`. The lens
 chooses the instrument and each keeps its own daemon verb, so nothing merges; every answer names the lens it
 applied, and a missing or unknown lens refuses with the list. Bare `lares sense analyze` lists them.
 
@@ -340,7 +340,7 @@ Run every check before the first deletion:
 !!! The movement
 
 ''THE MOVEMENT RUNS AS ONE COMMAND, and the steps that land
-nothing are the reason it is one.'' `lares sense pour --all` walks the sequence below; the steps stand
+nothing are the reason it is one.'' `lares sense pour all=true` walks the sequence below; the steps stand
 here because a reader tending a sensorium by hand needs to know what each one buys, and because a step
 skipped silently is what the single door exists to prevent.
 
@@ -495,6 +495,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;S4l8onfygwIKUSFQYn2H2RFxiZJNJDtJQ7KTnkNzE_I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wpj5PJoD7hYTWN6FPdf5H5CPNYIjPkd1n9e6aIrsCko`>>
 
 <<^ code=`&#x0004;` to=`?`>>

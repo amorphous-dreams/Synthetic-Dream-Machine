@@ -24,7 +24,7 @@ import { seatTtyWardGatherer } from "../ward-door.js";
 import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
-import { parseArgs, ArgsError, type ParsedArgs } from "../parse-args.js";
+import { parseArgs, ArgsError, GLOBAL_FLAGS, type ParsedArgs } from "../parse-args.js";
 import { CustodyLocked, CustodyRecordUnavailable, SealedActRefused } from "@lararium/node";
 import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { armAskBudget } from "../local-connector.js";
@@ -51,7 +51,7 @@ import { cmdRealm } from "../commands/realm.js";
 import { cmdDdate }                   from "../commands/ddate-cmd.js";
 import { cmdOracle }                  from "../commands/oracle-cmd.js";
 import { cmdLaw }                     from "../commands/law.js";
-import { cmdSense, sensePathAccepts, retiredSensePromote } from "../commands/sense.js";
+import { cmdSense, retiredSensePromote } from "../commands/sense.js";
 import { cmdFlowRun }                 from "../commands/flow-run.js";
 import { cmdMempalace, MEMPALACE_OWN_VERBS } from "../commands/mempalace.js";
 import { cmdHooks }                   from "../commands/hooks.js";
@@ -63,7 +63,7 @@ import { cmdSensorium }               from "../commands/sensorium.js";
 import { cmdHome, cmdRepo }           from "../commands/tunnel-door.js";
 import type { VerbTable } from "../verb-table.js";
 import { renderCommandHelp, helpDoor, helpLines } from "../command-help.js";
-import { packDoor } from "@lararium/tw5/affordance-pack";
+import { affordancePack, packDoor, packRoute } from "@lararium/tw5/affordance-pack";
 import { emit, exitFor } from "../render.js";
 import { storeFailure } from "../store-door.js";
 import { cmdFleet }                   from "../commands/fleet.js";
@@ -128,13 +128,6 @@ export interface Command {
   readonly summary:     string;
   readonly handler:     Handler;
   /**
-   * Every option and flag NAME a handler beneath this command reads (global ones — see GLOBAL_FLAGS — stand
-   * once, outside every row). The dispatcher refuses any other name BEFORE the handler runs: a flag nobody
-   * reads never vanishes while the act runs without it. `tests/laws/accepts-track-the-handlers.law.test.ts` walks the handlers'
-   * source and reds when one reads a name this row omits, so the row cannot drift from the code.
-   */
-  readonly accepts:     readonly string[];
-  /**
    * The sub-verbs this door answers: the table its own dispatcher reads, a tree where a sub-verb names its own (`meme offer`).
    * `null` declares the door takes arguments, never sub-verbs (`lares wear 2`): every row says which, so no door escapes. `tests/laws/harness.ts#verbTables` reads every law's
    * door tables from here.
@@ -142,7 +135,7 @@ export interface Command {
   readonly verbs:       VerbTable | null;
   /**
    * An argument that may stand BEFORE the verb, named by what it holds (`sense` takes `<sensorium>`: `lares sense memory pour
-   * --all`). The dispatcher resolves it against live state; a reader of the table reads a word outside it as this argument
+   * all=true`). The dispatcher resolves it against live state; a reader of the table reads a word outside it as this argument
    * only where the next word is a verb the table answers.
    */
   readonly leads?:      string;
@@ -152,12 +145,6 @@ export interface Command {
    * aside for exactly the verbs this names.
    */
   readonly passesThrough?: (args: ParsedArgs) => boolean;
-  /**
-   * The names THIS line's sub-path reads, where the door's wide `accepts` row would let a sibling's flag ride a sub-verb that
-   * ignores it (`persona raise-sign --face 2`, `vessel request --dry-run`). Absent, or `null` for a line it does not narrow, the
-   * door's row stands. The dispatcher refuses any other name by name before the handler runs.
-   */
-  readonly pathAccepts?: (args: ParsedArgs) => readonly string[] | null;
   /**
    * Which projections MAY expose this command — named from the SHARED `VERB_SURFACE` vocabulary the daemon
    * verb-plane also reads, so the two tables can never drift apart on what a surface is CALLED.
@@ -174,7 +161,7 @@ export interface Command {
    * meaning as `VerbSpec.signs` on the daemon plane, deliberately worded once and referenced here.
    *
    * An agent surface may render such a command and compose its arguments; it MUST NEVER execute one. The
-   * signing hand stays the human's, which is why `lares surface --executable` drops these even from a
+   * signing hand stays the human's, which is why `lares surface executable=true` drops these even from a
    * surface that declared them.
    */
   readonly signs?:      boolean;
@@ -186,13 +173,8 @@ export interface Command {
   readonly signsOnly?:  readonly string[];
 }
 
-/**
- * Names every command reads: `--json`/`--no-json` (render.ts), `--help`/`--meme` (the dispatcher: `--meme` beside `--help`; a
- * door that reads `--meme` on its own line names it in its row, and elsewhere it refuses as any unread flag does), `--yes`
- * (the confirmation gate), `--skip-build`, which `freshBuildGate` appends when it re-execs the line, and
- * `--keyhive-trace`, which asks for Keyhive's own tracing by name ({@link askKeyhiveTrace}).
- */
-export const GLOBAL_FLAGS: readonly string[] = ["json", "help", "meme", "yes", "skip-build", "keyhive-trace"];
+/** The dash spellings every line still reads (`../parse-args.ts`), each a flag that takes no value. */
+export { GLOBAL_FLAGS };
 
 /**
  * The environment name that asks for Keyhive's trace (`@lararium/keyhive`, `KEYHIVE_TRACE_ENV`; the CLI
@@ -213,7 +195,7 @@ export function askKeyhiveTrace(flags: Readonly<Record<string, unknown>>, env: R
   return true;
 }
 
-/** Edit distance, for naming the nearest accepted spelling of a refused flag. */
+/** Edit distance, for naming the nearest spelling of a refused param. */
 function distance(a: string, b: string): number {
   const row = Array.from({ length: b.length + 1 }, (_, j) => j);
   for (let i = 1; i <= a.length; i++) {
@@ -228,14 +210,42 @@ function distance(a: string, b: string): number {
   return row[b.length] as number;
 }
 
+/** A `#/takes` spelling as the bare param name it takes (`face=` · `face=…` · `face=<n>` read `face`). */
+const takeName = (spelling: string): string => spelling.replace(/^--/, "").split(/[=\s]/)[0] ?? "";
+
+/** The params one carrier takes on the terminal, bare. */
+function carrierTakes(address: string): string[] {
+  return (affordancePack().carriers[address]?.takes["cli"] ?? []).map(takeName).filter(Boolean);
+}
+
+/** THE PARAMS A DOOR TAKES: the union of its carriers' cli `#/takes` (the baked pack), so the carriers hold the one list. */
+export function doorTakes(door: string): readonly string[] {
+  return [...new Set((packDoor(door)?.addresses ?? []).flatMap(carrierTakes))];
+}
+
 /**
- * The flag names on the line that this command reads nowhere, each with its nearest accepted spelling (or
- * null when nothing sits close). Empty when every name is read, or when the command passes this line on.
+ * THE PARAMS THIS LINE TAKES: the carrier the line's leading words route to (`vessel request`, `persona raise-sign`), so a
+ * sibling verb's param never rides a verb that ignores it; a line whose words route to no carrier of the door takes the
+ * door's union.
  */
-export function unknownFlags(cmd: Command, args: ParsedArgs): { name: string; nearest: string | null }[] {
+export function lineTakes(cmd: Command, args: ParsedArgs): readonly string[] {
+  const words = [cmd.name, ...args.positional];
+  const own = packDoor(cmd.name)?.addresses ?? [];
+  for (let n = words.length; n > 0; n--) {
+    const address = packRoute("cli", words.slice(0, n).join(" "));
+    if (address !== undefined && own.includes(address)) return carrierTakes(address);
+  }
+  return doorTakes(cmd.name);
+}
+
+/**
+ * The params on the line that its carrier takes nowhere, each with its nearest taken spelling (or null when nothing sits
+ * close). Empty when every name is taken, or when the command passes this line on.
+ */
+export function unknownParams(cmd: Command, args: ParsedArgs): { name: string; nearest: string | null }[] {
   if (cmd.passesThrough?.(args) === true) return [];
-  // `--meme` reads globally beside `--help` alone (help runs first), so past it a door's own row decides the word.
-  const known = [...new Set([...(cmd.pathAccepts?.(args) ?? cmd.accepts), ...GLOBAL_FLAGS.filter((n) => n !== "meme")])];
+  // `--meme` reads globally beside `--help` alone (help runs first), so past it a door's own takes decide the word.
+  const known = [...new Set([...lineTakes(cmd, args), ...GLOBAL_FLAGS.filter((n) => n !== "meme")])];
   const names = [...new Set([...Object.keys(args.options), ...Object.keys(args.flags)])];
   return names.filter((n) => !known.includes(n)).map((name) => {
     const best = known.map((k) => ({ k, d: distance(name, k) })).sort((x, y) => x.d - y.d)[0];
@@ -266,7 +276,7 @@ export function projectCommands(surface: string, executableOnly = false): readon
 
 /**
  * A FLIPPED DOOR'S WORDS COME FROM ITS CARRIERS. A door every affordance of which holds an affordance carrier draws its brief
- * (the top-level index line) and its account from the baked pack; the row keeps behaviour alone (handler, verbs, accepts).
+ * (the top-level index line) and its account from the baked pack; the row keeps behaviour alone (handler, verbs).
  * Absent from the pack, the row prints no brief and the door's help names the re-bake that gathers it, never a second copy.
  */
 function packedBrief(door: string): string | undefined {
@@ -280,72 +290,67 @@ function packedAccount(door: string): string {
 }
 
 export const COMMANDS: readonly Command[] = [
-  { name: "intent", brief: packedBrief("intent"), summary: packedAccount("intent"), handler: cmdIntent, verbs: INTENT_VERBS, accepts: ["face", "to", "prefer", "class", "every", "args", "nonce", "prev", "void-at", "through", "executor", "detail", "deny", "agent", "prefix", "policy", "as-of", "until"], signs: true },
-  { name: "trust", brief: packedBrief("trust"), summary: packedAccount("trust"), handler: cmdPromote, verbs: TRUST_VERBS, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
-  { name: "kapae", brief: packedBrief("kapae"), summary: packedAccount("kapae"), handler: cmdKapae, verbs: KAPAE_VERBS, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
-  { name: "lei", brief: packedBrief("lei"), summary: packedAccount("lei"), handler: cmdLei, verbs: LEI_VERBS, accepts: ["rite", "branch", "head", "reach", "returns", "after", "lei", "face", "all"], signs: true, signsOnly: ["kui", "unstring", "restring"] },
-  { name: "rite", brief: packedBrief("rite"), summary: packedAccount("rite"), handler: cmdRite, verbs: RITE_VERBS, accepts: ["rite", "branch", "head", "tessera", "abandon", "face", "image", "workspace", "into", "accept-omissions", "staging", "if-due", "sessions", "rollback", "keeper-to", "keeper-next", "base", "supersedes"] },
-  { name: "kahua", brief: packedBrief("kahua"), summary: packedAccount("kahua"), handler: cmdKahua, pathAccepts: (a) => a.positional[0] === "get" ? (a.positional[1] ? ["face", "history"] : ["face", "history", "after", "limit"]) : a.positional[0] === "list" ? null : ["face", "text", "file", "digest", "taint", "sources", "parent", "proposal", "proposals", "fields", "all", "terms", "land"], verbs: KAHUA_VERBS, accepts: ["face", "text", "file", "digest", "taint", "sources", "parent", "proposal", "proposals", "fields", "history", "after", "limit", "all", "terms", "land"], signs: true, signsOnly: ["mint", "lift", "withdraw", "carry"] },
-  { name: "intent-relay", brief: packedBrief("intent-relay"), summary: packedAccount("intent-relay"), handler: cmdIntentRelay, verbs: INTENT_RELAY_VERBS, accepts: ["face", "json"], signs: true },
-  { name: "vessel",        brief: packedBrief("vessel"), summary: packedAccount("vessel"), handler: cmdVessel, pathAccepts: (a) => a.positional[0] === "request" ? ["cancel"] : VESSEL_ROW.filter((n) => n !== "cancel"), verbs: VESSEL_SUBS, accepts: ["apply", "bag", "cancel", "chair", "change-id", "cold-key", "commit", "cut", "docs", "dry-run", "force", "foreground", "fresh", "genesis", "grain", "hearth", "image", "in-wiki", "init", "keep", "lag", "lift-kahua", "name", "nexus", "observe", "page", "palaces", "porch", "port", "restart", "restore", "revert", "root", "shadow", "storage", "tag-blobs", "verbose", "wiki", "with-web", "workbench"], signs: true /* found mints the vessel key + persona root; lay writes founding material */ },
-  { name: "herm", brief: packedBrief("herm"), summary: packedAccount("herm"), handler: cmdHerm, verbs: HERM_VERBS, accepts: ["port", "relay-port"] },
-  { name: "host",          brief: packedBrief("host"), summary: packedAccount("host"), handler: cmdHost, verbs: HOST_VERBS, accepts: ["cap", "face", "nexus", "relay"], signs: true },
-  { name: "walk",          brief: packedBrief("walk"), summary: packedAccount("walk"), handler: cmdWalk, verbs: WALK_VERBS, accepts: ["face"] },
-  { name: "ingest",        brief: packedBrief("ingest"), summary: packedAccount("ingest"), handler: cmdIngest, pathAccepts: (a) => a.flags["watch"] === true ? ["watch", "apply", "debounce", "source", "to"] : INGEST_ROW.filter((n) => n !== "watch" && n !== "debounce"), verbs: null, accepts: ["apply", "change-id", "debounce", "in-wiki", "source", "tag-blobs", "to", "watch"] },
-  { name: "export",        brief: packedBrief("export"), summary: packedAccount("export"), handler: cmdExport, verbs: null, accepts: ["accept-omissions"] },
-  { name: "import",        brief: packedBrief("import"), summary: packedAccount("import"), handler: cmdImport, verbs: null, accepts: ["apply"], signs: true /* re-lifts sign kahua acts under the face's grant */ },
-  { name: "shore",         brief: packedBrief("shore"), summary: packedAccount("shore"), handler: cmdShore, verbs: SHORE_ACTS, accepts: ["all", "bag", "boot", "count", "face", "held", "key", "kind", "pending", "yes"] },
-  { name: "surface",       brief: packedBrief("surface"), summary: packedAccount("surface"), handler: (args) => cmdSurface(args), verbs: SURFACE_VERBS, accepts: ["face", "launch", "message", "realm", "workspace"] },
-  { name: "meme", brief: packedBrief("meme"), summary: packedAccount("meme"), handler: cmdMeme, pathAccepts: (a) => a.positional[0] === "offer" && a.positional[1] === "show" ? (a.positional[2] ? ["nexus"] : ["bag", "all", "after", "limit", "nexus"]) : null, verbs: MEME_VERBS, accepts: ["after", "all", "approval", "bag", "check", "dest-bag", "dialect", "edges", "face", "format", "from-bag", "gradient", "grammar", "limit", "nexus", "out", "over-fresher", "realm", "recipe", "root", "sitting", "target", "to", "tongue"] },
-  { name: "bag",           brief: packedBrief("bag"), summary: packedAccount("bag"), handler: cmdBag, pathAccepts: (a) => a.positional[0] === "show" ? (a.positional[1] ? ["dir"] : ["dir", "after", "limit"]) : a.positional[0] === "list" ? null : null, verbs: BAG_VERBS, accepts: ["all", "after", "limit", "approve", "dir", "dry-run", "face", "fetch", "held", "holder", "home", "list", "note", "pin", "read", "read-remove", "release", "remove", "repo", "role", "root", "sweep", "tier", "to", "vcs", "write", "write-remove", "workspace"] },
-  { name: "events",        brief: packedBrief("events"), summary: packedAccount("events"), handler: cmdEvents, verbs: null, accepts: ["kind", "since", "wait"] },
-  { name: "realm",         brief: packedBrief("realm"), summary: packedAccount("realm"), handler: (args) => cmdRealm(args), verbs: REALM_VERBS, accepts: ["to"] },
-  { name: "wiki",          brief: packedBrief("wiki"), summary: packedAccount("wiki"), handler: cmdWiki, pathAccepts: (a) => a.positional[0] === "keep" || a.positional[0] === "unkeep" || a.positional[0] === "switch" ? [] : a.positional[0] === "render" ? (a.options["output"] === "workbench" ? ["recipe", "output", "filename", "type", "template", "variables", "overwrite", "face"] : ["recipe", "text", "form", "type", "max-bytes", "after", "target", "face", "bag"]) : a.positional[0] === "status" ? ["recipe", "target", "face", "bag", "realm"] : null, verbs: WIKI_VERBS, accepts: ["after", "bag", "count", "days", "dry-run", "face", "filename", "force", "form", "list", "max-bytes", "note", "output", "overwrite", "read", "read-remove", "realm", "recipe", "remove", "target", "template", "text", "type", "variables", "write", "write-remove", "workspace"] },
-  { name: "law",           brief: packedBrief("law"), summary: packedAccount("law"), handler: cmdLaw, verbs: LAW_VERBS, accepts: ["after", "all", "face", "limit"] },
-  { name: "oracle",        brief: packedBrief("oracle"), summary: packedAccount("oracle"), handler: cmdOracle, verbs: CAST_DOOR_VERBS, accepts: ["asking", "bag", "by", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"] },
+  { name: "intent", brief: packedBrief("intent"), summary: packedAccount("intent"), handler: cmdIntent, verbs: INTENT_VERBS, signs: true },
+  { name: "trust", brief: packedBrief("trust"), summary: packedAccount("trust"), handler: cmdPromote, verbs: TRUST_VERBS, signs: true },
+  { name: "kapae", brief: packedBrief("kapae"), summary: packedAccount("kapae"), handler: cmdKapae, verbs: KAPAE_VERBS, signs: true },
+  { name: "lei", brief: packedBrief("lei"), summary: packedAccount("lei"), handler: cmdLei, verbs: LEI_VERBS, signs: true, signsOnly: ["kui", "unstring", "restring"] },
+  { name: "rite", brief: packedBrief("rite"), summary: packedAccount("rite"), handler: cmdRite, verbs: RITE_VERBS },
+  { name: "kahua", brief: packedBrief("kahua"), summary: packedAccount("kahua"), handler: cmdKahua, verbs: KAHUA_VERBS, signs: true, signsOnly: ["mint", "lift", "withdraw", "carry"] },
+  { name: "intent-relay", brief: packedBrief("intent-relay"), summary: packedAccount("intent-relay"), handler: cmdIntentRelay, verbs: INTENT_RELAY_VERBS, signs: true },
+  { name: "vessel",        brief: packedBrief("vessel"), summary: packedAccount("vessel"), handler: cmdVessel, verbs: VESSEL_SUBS, signs: true /* found mints the vessel key + persona root; lay writes founding material */ },
+  { name: "herm", brief: packedBrief("herm"), summary: packedAccount("herm"), handler: cmdHerm, verbs: HERM_VERBS },
+  { name: "host",          brief: packedBrief("host"), summary: packedAccount("host"), handler: cmdHost, verbs: HOST_VERBS, signs: true },
+  { name: "walk",          brief: packedBrief("walk"), summary: packedAccount("walk"), handler: cmdWalk, verbs: WALK_VERBS },
+  { name: "ingest",        brief: packedBrief("ingest"), summary: packedAccount("ingest"), handler: cmdIngest, verbs: null },
+  { name: "export",        brief: packedBrief("export"), summary: packedAccount("export"), handler: cmdExport, verbs: null },
+  { name: "import",        brief: packedBrief("import"), summary: packedAccount("import"), handler: cmdImport, verbs: null, signs: true /* re-lifts sign kahua acts under the face's grant */ },
+  { name: "shore",         brief: packedBrief("shore"), summary: packedAccount("shore"), handler: cmdShore, verbs: SHORE_ACTS },
+  { name: "surface",       brief: packedBrief("surface"), summary: packedAccount("surface"), handler: (args) => cmdSurface(args), verbs: SURFACE_VERBS },
+  { name: "meme", brief: packedBrief("meme"), summary: packedAccount("meme"), handler: cmdMeme, verbs: MEME_VERBS },
+  { name: "bag",           brief: packedBrief("bag"), summary: packedAccount("bag"), handler: cmdBag, verbs: BAG_VERBS },
+  { name: "events",        brief: packedBrief("events"), summary: packedAccount("events"), handler: cmdEvents, verbs: null },
+  { name: "realm",         brief: packedBrief("realm"), summary: packedAccount("realm"), handler: (args) => cmdRealm(args), verbs: REALM_VERBS },
+  { name: "wiki",          brief: packedBrief("wiki"), summary: packedAccount("wiki"), handler: cmdWiki, verbs: WIKI_VERBS },
+  { name: "law",           brief: packedBrief("law"), summary: packedAccount("law"), handler: cmdLaw, verbs: LAW_VERBS },
+  { name: "oracle",        brief: packedBrief("oracle"), summary: packedAccount("oracle"), handler: cmdOracle, verbs: CAST_DOOR_VERBS },
   // THE CALL SHAPE (comms-ux-enacts landing 8): each verb word takes `name=value` params alone, read by one token rule and bound in
   // the VM against the carrier's live `#/takes`; no flag table and no sub-verb (an address and `lares -` answer beside them). A verb
   // one carrier skins draws its words from the pack; `get` skins two (by title, by filter), and the pack gathers both under its door.
-  { name: "get", brief: packedBrief("get"), summary: packedAccount("get"), handler: cmdCall, verbs: null, accepts: [] },
-  { name: "put", brief: packedBrief("put"), summary: packedAccount("put"), handler: cmdCall, verbs: null, accepts: [] },
-  { name: "delete", brief: packedBrief("delete"), summary: packedAccount("delete"), handler: cmdCall, verbs: null, accepts: [] },
-  { name: "rename", brief: packedBrief("rename"), summary: packedAccount("rename"), handler: cmdCall, verbs: null, accepts: [] },
-  { name: "msg", brief: packedBrief("msg"), summary: packedAccount("msg"), handler: cmdCall, verbs: null, accepts: [] },
+  { name: "get", brief: packedBrief("get"), summary: packedAccount("get"), handler: cmdCall, verbs: null },
+  { name: "put", brief: packedBrief("put"), summary: packedAccount("put"), handler: cmdCall, verbs: null },
+  { name: "delete", brief: packedBrief("delete"), summary: packedAccount("delete"), handler: cmdCall, verbs: null },
+  { name: "rename", brief: packedBrief("rename"), summary: packedAccount("rename"), handler: cmdCall, verbs: null },
+  { name: "msg", brief: packedBrief("msg"), summary: packedAccount("msg"), handler: cmdCall, verbs: null },
   // THE LONG LINE (landing 16): `watch` holds its calls in a loop, one has line per change (`commands/watch-line.ts`).
-  { name: "watch", brief: packedBrief("watch"), summary: packedAccount("watch"), handler: cmdCall, verbs: null, accepts: [] },
-  { name: "repo",          brief: packedBrief("repo"), summary: packedAccount("repo"), handler: cmdRepo, verbs: TUNNEL_VERBS, accepts: ["brief", "familiar", "force", "probe", "root", "staged"] },
-  { name: "home",          brief: packedBrief("home"), summary: packedAccount("home"), handler: cmdHome, verbs: TUNNEL_VERBS, accepts: ["brief", "familiar", "force", "probe", "root", "staged"] },
-  { name: "sense",         brief: packedBrief("sense"), summary: packedAccount("sense"), handler: cmdSense, pathAccepts: sensePathAccepts, verbs: SENSE_VERBS, leads: "<sensorium>", accepts: ["agent", "all", "all-strata", "approve", "as-of", "bulk", "channel", "confirm", "device", "drain", "dry-run", "ephemeral", "force", "freeze-receipt", "function", "grounds", "halves", "hold", "imago", "intent", "k", "keep-hooks", "lens", "limit", "list", "min-count", "model-home", "names", "not-root", "pair", "palace", "project", "reason", "repour", "revision", "room", "self-weight", "sensorium-root", "session-id", "signal", "source-host", "source-key", "span", "speaker", "spectral", "store-swap", "surface", "trial-root", "wing", "writeback"] },
-  { name: "flow",          brief: packedBrief("flow"), summary: packedAccount("flow"), handler: cmdFlowRun, verbs: null, accepts: ["names", "signal", "target"] },
-  { name: "ddate",         brief: packedBrief("ddate"), summary: packedAccount("ddate"), handler: cmdDdate, verbs: null, accepts: [] },
-  { name: "mempalace",     brief: packedBrief("mempalace"), summary: packedAccount("mempalace"), handler: cmdMempalace, passesThrough: (a) => a.positional[0] !== undefined && !MEMPALACE_OWN_VERBS.includes(a.positional[0]), verbs: MEMPALACE_OWN_VERBS, accepts: ["confirm", "dry-run", "help-mempalace", "hold", "keep-hooks", "project", "wing"] },
-  { name: "spirit",        brief: packedBrief("spirit"), summary: packedAccount("spirit"), handler: cmdSpirit, verbs: SPIRIT_VERBS, accepts: ["add", "allowed-tools", "aperture", "base", "cap", "caps", "echo", "expect", "face", "file", "fold", "grant", "grants", "handback", "held", "instance", "key", "lane", "lanes", "line", "links", "log", "mandate", "model", "new", "offer", "parent", "paths", "reads", "record", "slot", "source", "stream", "streams", "text", "title", "transcripts", "witness", "workdir"] },
-  { name: "hooks",         brief: packedBrief("hooks"), summary: packedAccount("hooks"), handler: cmdHooks, verbs: HOOKS_VERBS, accepts: ["reason"] },
-  { name: "mcp",           brief: packedBrief("mcp"), summary: packedAccount("mcp"), handler: cmdMcp, verbs: MCP_VERBS, accepts: [], passesThrough: () => true },
-  { name: "sensorium",     brief: packedBrief("sensorium"), summary: packedAccount("sensorium"), handler: cmdSensorium, verbs: SENSORIUM_VERBS, accepts: ["all", "evidence", "keep", "name", "orphans", "projection"] },
-  { name: "vault",         brief: packedBrief("vault"), summary: packedAccount("vault"), handler: cmdVault, verbs: VAULT_VERBS, accepts: ["all", "as", "cards", "face", "memory", "out", "paper", "passphrase", "rotate", "verbose"], signs: true /* holds and rotates persona key material */ },
-  { name: "wear",          brief: packedBrief("wear"), summary: packedAccount("wear"), handler: cmdWear, verbs: null, accepts: ["face", "yes"] },
-  { name: "library",       brief: packedBrief("library"), summary: packedAccount("library"), handler: cmdLibrary, verbs: LIBRARY_VERBS, accepts: ["keep", "licence", "license", "note", "origin", "out", "to"] },
-  { name: "persona",       brief: packedBrief("persona"), summary: packedAccount("persona"), handler: cmdPersona, pathAccepts: (a) => a.positional[0] === "raise-sign" ? ["as"] : PERSONA_ROW.filter((n) => n !== "as"), verbs: PERSONA_VERBS, accepts: ["as", "chair", "face", "handle", "name", "nexus", "prefix", "seat", "seat-key", "split-root", "threshold"], signs: true /* mints persona roots */ },
-  { name: "circle",        brief: packedBrief("circle"), summary: packedAccount("circle"), handler: cmdCircle, verbs: CIRCLE_VERBS, accepts: ["card", "face", "petname", "to"] },
-  { name: "cabal",         brief: packedBrief("cabal"), summary: packedAccount("cabal"), handler: cmdCabal, verbs: CABAL_VERBS, accepts: ["applicant", "bundle", "cap", "face", "nexus", "realm"], signs: true /* a vouch STAKES the voucher's own standing */ },
-  { name: "edge",          brief: packedBrief("edge"), summary: packedAccount("edge"), handler: cmdEdge, verbs: EDGE_VERBS, accepts: ["as", "face", "realm", "nexus", "member", "device", "quorum", "fleet", "partial", "voucher", "joiner", "from", "act"], signs: true /* a kapae act signs over a relationship */ },
-  { name: "nexus",         brief: packedBrief("nexus"), summary: packedAccount("nexus"), handler: cmdNexus, pathAccepts: (a) => a.positional[0] === "approve" ? (a.positional[1] === "open" ? ["purpose", "surface", "class", "nexus", "out"] : a.positional[1] === "sign" ? ["confirm-hash", "confirm-statement", "nexus", "out"] : a.positional[1] === "check" ? ["nexus"] : null) : null, verbs: NEXUS_VERBS, accepts: ["act", "added", "apply", "approval", "carrier", "carry", "charter", "charter-law", "class", "cold-key", "confirm-hash", "confirm-statement", "contract", "cosign", "cut", "edge", "expiry", "face", "floor-pin", "from", "heard", "heard-threshold", "index", "join", "land", "list", "nexus", "note", "out", "purpose", "realm", "reason", "release", "sig", "source", "steward", "surface", "sync-url", "terms", "thin", "threshold", "tier", "with"], signs: true /* quorum-signs admits, kapae and charter acts */ },
-  { name: "fleet",         brief: packedBrief("fleet"), summary: packedAccount("fleet"), handler: cmdFleet, verbs: FLEET_VERBS, accepts: ["doc-url", "face", "out", "sync-url"], signs: true /* signs a device edge, certificates, grants and the answer */ },
-  { name: "handle",        brief: packedBrief("handle"), summary: packedAccount("handle"), handler: cmdHandle, verbs: HANDLE_VERBS, accepts: ["card", "face", "from-persona", "glamour", "persona", "return-locator", "subject", "surface"], signs: true /* mints + signs a HandleCard */ },
+  { name: "watch", brief: packedBrief("watch"), summary: packedAccount("watch"), handler: cmdCall, verbs: null },
+  { name: "repo",          brief: packedBrief("repo"), summary: packedAccount("repo"), handler: cmdRepo, verbs: TUNNEL_VERBS },
+  { name: "home",          brief: packedBrief("home"), summary: packedAccount("home"), handler: cmdHome, verbs: TUNNEL_VERBS },
+  { name: "sense",         brief: packedBrief("sense"), summary: packedAccount("sense"), handler: cmdSense, verbs: SENSE_VERBS, leads: "<sensorium>" },
+  { name: "flow",          brief: packedBrief("flow"), summary: packedAccount("flow"), handler: cmdFlowRun, verbs: null },
+  { name: "ddate",         brief: packedBrief("ddate"), summary: packedAccount("ddate"), handler: cmdDdate, verbs: null },
+  { name: "mempalace",     brief: packedBrief("mempalace"), summary: packedAccount("mempalace"), handler: cmdMempalace, passesThrough: (a) => a.positional[0] !== undefined && !MEMPALACE_OWN_VERBS.includes(a.positional[0]), verbs: MEMPALACE_OWN_VERBS },
+  { name: "spirit",        brief: packedBrief("spirit"), summary: packedAccount("spirit"), handler: cmdSpirit, verbs: SPIRIT_VERBS },
+  { name: "hooks",         brief: packedBrief("hooks"), summary: packedAccount("hooks"), handler: cmdHooks, verbs: HOOKS_VERBS },
+  { name: "mcp",           brief: packedBrief("mcp"), summary: packedAccount("mcp"), handler: cmdMcp, verbs: MCP_VERBS, passesThrough: () => true },
+  { name: "sensorium",     brief: packedBrief("sensorium"), summary: packedAccount("sensorium"), handler: cmdSensorium, verbs: SENSORIUM_VERBS },
+  { name: "vault",         brief: packedBrief("vault"), summary: packedAccount("vault"), handler: cmdVault, verbs: VAULT_VERBS, signs: true /* holds and rotates persona key material */ },
+  { name: "wear",          brief: packedBrief("wear"), summary: packedAccount("wear"), handler: cmdWear, verbs: null },
+  { name: "library",       brief: packedBrief("library"), summary: packedAccount("library"), handler: cmdLibrary, verbs: LIBRARY_VERBS },
+  { name: "persona",       brief: packedBrief("persona"), summary: packedAccount("persona"), handler: cmdPersona, verbs: PERSONA_VERBS, signs: true /* mints persona roots */ },
+  { name: "circle",        brief: packedBrief("circle"), summary: packedAccount("circle"), handler: cmdCircle, verbs: CIRCLE_VERBS },
+  { name: "cabal",         brief: packedBrief("cabal"), summary: packedAccount("cabal"), handler: cmdCabal, verbs: CABAL_VERBS, signs: true /* a vouch STAKES the voucher's own standing */ },
+  { name: "edge",          brief: packedBrief("edge"), summary: packedAccount("edge"), handler: cmdEdge, verbs: EDGE_VERBS, signs: true /* a kapae act signs over a relationship */ },
+  { name: "nexus",         brief: packedBrief("nexus"), summary: packedAccount("nexus"), handler: cmdNexus, verbs: NEXUS_VERBS, signs: true /* quorum-signs admits, kapae and charter acts */ },
+  { name: "fleet",         brief: packedBrief("fleet"), summary: packedAccount("fleet"), handler: cmdFleet, verbs: FLEET_VERBS, signs: true /* signs a device edge, certificates, grants and the answer */ },
+  { name: "handle",        brief: packedBrief("handle"), summary: packedAccount("handle"), handler: cmdHandle, verbs: HANDLE_VERBS, signs: true /* mints + signs a HandleCard */ },
 ];
 
-/** THE RELEASE LEFT THE READ: `vessel read vessel --release*` names its new door, and reads nothing. */
+/** THE RELEASE LEFT THE READ: `vessel read vessel release*=…` names its new door, and reads nothing. */
 function movedRelease(args: ParsedArgs): boolean {
   if (args.command !== "vessel" || args.positional[0] !== "read") return false;
   return ["release", "release-keep", "release-fresh"].some((n) => n in args.options || n in args.flags);
 }
 
-/** The door rows a sub-path narrows (`pathAccepts`), read off the table itself so the two never drift. */
-function rowOf(name: string): readonly string[] { return COMMANDS.find((c) => c.name === name)?.accepts ?? []; }
-const VESSEL_ROW  = { filter: (f: (n: string) => boolean) => rowOf("vessel").filter(f) };
-const INGEST_ROW  = { filter: (f: (n: string) => boolean) => rowOf("ingest").filter(f) };
-const PERSONA_ROW = { filter: (f: (n: string) => boolean) => rowOf("persona").filter(f) };
 
 /**
  * Every top-level `lares` command name — the source the isomorphism fixture (cli-verbs.json) mirrors
@@ -357,7 +362,7 @@ export const COMMAND_NAMES: readonly string[] = COMMANDS.map((c) => c.name);
 /**
  * The global help IS the surface projection — a face reading the one table, never a second catalogue.
  *
- * `lares help --surface <name>` reads another face's projection; `--executable` drops the key-holding acts
+ * `lares help surface=<name>` reads another face's projection; `executable=true` drops the key-holding acts
  * an agent surface may compose and must never run; `--json` emits the shape another face consumes. Folding
  * these here rather than into a verb of their own keeps the CLI from spending a command on describing
  * commands.
@@ -401,7 +406,7 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
     console.log("  ✍ = holds a key. An agent surface may compose these and MUST NOT execute them.");
   }
   // The usage line already names `lares <command> --help`; the TTY rule rides the flags' own header, one line spared.
-  console.log("Global flags (prose on a TTY, JSON off-TTY or under --json):");
+  console.log("Global flags (prose on a TTY, JSON off-TTY or under --json); every other param rides as name=value:");
   console.log(`  ${"--json".padEnd(14)} Emit a deterministic JSON result (ok|error + requestId); status reads need it.`);
   console.log(`  ${"--no-json".padEnd(14)} Force human prose even when stdout is not a TTY.`);
   console.log(`  ${"--yes".padEnd(14)} Skip confirmation prompts (required for non-interactive runs).`);
@@ -430,9 +435,9 @@ export const MOVED: ReadonlyArray<{ readonly argv: readonly string[]; readonly t
   { argv: ["nexus", "promote"], to: "lares nexus approve" },
   // Verbs that ride the door owning their island (fewer-front-doors).
   { argv: ["receipt"], to: "lares vessel request <id>" },
-  { argv: ["cancel"], to: "lares vessel request <id> --cancel" },
+  { argv: ["cancel"], to: "lares vessel request <id> cancel=true" },
   // `watch` left this table at landing 16: the word stands again as a call verb (a filter subscription), and the ingest watch
-  // still rides `lares ingest --watch`.
+  // still rides `lares ingest watch=true`.
   { argv: ["draft"], to: "lares act lar:///carriage.draft.pulls uri=<uri>" },
   { argv: ["raise"], to: "lares persona raise-sign <challenge-json-text>" },
   { argv: ["wing-of"], to: "node tools/wing-of.mjs" },
@@ -449,17 +454,17 @@ function movedTo(args: ParsedArgs): string | null {
   const line = [args.command, ...args.positional];
   const row = MOVED.find((m) => m.argv.every((w, i) => line[i] === w));
   if (row) return row.to;
-  if (movedRelease(args)) return "lares vessel release <documentId> [--keep|--fresh]";
+  if (movedRelease(args)) return "lares vessel release <documentId> [keep=true|fresh=true]";
   return args.command === "sense" && retiredSensePromote(args) ? "lares sense harden" : null;
 }
 
-/** The door table as the keyword reader takes it: each door's name and the flags its handlers read. */
-const KEYWORD_DOORS = { names: COMMANDS.map((c) => c.name), accepts: (door: string): readonly string[] => COMMANDS.find((c) => c.name === door)?.accepts ?? [] };
+/** The door table as the keyword reader takes it: each door's name and the params its carriers take. */
+const KEYWORD_DOORS = { names: COMMANDS.map((c) => c.name), takes: doorTakes };
 
 /**
  * ONE DOOR, KEYWORD PARAMS (the keyword head, `../keywords.ts`): a keyword line, whose first token names a keyword
  * (`lares rite=kukulu mu=_0`, `lares get=<title> aperture=arc`), reads to the line it runs: a call through the call door in
- * the call shape (`get title=…`), or a door the command table runs by position with its dials folded into its own flags. The
+ * the call shape (`get title=…`), or a door the command table runs by position with its dials folded into its own params. The
  * set panel's own keywords (stance · mode · mood · note) echo on stderr as the set line the call rode. A keyword line the reader refuses answers its teaching
  * refusal and exits 2. Null where the line names no keyword.
  */
@@ -514,7 +519,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   // (one spelling per door) stops being checkable from outside. The unknown-command refusal
   // below therefore owns EVERY unknown name, flags included.
   // BARE `lares` SPEAKS THE HOUSE (the keyword head): the status line, the layered pins, the keys; the full door list moved behind
-  // `lares help`. A bare line that names a flag (`lares --json`, `--surface`) still asks the menu's machine shape.
+  // `lares help`. A bare line that names a flag (`lares --json`, `surface=`) still asks the menu's machine shape.
   const bareFlags = [...Object.keys(args.options), ...Object.keys(args.flags)];
   if (args.command === null && bareFlags.length === 0) return await bareDoor({});
   // The bare door's address, as the bridge forwards a bare line or a keyword line naming no act keyword into the vessel's host.
@@ -544,15 +549,11 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     return 2;
   }
   // AN ADDRESS NAMES ITS OWN VERB (comms-ux-enacts landing 8): `lares lar:///<address> name=value…`, `lares act lar:///<address> …`
-  // and `lares -` (one call sigil on stdin) ride the call door, which takes params alone, past every door's flag table.
+  // and `lares -` (one call sigil on stdin) ride the call door, which takes params alone. The parser refuses every dash flag
+  // outside GLOBAL_FLAGS on a call line; `--meme` reads beside `--help` alone, and past it names the dial it burned into.
   if (isCallHead(args.command, args.positional) && !(CALL_WORDS as readonly string[]).includes(args.command ?? "")) {
-    const flags = [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !GLOBAL_FLAGS.includes(n) || n === "meme");
-    if (flags.length > 0) {
-      for (const name of flags) {
-        // THE FLAG ZOO BURNED INTO THE DIALS (the keyword head): a burned flag names the dial it reads as.
-        const dial = BURNED_FLAGS[name];
-        console.error(dial !== undefined ? `lares: --${name} burned into the dials: it reads as ${dial} on a call` : `lares: unknown flag --${name} for a call; a call takes name=value params (${name}=…)`);
-      }
+    if (args.flags["meme"] !== undefined && args.flags["help"] !== true) {
+      console.error(`lares: dash-flag-burned: --meme burned into the dials: it reads as ${BURNED_FLAGS["meme"]} on a call; run: lares ${[args.command, ...args.positional].join(" ")} ${BURNED_FLAGS["meme"]}`);
       return 2;
     }
     // THE ONE ACT'S HELP (landing 9): `lares act --help` with no address prints the act carriers' call shapes, drawn from the pack.
@@ -578,14 +579,14 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     renderCommandHelp(helpDoor(cmd.name, args.positional), cmd.summary);
     return 0;
   }
-  // A flag no handler beneath this command reads is refused BY NAME, before anything runs — never after the
-  // act, which would report a refusal for work already done.
-  const stray = unknownFlags(cmd, args);
+  // A param the line's carrier takes nowhere refuses BY NAME, before anything runs — never after the act, which would report a
+  // refusal for work already done.
+  const stray = unknownParams(cmd, args);
   if (stray.length > 0) {
     for (const { name, nearest } of stray) {
-      console.error(`lares: unknown flag --${name} for \`lares ${cmd.name}\`${nearest === null ? "" : ` (did you mean --${nearest}?)`}`);
+      console.error(`lares: unknown param ${name}= for \`lares ${cmd.name}\`${nearest === null ? "" : ` (did you mean ${nearest}=?)`}`);
     }
-    console.error(`Run \`lares ${cmd.name} --help\` for the flags it reads.`);
+    console.error(`Run \`lares ${[cmd.name, ...args.positional.slice(0, 1)].join(" ")} --help\` for the params it takes.`);
     return 2;
   }
   // Fresh-Build Invariant — a daemon-lifecycle verb (found/boot/mutate-identity) never runs

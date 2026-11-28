@@ -111,7 +111,7 @@ export interface StopIncumbentOpts {
    */
   readonly onPastGrace: (heldPids: readonly number[]) => void;
   /**
-   * `--cut`: past grace, send the holder ONE further signal (never a ladder, never a SIGKILL) — the
+   * `cut=true`: past grace, send the holder ONE further signal (never a ladder, never a SIGKILL) — the
    * operator's own SECOND signal, which the vessel's own shutdown reads as the event that cuts a hung
    * teardown (`main.ts` exits 75 on it). This door still never decides FOR the vessel what that signal
    * means; it only delivers the operator's own choice once, past the grace it already reported.
@@ -198,14 +198,14 @@ export async function stopIncumbent(
       // NEVER RE-READ THE PORT PAST GRACE (H5′). `main.ts`'s own teardown closes the http listener — the
       // very thing `portHolderPids` reads the OS table FOR — as its FIRST step, well before the holder it
       // signalled has actually exited. So a past-grace `holderPidsOf(port)` read lands on an ALREADY-FREED
-      // port and finds nobody, and a `--cut` built on that read signals nobody: the honest wait this door
+      // port and finds nobody, and a `cut=true` built on that read signals nobody: the honest wait this door
       // owes (never escalating past the operator's own SECOND signal) silently became unreachable instead.
       // The only pids a cut can ever mean to reach are the ones THIS DOOR ITSELF SIGNALLED at the top —
       // filtered to those still answering `pidAlive` (the unconditional floor, same one `stillHeld` reads):
       // a pid that has truly exited is never worth signalling again, and never worth naming as "still held".
       const held = pids.filter(pidAlive);
       opts.onPastGrace(held);
-      // `--cut`: deliver the operator's own second signal once, past the grace already reported. Never a
+      // `cut=true`: deliver the operator's own second signal once, past the grace already reported. Never a
       // ladder past this one further SIGTERM, never a SIGKILL — the vessel's own shutdown decides what a
       // second signal means (main.ts: a hung-teardown cut, exit 75).
       if (opts.cut) { for (const pid of held) { try { kill(pid, "SIGTERM"); } catch { /* already gone */ } } }

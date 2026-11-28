@@ -20,7 +20,7 @@ import { describe, it, expect } from "vitest";
 import { floorCure } from "../src/floor-cure.js";
 
 const FLOOR = "[daemon] this vessel stands at the waking floor and holds no face — "
-            + "light one with `lares persona new 0 --name '<label>'` before any persona-scoped act.";
+            + "light one with `lares persona new 0 name='<label>'` before any persona-scoped act.";
 
 describe("floor-cure — the refusal keeps its reading, the cure follows the disk", () => {
   it("★ a face on disk turns the cure into the LIFT, not another mint ★", () => {
@@ -45,7 +45,7 @@ describe("floor-cure — the refusal keeps its reading, the cure follows the dis
 
   it("the PersonaGroup-plane spelling of the same floor gets the same correction", () => {
     const plane = "[daemon] this vessel stands at the waking floor and holds no PersonaGroup plane — "
-                + "light a face with `lares persona new 0 --name '<label>'`.";
+                + "light a face with `lares persona new 0 name='<label>'`.";
     expect(floorCure(plane, { faceOnDisk: true })).toMatch(/lares vessel stand/);
   });
 

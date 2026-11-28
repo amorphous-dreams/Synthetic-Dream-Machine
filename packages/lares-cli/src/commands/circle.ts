@@ -1,15 +1,15 @@
 /**
- * `lares circle {add <nym> --to <circle> | remove <nym> --to <circle> | list [--to <circle>]}` — the FOLLOW
+ * `lares circle {add <nym> to=<circle> | remove <nym> to=<circle> | list [to=<circle>]}` — the FOLLOW
  * VERB, the operator's door to the INVERSION-OF-CONTROL social graph. "Adding to a circle IS the follow"
  * (social-seed): this command edits the LOCAL private graph and NOTHING crosses the wire.
  *
- *   add <nym> --to <circle> [--petname <label>] [--card <file>]
+ *   add <nym> to=<circle> [petname=<label>] [card=<file>]
  *                        recognise the nym (already-known, or TOFU-admit a carried self-certifying card),
  *                        optionally set its PRIVATE local label, and add it to the circle — one gesture over
  *                        the three LOCAL stores (handle-book · petname · circle).
- *   remove <nym> --to <circle>   drop the nym from the circle (unfollow; the handle-book memory stays).
- *   list [--to <circle>]         the private follow-view — nyms under the recogniser's OWN names (petname +
- *                                last-seen glamour). No --to lists every circle.
+ *   remove <nym> to=<circle>   drop the nym from the circle (unfollow; the handle-book memory stays).
+ *   list [to=<circle>]         the private follow-view — nyms under the recogniser's OWN names (petname +
+ *                                last-seen glamour). No to= lists every circle.
  *
  * NEVER A FEDERATED WRITE. This drives `composeFollow` over the circles-backed CircleStore (the FOLLOW-GRAPH
  * daemon verbs — circle-add/circle-remove/circle-list — over the sovereign circles doc) + the LOCAL handle-
@@ -19,7 +19,7 @@
  * NO central trace. Publishing a public glamour stays a SEPARATE, deliberate act (`lares persona` + a who-face
  * publish), never fired here. The default circle is `following` (the primary system circle seedCirclesDoc plants).
  *
- * Fail-closed: following an UNMET nym with no `--card` REFUSES (you cannot name-into-a-circle a handle you
+ * Fail-closed: following an UNMET nym with no `card=` REFUSES (you cannot name-into-a-circle a handle you
  * have never met) — carry its self-certifying HandleCard to admit it first. Recognition stays CLIENT-side
  * (the local handle-book) ahead of the circles membership write; the handle-book co-move is the open fork.
  *
@@ -48,7 +48,7 @@ function usage(args: ParsedArgs, typed?: string): number {
   return refuseUsage(args, "circle", helpLines("circle"), typed ? `unknown sub-verb "${typed}"` : undefined);
 }
 
-/** Read the `--to <circle>` option, defaulting to the primary follow circle. */
+/** Read the `to=<circle>` option, defaulting to the primary follow circle. */
 function circleOf(args: ParsedArgs): string {
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   return to.length > 0 ? to : DEFAULT_CIRCLE;
@@ -58,9 +58,9 @@ function circleOf(args: ParsedArgs): string {
 function readCardFile(path: string): HandleCard {
   let raw: string;
   try { raw = readFileSync(path, "utf8"); }
-  catch (err) { throw new UsageError(`cannot read --card file "${path}": ${err instanceof Error ? err.message : String(err)}`); }
+  catch (err) { throw new UsageError(`cannot read card= file "${path}": ${err instanceof Error ? err.message : String(err)}`); }
   try { return JSON.parse(raw) as HandleCard; }
-  catch { throw new UsageError(`--card file "${path}" holds no JSON that parses`); }
+  catch { throw new UsageError(`card= file "${path}" holds no JSON that parses`); }
 }
 
 /** Every verb the circle door answers. */
@@ -90,7 +90,7 @@ export async function cmdCircle(args: ParsedArgs): Promise<number> {
 
 async function circleAdd(args: ParsedArgs): Promise<number> {
   const nym = args.positional[1];
-  if (!nym) throw new UsageError("add needs a nym (e.g. `lares circle add <verifying-key-hex> --to following`)");
+  if (!nym) throw new UsageError("add needs a nym (e.g. `lares circle add <verifying-key-hex> to=following`)");
   const circleId = circleOf(args);
   const petname  = typeof args.options["petname"] === "string" ? args.options["petname"].trim() : undefined;
   const cardPath = typeof args.options["card"] === "string" ? args.options["card"] : undefined;
@@ -121,7 +121,7 @@ async function circleAdd(args: ParsedArgs): Promise<number> {
     human: () => {
       console.log(`followed ${result.petname ? `"${result.petname}"` : nym.slice(0, 16) + "…"} into circle "${result.circleId}".`);
       console.log(`  the follow is PRIVATE and LOCAL — nothing reached the crossroads plane (no central trace).`);
-      if (!result.petname) console.log(`  name it for yourself with --petname '<label>' (private; never federates).`);
+      if (!result.petname) console.log(`  name it for yourself with petname='<label>' (private; never federates).`);
     },
   });
   return 0;
@@ -147,7 +147,7 @@ function readCarriageArg(raw: string): string {
  * `lares circle card <carriage | @file | ->` — the CARD-ARRIVAL front door. Decode a carried, self-certifying
  * HandleCard (a paste, a QR scan, a `#card=…` URL fragment, or stdin) and INGEST it into the local handle-book
  * (TOFU / monotone reader rule). A pure LOCAL recognition write — nothing crosses the wire. Afterward the nym is
- * KNOWN, so `lares circle add <nym> --to <circle>` follows it WITHOUT carrying `--card`.
+ * KNOWN, so `lares circle add <nym> to=<circle>` follows it WITHOUT carrying `card=`.
  *
  * Fail-closed: a garbled / absent / wrong-domain carriage refuses (the card did not arrive — re-carry it); a card
  * whose signature or lineage the book rejects refuses with the book's named verdict. Neither ever half-admits.
@@ -173,7 +173,7 @@ async function circleCard(args: ParsedArgs): Promise<number> {
     },
     human: () => {
       console.log(`admitted ${card.glamour ? `"${card.glamour}" ` : ""}${card.nym.slice(0, 16)}… into the handle-book (act ${card.actCid.slice(0, 16)}…, ${card.parents.length} parent(s), TOFU).`);
-      console.log(`  now follow it locally:  lares circle add ${card.nym} --to ${DEFAULT_CIRCLE}`);
+      console.log(`  now follow it locally:  lares circle add ${card.nym} to=${DEFAULT_CIRCLE}`);
       console.log(`  the admission is PRIVATE and LOCAL — nothing reached the wire.`);
     },
   });
@@ -182,7 +182,7 @@ async function circleCard(args: ParsedArgs): Promise<number> {
 
 async function circleRemove(args: ParsedArgs): Promise<number> {
   const nym = args.positional[1];
-  if (!nym) throw new UsageError("remove needs a nym (e.g. `lares circle remove <verifying-key-hex> --to following`)");
+  if (!nym) throw new UsageError("remove needs a nym (e.g. `lares circle remove <verifying-key-hex> to=following`)");
   const circleId = circleOf(args);
   const result = await composeUnfollow({ circles: makeDaemonCircleStore(await vesselDid()), nym, circleId });
   emit(args, {
@@ -209,7 +209,7 @@ async function circleList(args: ParsedArgs): Promise<number> {
     data: { circles: rows },
     human: () => {
       if (rows.length === 0 || rows.every((r) => r.follows.length === 0)) {
-        console.log("no follows yet — add one with `lares circle add <nym> --card <card.json> --to following`.");
+        console.log("no follows yet — add one with `lares circle add <nym> card=<card.json> to=following`.");
         return;
       }
       for (const { circleId, follows } of rows) {

@@ -7,7 +7,7 @@
  * card that opens no commitment, a replacement card that reads back otherwise, or a standing vessel refuses before any byte
  * moves, so the head, the chain and the key file stay as they stood.
  *
- * `--cold-key <code>` stands in for the terminal on a staged test root alone: a card typed into a flag on a live machine
+ * `cold-key=<code>` stands in for the terminal on a staged test root alone: a card typed into a flag on a live machine
  * rests in the shell's history.
  */
 import { coldKeySeedFromCode, ColdKeyCardError } from "@lararium/mesh/cold-key-card";
@@ -28,7 +28,7 @@ export async function cmdRotatePlace(args: ParsedArgs): Promise<number> {
     }
     const flagged = args.options["cold-key"];
     if (flagged !== undefined && !(await readBackStandsIn())) {
-      console.error("lares vessel rotate: --cold-key stands in for the terminal on a staged test root alone: type the card when the rite asks for it.");
+      console.error("lares vessel rotate: cold-key= stands in for the terminal on a staged test root alone: type the card when the rite asks for it.");
       return 2;
     }
     if (flagged === undefined && !canPromptSecret()) {

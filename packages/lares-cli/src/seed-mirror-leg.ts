@@ -1,9 +1,9 @@
 /**
  * seed-mirror-leg — the lay's mirror leg as a door any verb walks through with a narrow options object.
  *
- * The leg takes what it reads by name (`apply`, the raw `--lift-kahua` count, whether the reading answers as JSON, the
- * kahua-only cut) and never a verb's whole flag bag, so `lares vessel lay` and `lares shore lift-kahua` each read only
- * the flags their own accepts row names (`tests/laws/accepts-track-the-handlers.law.test.ts`). This module reaches no
+ * The leg takes what it reads by name (`apply`, the raw `lift-kahua=` count, whether the reading answers as JSON, the
+ * kahua-only cut) and never a verb's whole param bag, so `lares vessel lay` and `lares shore lift-kahua` each read only
+ * the params their own carriers take (`#/takes`). This module reaches no
  * command handler: the lay's ingest and act gestures stay in `commands/lay.ts`.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
@@ -14,9 +14,9 @@ import { seedMirrors, mirrorLines, mirrorsLeftWork, kahuaConfirmPrompt, MirrorRe
 
 /** What the mirror leg reads: each name the calling verb took off its own flags. */
 export interface MirrorLegOptions {
-  /** Whether the leg writes (`--apply`); a dry leg previews. */
+  /** Whether the leg writes (`apply=true`); a dry leg previews. */
   readonly apply: boolean;
-  /** The raw `--lift-kahua` count as typed, or undefined where absent; a malformed count refuses by name. */
+  /** The raw `lift-kahua=` count as typed, or undefined where absent; a malformed count refuses by name. */
   readonly liftKahua?: string | undefined;
   /** Whether the reading answers as JSON: then no TTY hand confirms the kahua lift. */
   readonly json?: boolean;
@@ -26,10 +26,10 @@ export interface MirrorLegOptions {
   readonly benchesOnly?: boolean;
 }
 
-/** `--lift-kahua <N>` read as a whole count, or null where absent; a malformed count refuses by name. */
+/** `lift-kahua=<N>` read as a whole count, or null where absent; a malformed count refuses by name. */
 export function liftKahuaCountOf(raw: string | undefined): number | null {
   if (raw === undefined) return null;
-  if (!/^(?:0|[1-9][0-9]*)$/.test(raw)) throw new MirrorRefused("seed-kahua-count", `--lift-kahua names the whole count the preview shows; "${raw}" names none`);
+  if (!/^(?:0|[1-9][0-9]*)$/.test(raw)) throw new MirrorRefused("seed-kahua-count", `lift-kahua= names the whole count the preview shows; "${raw}" names none`);
   return Number(raw);
 }
 

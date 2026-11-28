@@ -17,7 +17,7 @@
  *   prune-stale              — surface stale drafts for residency-action-or-prune
  *   render / status          — THE TIDDLER DOOR's engine verbs (wiki-surface-scout, lane 1): wikify a title or a span,
  *                              and read each layer's writeability for the session's face, each in the wiki's own engine
- *                              (`--recipe default` or any wiki the face reaches); `lares get · put · delete · rename` holds
+ *                              (`recipe=default` or any wiki the face reaches); `lares get · put · delete · rename` holds
  *                              the record verbs and a filter's pages (`lares get filter=<filter>`)
  */
 
@@ -63,7 +63,7 @@ async function call(
 }
 
 export async function cmdWikiList(args: ParsedArgs): Promise<number> {
-  // EACH HAT REACHED BY NAME: `--face N` lists through a session of face N (the island answers the mount's catalog alone for
+  // EACH HAT REACHED BY NAME: `face=N` lists through a session of face N (the island answers the mount's catalog alone for
   // now, so a lit sibling refuses there by name); with none, the one-shot lists the worn face's. A shut face: `face-not-open`.
   let named: { face?: number };
   try { named = args.options["face"] === undefined && args.flags["face"] === undefined ? {} : faceOption(args); }
@@ -167,14 +167,14 @@ export function initWorkbenchLine(result: Record<string, unknown>): string | nul
 export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIVE_REALM_DOORS): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki init <slug> [--realm <pet>]");
+    console.error("usage: lares wiki init <slug> [realm=<pet>]");
     return 2;
   }
-  // `--realm <pet>` PLACES THE WIKI IN AN EXISTING NAMED REALM BEFORE IT MINTS, so its first mount lays its workbench there; an
+  // `realm=<pet>` PLACES THE WIKI IN AN EXISTING NAMED REALM BEFORE IT MINTS, so its first mount lays its workbench there; an
   // unnamed realm refuses before anything mints.
   const realm = args.options["realm"];
   if (realm !== undefined) {
-    if (typeof realm !== "string" || realm === "") { console.error("usage: lares wiki init <slug> [--realm <pet>]"); return 2; }
+    if (typeof realm !== "string" || realm === "") { console.error("usage: lares wiki init <slug> [realm=<pet>]"); return 2; }
     try { await placeWikiInRealm(realmDoors, slug, realm); }
     catch (err) {
       if (!(err instanceof RealmRefused)) throw err;
@@ -193,7 +193,7 @@ export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIV
   // The mint holds the wiki it mints (a cold grain reads `document-unavailable` until held); a wiki that already stood is left as it was.
   const hold = result["status"] === "minted" || result["status"] === "completed" ? await holdTheMint(slug, did) : null;
   // The mint bound (or found) the wiki's workbench realm: the label records its canon realm id beside the pet name. EVERY REALM
-  // CARRIES A PET NAME: with no `--realm`, the wiki takes its own realm label under its slug (`realms/<slug>/wikis/<slug>/`).
+  // CARRIES A PET NAME: with no `realm=`, the wiki takes its own realm label under its slug (`realms/<slug>/wikis/<slug>/`).
   let placed: { readonly petName: string } | null = null;
   try { placed = typeof realm === "string" ? await placeWikiInRealm(realmDoors, slug, realm) : (await ensureWikiRealm(realmDoors, slug)).label; }
   catch (err) { if (!(err instanceof RealmRefused)) throw err; }
@@ -221,7 +221,7 @@ export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIV
   return 0;
 }
 
-const RETIRE_USAGE = "usage: lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]";
+const RETIRE_USAGE = "usage: lares wiki retire <slug> [face=N] [dry-run=true] [force=true count=<records>]";
 /** The refusals `retire-wiki` (and the session door before it) names by code (`<code>: <detail>`); any other failure reads as the transport's. */
 const RETIRE_REFUSAL = /^(retire-needs-hand|no-face|system-bag|wiki-face-private|no-such-wiki|not-the-owner|wiki-shared|wiki-not-empty|retire-count-missing|retire-count-moved|retire-carry-unlanded|waking-floor|content-mounted-only|face-not-open|workbench-slug-bound)\b/;
 
@@ -240,9 +240,9 @@ const LIVE_RETIRE_DOORS: RetireDoors = {
  * rows, its workbench's ledger rows, its slot and Keyhive bindings) leaves, so the slug mints again cleanly under the face that
  * should hold it. The canon bag's document and its files stay.
  *
- * A HAND ACT: it rides a session of the worn face (or `--face N`) opened by the `cli` hand, so a seat session refuses at the
- * socket and the island refuses any ask no hand placed. `--dry-run` reads what would leave and the record counts, writing
- * nothing; a shell holding records refuses `wiki-not-empty` unless `--force --count <records>` names that very count.
+ * A HAND ACT: it rides a session of the worn face (or `face=N`) opened by the `cli` hand, so a seat session refuses at the
+ * socket and the island refuses any ask no hand placed. `dry-run=true` reads what would leave and the record counts, writing
+ * nothing; a shell holding records refuses `wiki-not-empty` unless `force=true count=<records>` names that very count.
  *
  * THE RECORD OF LEAVING STAYS: the shell's effect records (the house's residency rows) never leave with it. The vessel carries
  * them, verbatim, into one retirement record per slug in the face's daemon wiki working layer before it erases them, and the
@@ -266,8 +266,8 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
   const force = args.flags["force"] === true;
   const dryRun = args.flags["dry-run"] === true;
   const countText = args.options["count"];
-  if (countText !== undefined && (!force || !/^\d+$/.test(countText))) { console.error(`${RETIRE_USAGE}\n  --count names the record count a --force retire destroys`); return 2; }
-  if (dryRun && force) { console.error(`${RETIRE_USAGE}\n  --dry-run reads and writes nothing; it takes no --force`); return 2; }
+  if (countText !== undefined && (!force || !/^\d+$/.test(countText))) { console.error(`${RETIRE_USAGE}\n  count= names the record count a force=true retire destroys`); return 2; }
+  if (dryRun && force) { console.error(`${RETIRE_USAGE}\n  dry-run=true reads and writes nothing; it takes no force=true`); return 2; }
   const verbArgs: Record<string, unknown> = { slug, ...(dryRun ? { "dry-run": true } : {}), ...(force ? { force: true } : {}), ...(countText !== undefined ? { count: Number(countText) } : {}) };
   let r: SubmitResult;
   try { r = await doors.call("retire-wiki", verbArgs, named.face ?? await doors.wornFace()); }
@@ -619,7 +619,7 @@ export async function cmdWikiRotateRecipe(args: ParsedArgs): Promise<number> {
 export async function cmdWikiPruneStale(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki prune-stale <slug> [--days <N>]");
+    console.error("usage: lares wiki prune-stale <slug> [days=<N>]");
     return 2;
   }
   const daysOpt = args.options["days"];
@@ -753,13 +753,13 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
 
 // ── THE TIDDLER DOOR's engine verbs: render · status ─────────────────────────────────────────
 
-/** `lares wiki render <title>` or `lares wiki render --text '<span>'`: the daemon verb `wiki-render` and its args. */
+/** `lares wiki render <title>` or `lares wiki render text='<span>'`: the daemon verb `wiki-render` and its args. */
 export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
   const title = args.positional[0];
   const span = typeof args.options["text"] === "string" ? args.options["text"] : "";
   if (args.options["output"] !== undefined) {
-    if (args.options["output"] !== "workbench") throw new DoorUsage("--output names workbench alone");
-    if (!title || span || args.options["target"] !== undefined || args.options["after"] !== undefined || args.options["form"] !== undefined) throw new DoorUsage("wiki render --output workbench needs one source filter and takes no span, visit, cursor or form");
+    if (args.options["output"] !== "workbench") throw new DoorUsage("output= names workbench alone");
+    if (!title || span || args.options["target"] !== undefined || args.options["after"] !== undefined || args.options["form"] !== undefined) throw new DoorUsage("wiki render output=workbench needs one source filter and takes no span, visit, cursor or form");
     const out: Record<string, unknown> = { ...engineContainerArgs(args, "wiki render"), filter: title, output: "workbench" };
     if (args.options["filename"] !== undefined) out["filename"] = args.options["filename"];
     if (args.options["type"] !== undefined) out["type"] = args.options["type"];
@@ -767,17 +767,17 @@ export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
     if (args.flags["overwrite"] === true) out["overwrite"] = true;
     if (args.options["variables"] !== undefined) {
       let variables: unknown;
-      try { variables = JSON.parse(args.options["variables"]!); } catch { throw new DoorUsage("--variables reads a JSON object of paired names and values"); }
-      if (!variables || typeof variables !== "object" || Array.isArray(variables) || Object.values(variables).some((v) => typeof v !== "string")) throw new DoorUsage("--variables reads a JSON object of paired names and values");
+      try { variables = JSON.parse(args.options["variables"]!); } catch { throw new DoorUsage("variables= reads a JSON object of paired names and values"); }
+      if (!variables || typeof variables !== "object" || Array.isArray(variables) || Object.values(variables).some((v) => typeof v !== "string")) throw new DoorUsage("variables= reads a JSON object of paired names and values");
       out["variables"] = variables;
     }
     return { verb: "wiki-render-out", args: out };
   }
-  if (Boolean(title) === Boolean(span)) throw new DoorUsage("name one source: a title (`lares wiki render \"My Note\" --recipe default`) or a span (`--text \"''bold'' {{My Note}}\"`)");
+  if (Boolean(title) === Boolean(span)) throw new DoorUsage("name one source: a title (`lares wiki render \"My Note\" recipe=default`) or a span (`text=\"''bold'' {{My Note}}\"`)");
   const out: Record<string, unknown> = { ...engineContainerArgs(args, "wiki render"), ...(title ? { title } : { text: span }), ...targetOf(args) };
   const form = wordOf(args.options["form"]);
   if (form) {
-    if (form !== "text" && form !== "html") throw new DoorUsage(`--form reads text or html (got "${form}")`);
+    if (form !== "text" && form !== "html") throw new DoorUsage(`form= reads text or html (got "${form}")`);
     out["form"] = form;
   }
   const type = wordOf(args.options["type"]);
@@ -812,7 +812,7 @@ async function cmdWikiRender(args: ParsedArgs): Promise<number> {
       human: () => {
         if (plan.verb === "wiki-render-out") { console.log(String(out["has"] ?? "")); for (const file of (out["files"] as Array<{ name: string; bytes: number }> ?? [])) console.log(`${file.name}\t${file.bytes}`); return; }
         stdout.write(String(out["text"] ?? ""));
-        if (out["truncated"] === true) console.error(`\ntruncated at the byte cap (${out["bytes"]} bytes whole) · next: --after ${out["next"]}`);
+        if (out["truncated"] === true) console.error(`\ntruncated at the byte cap (${out["bytes"]} bytes whole) · next: after=${out["next"]}`);
       },
     });
     return 0;
@@ -821,7 +821,7 @@ async function cmdWikiRender(args: ParsedArgs): Promise<number> {
 
 async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
   if (args.options["recipe"] === undefined && args.flags["recipe"] === undefined && args.options["bag"] === undefined && args.flags["bag"] === undefined && args.options["realm"] === undefined && args.flags["realm"] === undefined) {
-    if (args.options["target"] !== undefined || args.flags["target"] !== undefined) return guardDoor(args, "wiki status", async () => { throw new DoorUsage("--target requires a recipe"); });
+    if (args.options["target"] !== undefined || args.flags["target"] !== undefined) return guardDoor(args, "wiki status", async () => { throw new DoorUsage("target= requires a recipe"); });
     if (!wantsJson(args)) {
       for (const render of [cmdWikiList, cmdWikiActive, cmdResidency]) { const code = await render(args); if (code !== 0) return code; }
       return 0;

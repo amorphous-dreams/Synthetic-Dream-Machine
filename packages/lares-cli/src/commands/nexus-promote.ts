@@ -2,15 +2,15 @@
  * `lares nexus approve {open | sign | check}` — the seats' approval of ONE promotion's exact bytes, carried
  * between vaults as a file (stable-founding-road, "Planes ~ cabal, realm, Nexus").
  *
- *   open  <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>
+ *   open  <file> purpose=<p> surface=<s> [class=ordinary|high-impact] [nexus=<aid>] out=<approval>
  *         read the file's exact bytes, sign an approval of their hash with the seats held here, write it
- *   sign  <approval> --confirm-statement <digest> [--confirm-hash <hash>] [--nexus <aid>] --out <approval>
+ *   sign  <approval> confirm-statement=<digest> [confirm-hash=<hash>] [nexus=<aid>] out=<approval>
  *         add the seats held here to an approval; the person names the statement digest `open` printed (the
  *         digest of the signed bytes: bytes hash, purpose, surface, class, epoch), and may also name the bytes hash
- *   check <approval> <file> [--nexus <aid>]
+ *   check <approval> <file> [nexus=<aid>]
  *         the verdict over the file's bytes against this vault's charter head (exit 0 only on ok)
  *
- * The seat rows rest in this vault, so these run on the CLI side like `nexus contract --out`: the door opens
+ * The seat rows rest in this vault, so these run on the CLI side like `nexus contract out=`: the door opens
  * the vault's own key session, and the approval file holds public material alone.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/chartered-classes
@@ -46,9 +46,9 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
   try {
     if (sub === "open") {
       const file = args.positional[2], purpose = args.options["purpose"], surface = args.options["surface"], out = args.options["out"];
-      if (!file || !purpose || !surface || !out) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "open needs <file>, --purpose, --surface and --out");
+      if (!file || !purpose || !surface || !out) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "open needs <file>, purpose=, surface= and out=");
       const klass = args.options["class"] ?? "high-impact";
-      if (klass !== "ordinary" && klass !== "high-impact") return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "--class takes ordinary or high-impact");
+      if (klass !== "ordinary" && klass !== "high-impact") return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "class= takes ordinary or high-impact");
       partialOutOrRefuse(refuse, out);
       const r = await runPromoteOpen({ file, purpose, surface, actClass: klass, sealHome, ...nexus });
       const written = writePartialFile(out, r.approval);
@@ -58,14 +58,14 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
           console.log(`  statement: ${r.statement}`);
           console.log(`  signed here: ${r.signed.length} seat${r.signed.length === 1 ? "" : "s"} · ${verdictLine(r.verdict)}`);
           console.log(written.path !== null ? `  approval:    ${written.path}` : `  approval: ${written.error ?? "not written"}\n${JSON.stringify(r.approval)}`);
-          if (!r.verdict.ok) console.log(`  carry the file to the next seat's vault: \`lares nexus approve sign ${out} --confirm-statement ${r.statement} --out <file>\``);
+          if (!r.verdict.ok) console.log(`  carry the file to the next seat's vault: \`lares nexus approve sign ${out} confirm-statement=${r.statement} out=<file>\``);
         } });
       return 0;                                  // a partial reads as progress; `check` alone answers ok or not
     }
     if (sub === "sign") {
       const path = args.positional[2], confirmHash = args.options["confirm-hash"], confirmStatement = args.options["confirm-statement"], out = args.options["out"];
       if (!path) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "sign needs <approval.json>");
-      if (confirmStatement !== undefined && !out) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "a confirmed sign needs --out <file>");
+      if (confirmStatement !== undefined && !out) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "a confirmed sign needs out=<file>");
       if (out !== undefined) partialOutOrRefuse(refuse, out, path);
       const r = await runPromoteSign({ approval: readApproval(path), sealHome, ...nexus, ...(confirmHash !== undefined ? { confirmHash } : {}), ...(confirmStatement !== undefined ? { confirmStatement } : {}) });
       const written = out !== undefined && r.would === undefined ? writePartialFile(out, r.approval) : null;
@@ -75,7 +75,7 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
           console.log(`  statement: ${r.statement}`);
           console.log(`  purpose:  ${r.approval.purpose} · surface: ${r.approval.surface} · class: ${r.approval.actClass}`);
           console.log(`  seats:    ${r.counted} of ${r.threshold}${r.complete ? " (complete)" : ""}`);
-          if (r.would) console.log(`  read only — confirm with \`--confirm-statement ${r.statement} --out <file>\` to sign with the seats held here`);
+          if (r.would) console.log(`  read only — confirm with \`confirm-statement=${r.statement} out=<file>\` to sign with the seats held here`);
           else console.log(`  added:    ${r.added.length} seat${r.added.length === 1 ? "" : "s"}${written?.path ? ` · approval: ${written.path}` : ""}`);
         } });
       return 0;

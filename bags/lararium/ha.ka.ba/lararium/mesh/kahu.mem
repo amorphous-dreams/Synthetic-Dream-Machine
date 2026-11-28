@@ -176,7 +176,7 @@ flows down through their infra's relationships with each other's nodes and leafs
 
 ''The ladder'': a seed → a Nexus of two seats → an enduring Nexus of three or more.
 
-''A SEED FOUNDS IN ONE ACT, AND ITS AID NEVER MOVES.'' The Stable founding act (`lares vessel found --hearth`)
+''A SEED FOUNDS IN ONE ACT, AND ITS AID NEVER MOVES.'' The Stable founding act (`lares vessel found hearth=true`)
 yields, under one human route, the place, persona zero, and a PRIVATE seed charter of one seat at threshold one:
 the seat's own key, and its cold next key on one card the person reads back before the charter moves. Persona
 zero's face founds after the charter, so its fleet relations bind the seed charter's AID, the hearth's true name:
@@ -229,7 +229,7 @@ quorum, and a voucher's own withdrawal takes the voucher's one signature
 ''THE USER ROAD STANDS SEPARATE.'' A hosted friend's leaf under an operator's own household takes no Kahu
 quorum and carries its own bound: a user introduces, an operator admits, and the answer consumes the
 introduction. What the code holds: a clockless allowance of `min(1 + rolls survived, cap)` per hosting
-epoch (`lares host roll --cap`); a host-minted guest at floor 1; a walker-minted guest vesting at the
+epoch (`lares host roll cap=true`); a host-minted guest at floor 1; a walker-minted guest vesting at the
 host's next roll; single-use blind tokens burned at the host; revocation by a roll or by a kapae of the
 guest's leaf; no bound on the operator's own `lares host invite`. ''Owed in code'': a walker's invite
 earns standing by a roll alone, with no operator answer
@@ -499,7 +499,7 @@ it claims and the charter epoch it roots on. A bare CID is no approval; other by
 `bytes-differ`; a class below its surface's class, another epoch, or a count short of the class threshold each
 refuse. ''No promotion rides the emergency power''. A seat signs only a statement a person confirms by its digest (the bytes hash, purpose, surface, class and epoch together), and the
 seats on two vessels each sign a carried partial (`lares nexus approve open|sign|check`). The approval governs a
-crossing into `@crossroads`: `lares meme promote --dest-bag lar:///ha.ka.ba/bags/crossroads --approval <file>`
+crossing into `@crossroads`: `lares meme promote dest-bag=lar:///ha.ka.ba/bags/crossroads approval=<file>`
 refuses before anything moves unless the current charter's seats approved those exact bytes, and the receipt names
 the approval's statement digest. A crossing into a vessel's own canon asks no charter.
 
@@ -579,7 +579,7 @@ roster's threshold. A seal over any other shape (a cabal act, a pointer body) ve
 
 ''THE CHAIN.'' A release counts when it verifies and either opens the chain (`prior` null) or links to a release that
 counts. The head stands as the counted release no other counted release names; two heads read `unsettled`, and a face
-accepts neither until the cabal settles the fork. `lares nexus release <manifest-file> --approval <file>` seals and
+accepts neither until the cabal settles the fork. `lares nexus release <manifest-file> approval=<file>` seals and
 lands a release (`nexus-release.ts`); `lares nexus approve open|sign` carries the approval between vaults. A herm carries
 the answer and signs nothing; a vessel accepts a release by a person's own act, one pin per (vessel, Nexus) (`stable-founding-road` W26 slice 5).
 
@@ -699,6 +699,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2S6sq_-U4atq3mmFD8bnUvvaQ4VoUx317ij4mq6oFO8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B3jd5NCJ03gyBWMIoUrP0v-YaTSXWbUvc8cZ__AGlm8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,7 +4,7 @@
  * `lares act` derives its ACK budget from the gesture — `10s + carriers × 400ms`, because a
  * directory-batch LOAD chews one island frame per carrier and a flat budget would time out the ACK while
  * the verb itself ran on. Good shape. But every failure out of `runVerb` then landed as
- * `daemon-unreachable`, hinted "Start the daemon with `lares vessel stand --foreground` and try again".
+ * `daemon-unreachable`, hinted "Start the daemon with `lares vessel stand foreground=true` and try again".
  *
  * A budget overrun answers NOTHING like an absent daemon. The socket connected, the daemon took the verb,
  * and the caller stopped waiting — so the hint sends an operator to start something already running, and

@@ -45,7 +45,7 @@ test("the floor stands over the face's home wiki and lives; the unlock mounts it
   const ok = (...args) => { const r = lares(...args); assert.equal(r.status, 0, `lares ${args.join(" ")}:\n${r.out}`); return r.out; };
   /** `lares vessel stand`: the daemon stands detached, and the report reads it up (a boot fault reads down). */
   const json = (out) => JSON.parse(out.slice(out.indexOf("{")));
-  const stand = () => { const out = ok("vessel", "stand", "--port", String(port), "--skip-build", "--json"); assert.equal(json(out).data?.node?.up, true, `the daemon stands:\n${out}`); };
+  const stand = () => { const out = ok("vessel", "stand", `port=${String(port)}`, "--skip-build", "--json"); assert.equal(json(out).data?.node?.up, true, `the daemon stands:\n${out}`); };
   /** What the standing vessel's custody door reads, through `lares vault status`. */
   const door = () => json(ok("vault", "status", "--json")).data?.door ?? null;
   try {
@@ -54,7 +54,7 @@ test("the floor stands over the face's home wiki and lives; the unlock mounts it
       assert.equal(r.status, 0, `${script}: ${r.stderr}`);
     }
     cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
-    ok("vessel", "found", "--hearth", "--name", "floor witness", "--root", root, "--skip-build");
+    ok("vessel", "found", "hearth=true", "name=floor witness", `root=${root}`, "--skip-build");
 
     // F0: the unlocked vessel writes the face's home preference, and it names the user wiki at the next light.
     stand();
@@ -62,7 +62,7 @@ test("the floor stands over the face's home wiki and lives; the unlock mounts it
     assert.equal(first?.reading, "opens", JSON.stringify(first));
     ok("wiki", "init", WIKI);
     ok("put", "title=$:/config/lares/home/wiki", `text=[[${WIKI}]]`);
-    ok("vessel", "stop", "--port", String(port));
+    ok("vessel", "stop", `port=${String(port)}`);
 
     // F1: a fresh boot holds no key, so it stands at the floor, and the process lives.
     stand();
@@ -83,7 +83,7 @@ test("the floor stands over the face's home wiki and lives; the unlock mounts it
     assert.equal(after?.unlocked, true, JSON.stringify(after));
     assert.ok(after?.wikiAwaits == null, `nothing waits once the face stands: ${JSON.stringify(after)}`);
   } finally {
-    lares("vessel", "stop", "--port", String(port));
+    lares("vessel", "stop", `port=${String(port)}`);
     rmSync(root, { recursive: true, force: true });
   }
 });

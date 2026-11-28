@@ -90,7 +90,7 @@ describe("pointer lines and prose", () => {
 });
 
 describe("a seedless file keeps the one line its row names", () => {
-  const LINE = "- hand back with `lares spirit handback <pet> --file -`";
+  const LINE = "- hand back with `lares spirit handback <pet> file=-`";
   it("an absent file takes the render, or the line alone where the row renders none", () => {
     expect(seedless("## Surface\n\n" + LINE + "\n", LINE)(null)).toBe("## Surface\n\n" + LINE + "\n");
     expect(seedless("## Surface\n", LINE)(null)).toBe("## Surface\n" + LINE + "\n");
@@ -116,7 +116,7 @@ describe("a seedless file keeps the one line its row names", () => {
 
 describe("every fire reads the one return door (lar:///ha.ka.ba/lares/cli/reality-tunnel#/the-return-door)", () => {
   const row = (id: string) => [...declared(REPO).repo, ...declared(REPO).home].find((s) => s.id === id)!;
-  const DOOR = "lares spirit handback <pet> --file -";
+  const DOOR = "lares spirit handback <pet> file=-";
 
   it("the carrier names the return line where Copilot and Codex read, and the hook that runs it for Claude", async () => {
     // The hooks ship as plain .mjs a harness runs unbuilt; the weld loads the module itself.
@@ -584,7 +584,7 @@ describe("the home radius", () => {
     expect(rows.find((r) => r.id === "claude.om-hook")!.detail).toContain("reads as no pet name");
   });
 
-  it("a tend seats the keep hook on SessionEnd, so each session's end runs `lares rite keep --if-due` (cross-and-keep, K11)", async () => {
+  it("a tend seats the keep hook on SessionEnd, so each session's end runs `lares rite keep if-due=true` (cross-and-keep, K11)", async () => {
     const root = clone();
     const h = homes();
     const l = ledger();
@@ -599,7 +599,7 @@ describe("the home radius", () => {
     // The row stands in the carrier, and the script it names stands in the house's hooks folder and runs the due keep.
     const row = declared(REPO).home.find((s) => s.id === "claude.keep-hook");
     expect(row).toMatchObject({ host: "claude", kind: "claude-hook", file: ".claude/settings.json", event: "SessionEnd", runner: "node" });
-    expect(readFileSync(join(REPO, String(row!["script"])), "utf8")).toContain('"rite", "keep", "--if-due"');
+    expect(readFileSync(join(REPO, String(row!["script"])), "utf8")).toContain('"rite", "keep", "if-due=true"');
   });
 
   // ── THE HOUSE OWNS ITS HOOKS FOLDER: a hook file names no script there that no row declares for it ──────────────
@@ -874,7 +874,7 @@ describe("the carrier", () => {
 describe("the brief line", () => {
   it("prints one line with no terminal, the way the wake hook reads it", () => {
     // The exit reads the clone's own state (an untended clone's git config reads drift); the line's shape holds either way.
-    const r = spawnSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
+    const r = spawnSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "brief=true"], { encoding: "utf8", cwd: REPO });
     expect([0, 1]).toContain(r.status);
     const out = r.stdout;
     expect(out.trim().split("\n")).toHaveLength(1);
@@ -1161,16 +1161,16 @@ describe("the staged gate asks for a build only when a commit stages the seat", 
       `const fs = require("node:fs");`,
       `const argv = process.argv.slice(2);`,
       `fs.writeFileSync(${JSON.stringify(argvAt)}, JSON.stringify(argv));`,
-      `const at = argv.indexOf("--root");`,
-      `const root = at < 0 ? ${JSON.stringify(elsewhere)} : argv[at + 1];`,
+      `const named = argv.find((a) => a.startsWith("root="));`,
+      `const root = named === undefined ? ${JSON.stringify(elsewhere)} : named.slice(5);`,
       `process.stdout.write(JSON.stringify({ ok: false, data: { radius: "repo", root, rows: [{ state: "drift", id: "claude.import", detail: "d" }], exit: 1 } }) + "\\n");`,
       `process.exit(1);`,
     ].join("\n"));
     const r = gate(["CLAUDE.md"], cli);
     const top = realpathSync(r.root);
     const argv = JSON.parse(readFileSync(argvAt, "utf8")) as string[];
-    expect(argv.slice(0, 3)).toEqual(["repo", "read", "--staged"]);
-    expect(argv[argv.indexOf("--root") + 1]).toBe(top);
+    expect(argv.slice(0, 3)).toEqual(["repo", "read", "staged=true"]);
+    expect(argv).toContain(`root=${top}`);
     expect(r.code).toBe(1);
     expect(r.err).toContain(`read the staged seat of ${top}`);
     expect(r.err).not.toContain(elsewhere);
@@ -1197,7 +1197,7 @@ describe("the repo door keeps the checkout --root names", () => {
     const root = second();
     const out: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out.push(String(chunk)); return true; });
-    try { await cmdTunnelDoor("repo", parseArgs(["repo", "read", "--staged", "--root", root, "--json"])); }
+    try { await cmdTunnelDoor("repo", parseArgs(["repo", "read", "staged=true", `root=${root}`, "--json"])); }
     finally { vi.restoreAllMocks(); }
     const answer = JSON.parse(out.join("")) as { data: { root: string; rows: Row[] } };
     expect(answer.data.root).toBe(resolve(root));
@@ -1211,7 +1211,7 @@ describe("the repo door keeps the checkout --root names", () => {
   it("--root names no directory: usage, with the cure", async () => {
     const said: string[] = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
-    try { expect(await cmdTunnelDoor("repo", parseArgs(["repo", "read", "--root", join(dir, "no-such-tree")]))).toBe(EXIT.usage); }
+    try { expect(await cmdTunnelDoor("repo", parseArgs(["repo", "read", `root=${join(dir, "no-such-tree")}`]))).toBe(EXIT.usage); }
     finally { vi.restoreAllMocks(); }
     expect(said.join("\n")).toContain("git rev-parse --show-toplevel");
   });

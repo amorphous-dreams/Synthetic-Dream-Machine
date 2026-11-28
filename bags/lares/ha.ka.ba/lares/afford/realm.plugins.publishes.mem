@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.plugins.publishes"
 
 ! realm.plugins.publishes ~ a gift, not a collective act
 
-`lares nexus publish plugins --source <dir> [--face N] [--apply | --terms | --land '<answer>']` declares this operator's own plugin collection, verified by hash by any taker. `--apply` publishes; under a pūlama `--terms` prints the one unsigned act its root signs and `--land` lands the signed answer.
+`lares nexus publish plugins source=<dir> [face=N] [apply=true | terms=true | land='<answer>']` declares this operator's own plugin collection, verified by hash by any taker. `--apply` publishes; under a pūlama `--terms` prints the one unsigned act its root signs and `--land` lands the signed answer.
 
 <<~/ahu>>
 
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hGwiGRd4Zp8eNU7oIFRyLf-JTjxppi6pEMGfilqvAMQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SWBsU5LA5vDg3vac1UXm8772lu8Qft7iUQB-WRiElh0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

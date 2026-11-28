@@ -14,8 +14,8 @@
  *     path-based holders are per-file, not per-frame) — "batch = the existing sensorium run". The frames
  *     are the normalized VIEW that proves the abstraction (verified in @lararium/mesh).
  *   · DIRECT-SIGNAL / LIVE ⇒ the per-plane frame driver over {@link defaultStreamPlaneSink}: the
- *     natively-numeric door — a stream's `signal` frames feed `bands analyze --signal` +
- *     `couple --signal` (the NDJSON contract) DIRECTLY, no corpus, no chroma. This is the shore the
+ *     natively-numeric door — a stream's `signal` frames feed `bands analyze signal=` +
+ *     `couple signal=` (the NDJSON contract) DIRECTLY, no corpus, no chroma. This is the shore the
  *     NEXT adapter (a non-text on-box stream) builds against; the content/structure planes on the live
  *     path stay a documented shore (a numeric stream carries neither).
  *

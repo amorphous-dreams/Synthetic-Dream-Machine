@@ -2324,7 +2324,7 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
     const base = readBase(optionalStringArg(args, "base"), "tiddler-rename", false);
     /** A standing record this face reads. */
     const seen = (name: string): boolean => { const held = wiki.getTiddler(name); return held !== undefined && visible(name, held); };
-    const reaches = `\`lares wiki status --recipe ${anchor.recipe}\` names the layers this face reaches`;
+    const reaches = `\`lares wiki status recipe=${anchor.recipe}\` names the layers this face reaches`;
 
     for (let round = 0; ; round++) {
       const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;

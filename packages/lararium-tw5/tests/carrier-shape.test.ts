@@ -173,7 +173,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
    * A CEILING, not a floor: converting one lowers it, and a new uncarried file raises it. ''Lower it
    * whenever it can go lower'' — a ceiling left slack absorbs the next gap silently, which is what the
    * unnamed-carrier count did for a corpus that had shrunk from seventeen to seven beneath it. The sidecar
-   * pair is excluded the way `lares meme check --gradient` excludes it — a content file declaring
+   * pair is excluded the way `lares meme check gradient=true` excludes it — a content file declaring
    * itself in a `.meta` beside it carries no frame of its own and never should.
    */
   test("no more files stand under a bag uncarried than already did", () => {
@@ -183,7 +183,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
     const uncarried = tracked.filter((f) =>
       !f.endsWith(".mem") && !f.endsWith(".meta") && !declared.has(f));
     expect(tracked.length).toBeGreaterThan(600);
-    expect(uncarried.length, `an uncarried file appeared — run \`lares meme check --gradient $(git ls-files bags)\``)
+    expect(uncarried.length, `an uncarried file appeared — run \`lares meme check gradient=$(git ls-files bags)\``)
       .toBeLessThanOrEqual(39);
   });
 

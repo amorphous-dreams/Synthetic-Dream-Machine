@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.delegation.grants"
 
 ! face.delegation.grants ~ delegate ~ the root grants an agent a prefix
 
-`lares intent delegate --agent <atom> --prefix <verb prefix> --policy <json>` signs a delegation under the face's root, bounded by `--as-of` and `--until` cites, with a fresh `--nonce` unless the line names one.
+`lares intent delegate agent=<atom> prefix=<verb prefix> policy=<json>` signs a delegation under the face's root, bounded by `--as-of` and `--until` cites, with a fresh `--nonce` unless the line names one.
 
 <<~/ahu>>
 
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZcCwUfshb_ZIKmYjuBIweAAQJ5pcdqE3EgqZsgAhcBo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3RRqbE16vAQbDO1dBy6ozpwG2tkz3aZ7NkfJsIdx-F0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

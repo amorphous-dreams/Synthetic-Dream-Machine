@@ -73,10 +73,10 @@ export const STANDOFF_LOADED_FIELD = "lar-standoff-loaded";
 /** The actions an awaiting stand-off offers a person, each a runnable command: `keep-both` and the drafts only where drafts stand. */
 export function standoffActions(uri: string, key: string, withDrafts: boolean): Array<{ readonly action: string; readonly command: string }> {
   return [
-    { action: "keep-disk", command: `lares shore keep-disk ${uri} --key ${key}` },
-    { action: "keep-records", command: `lares shore keep-records ${uri} --key ${key}` },
+    { action: "keep-disk", command: `lares shore keep-disk ${uri} key=${key}` },
+    { action: "keep-records", command: `lares shore keep-records ${uri} key=${key}` },
     ...(withDrafts ? [
-      { action: "keep-both", command: `lares shore keep-both ${uri} --key ${key}` },
+      { action: "keep-both", command: `lares shore keep-both ${uri} key=${key}` },
       { action: "open-drafts", command: `lares shore drafts ${uri}` },
     ] : []),
   ];
@@ -436,7 +436,7 @@ export class StandoffKeeper {
       return this.awaiting(entry, path, [], `the records fell behind their last agreement with the file (${named}), and a write landed in that document since it mounted, so it may hold words newer than the file; a person picks`);
     }
     const owed = (why: string): Promise<KeeperOutcome> =>
-      this.awaiting(entry, path, [], `owed: the records fell behind their last agreement with the file (${named}) and the file's words did not land back: ${why}. The file stays whole; \`lares shore keep-disk ${uri} --key ${entry.standoff}\` lands them by hand`);
+      this.awaiting(entry, path, [], `owed: the records fell behind their last agreement with the file (${named}) and the file's words did not land back: ${why}. The file stays whole; \`lares shore keep-disk ${uri} key=${entry.standoff}\` lands them by hand`);
     const moved = (): Promise<KeeperOutcome> => this.awaiting(entry, path, [], "the file moved since the stand-off was weighed");
     const unrested = this.deps.unrested?.(bagId) ?? null;
     if (unrested !== null) return owed(`a write to ${bagId} cannot rest (${unrested})`);

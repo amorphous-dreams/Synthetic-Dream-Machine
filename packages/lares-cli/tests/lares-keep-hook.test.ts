@@ -1,8 +1,8 @@
 /**
  * lares-keep-hook — the SessionEnd hook the house seats in the operator's Claude settings (`lares home tend`,
- * lar:///ha.ka.ba/lares/cli/reality-tunnel): each session's end runs `lares rite keep --if-due`.
+ * lar:///ha.ka.ba/lares/cli/reality-tunnel): each session's end runs `lares rite keep if-due=true`.
  *
- *   KHK1  the hook starts this checkout's `lares rite keep --if-due --no-json` and exits 0 at once, never waiting on the keep:
+ *   KHK1  the hook starts this checkout's `lares rite keep if-due=true --no-json` and exits 0 at once, never waiting on the keep:
  *         a SessionEnd hook holds a short budget, and a keep cuts, commits and pushes;
  *   KHK2  the keep's own lines land in the state home's log (`$XDG_STATE_HOME/lares/keep-hook.log`), so a keep that refused
  *         (no return left, a secret-shaped string) leaves its reading where the operator finds it;
@@ -41,13 +41,13 @@ function run(withCli: string | null): { status: number | null; ms: number; log: 
 }
 
 describe("the keep hook at a session's end", () => {
-  test("KHK1 KHK2 RED: the hook starts `lares rite keep --if-due --no-json`, exits 0 without waiting on it, and the keep's lines land in the log", () => {
+  test("KHK1 KHK2 RED: the hook starts `lares rite keep if-due=true --no-json`, exits 0 without waiting on it, and the keep's lines land in the log", () => {
     // A keep that takes a second and a half: the hook returns long before it ends.
     const out = run('import { writeFileSync } from "node:fs";\nconsole.error("keep: no keep lei holds a return");\nsetTimeout(() => writeFileSync(process.env.SEEN, JSON.stringify(process.argv.slice(2))), 1500);\n');
     expect(out.status).toBe(0);
     expect(out.ms).toBeLessThan(1400);
-    expect(JSON.parse(out.seen)).toEqual(["rite", "keep", "--if-due", "--no-json"]);
-    expect(out.log).toMatch(/^keep hook: session end \(exit\); lares rite keep --if-due\n/);
+    expect(JSON.parse(out.seen)).toEqual(["rite", "keep", "if-due=true", "--no-json"]);
+    expect(out.log).toMatch(/^keep hook: session end \(exit\); lares rite keep if-due=true\n/);
     expect(out.log).toContain("keep: no keep lei holds a return");
   });
 

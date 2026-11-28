@@ -244,14 +244,14 @@ export async function casFetchReading(
 // A PIN CARRIES NO CLOCK — EVER. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
 // it, `releaseCas` removes it. `PinCap` (@lararium/mesh) carries NO clock field at all (M7: the record has
 // no place for one, so none is ever read). Its OPTIONAL `life` names the holder's OWN vessel life at pin
-// time (`vessel-life.ts`): PRESENCE in the sidecar still decides by default (a bare `--pin` carries no `life` —
-// the operator's own explicit, standing-forever pin), but a pin that DOES carry a `life` (a `--held` pin) ends
+// time (`vessel-life.ts`): PRESENCE in the sidecar still decides by default (a bare `pin=` carries no `life` —
+// the operator's own explicit, standing-forever pin), but a pin that DOES carry a `life` (a `held=true` pin) ends
 // on a CAUSAL event, never a span — `casSweep`'s REQUIRED `currentLife` option, this vessel's OWN current
 // life, reads it through the mesh-level `pinnedCids` (the SAME law `cas-caps.ts` states): held while its life
 // IS the current one, ended the moment another life holds the store; equality alone, never an order. A bare
 // pin with no `life` still reads presence-only regardless of `currentLife`. Ending a pin is always one of: an
 // EXPLICIT `releaseCas`, the next pin for the same cid superseding the one it replaces (`pinCas`'s
-// replace-by-cid), or — for a `--held` pin alone — the end of the vessel life that pinned it.
+// replace-by-cid), or — for a `held=true` pin alone — the end of the vessel life that pinned it.
 
 /** A cleartext CAS file name — hex sha256. Anything else in the dir (a sidecar) is never a blob. */
 const CAS_CID_RE = /^[0-9a-f]{64}$/;
@@ -289,7 +289,7 @@ export interface CasSweepOptions {
    *  "released" and "absent from `pins`" are the same fact. */
   readonly pins?:      readonly PinCap[];
   /**
-   * This vessel's CURRENT life (`owned-store.ts`'s `StoreClaim.life`) — the life a `--held` pin's own stamped
+   * This vessel's CURRENT life (`owned-store.ts`'s `StoreClaim.life`) — the life a `held=true` pin's own stamped
    * `life` compares against (`pinnedCids` — the SAME law `cas-caps.ts` states: absent `life` on a pin holds
    * regardless, i.e. presence-only; a pin WITH a `life` holds only while it equals `currentLife`). REQUIRED:
    * every caller, production or test, threads its own life through — never guessed; a caller with no life to
@@ -314,7 +314,7 @@ export interface CasSweepResult {
 
 /** Mark-and-sweep the cleartext CAS from the derived references + the genesis protect set. */
 export function casSweep(opts: CasSweepOptions): CasSweepResult {
-  // A `--held` pin (one stamped with a `life`) holds only while that life stands as this vessel's current one
+  // A `held=true` pin (one stamped with a `life`) holds only while that life stands as this vessel's current one
   // (`pinnedCids`); a presence-only pin (no `life`) still holds regardless. `currentLife` stands REQUIRED.
   const standing = pinnedCids(opts.pins ?? [], opts.currentLife);
   const swept: string[] = [], kept: string[] = [], protectedCids: string[] = [], pinned: string[] = [];
@@ -469,7 +469,7 @@ export interface InstallCasSweepOptions {
   /** The realm's own clock — the reading `realm-clock` answers (`realmMaintenanceFromBoard`), or null on a
    *  hearth outside every realm. Read at each probe; `realmPace` turns it into rolls. */
   readonly realmClock: () => CabalRealmMaintenanceProvenance | null | Promise<CabalRealmMaintenanceProvenance | null>;
-  /** This vessel's life — the callback supplies it at each sweep, so a `--held` pin reads against the life
+  /** This vessel's life — the callback supplies it at each sweep, so a `held=true` pin reads against the life
    *  that stands now. */
   readonly currentLife: () => string;
   readonly log:        (line: string) => void;
@@ -530,7 +530,7 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
       references,
       protect: opts.protect,
       pins: opts.pins(),
-      // Sample the caller's life for this sweep when judging a `--held` pin's stamped `life`.
+      // Sample the caller's life for this sweep when judging a `held=true` pin's stamped `life`.
       currentLife: opts.currentLife(),
       // The floor: the longest tier's grace in rolls. No pace → no age (every blob reads 0) → nothing sweeps.
       grace: graceForTier(longest, 1),

@@ -6,7 +6,7 @@
  *   scan    walk source for carriers, derive each uri by the address siting rule, NFC-assert at the shore, hash, diff the
  *           disk hash against the base's disk side
  *   submit  pack NEW+CHANGED carriers (hashes riding with the text) into one INGEST verb (`ingestWaveArgs`); the CLI submits
- *           it over the verb socket (`lares ingest`, `lares ingest --watch`, `lares vessel lay`), the vessel to its own daemon island
+ *           it over the verb socket (`lares ingest`, `lares ingest watch=true`, `lares vessel lay`), the vessel to its own daemon island
  *           (`islandIngestSubmit`)
  *
  * The gesture holds the disk grant and the Synced tree; the island holds neither (readiness reads local on both sides of
@@ -212,7 +212,7 @@ export interface MirrorDirs { readonly bags: string; readonly wikis: string; rea
  * Pick the address reverse-derivation by which mirror plane the source sits in.
  * Under the wikis dir → the working write-layer ingest-back derivation
  * (the editing plane); else the bags dir canon derivation. Designation of the
- * target bag stays the caller's (`--to`); the plane only drives the URI.
+ * target bag stays the caller's (`to=`); the plane only drives the URI.
  * `dirs` defaults to `<root>/bags` and `<root>/wikis`; the returned function derives against `dirs`
  * and ignores the root its caller hands it.
  *

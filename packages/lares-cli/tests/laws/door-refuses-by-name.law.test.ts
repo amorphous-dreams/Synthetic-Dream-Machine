@@ -34,7 +34,7 @@ describe("L1 · an unknown door, verb or flag refuses by name, exit 2", () => {
       ["the `=` spelling of an unknown flag", ["repo", "read", `--${UNKNOWN}=1`]],
       ["a retired door", ["cleanup-days"]],
       ["a retired sub-door", ["vessel", "wire"]],
-      ["a retired posture", ["vessel", "stand", "--install"]],
+      ["a retired posture", ["vessel", "stand", "install=true"]],
       ["a sub-verb a read never answers", ["vessel", "read", "sensorium"]],
     ])("%s refuses with exit 2, naming what it refused", async (_why, argv) => {
       const r = await door(argv);
@@ -49,8 +49,8 @@ describe("L1 · an unknown door, verb or flag refuses by name, exit 2", () => {
       expect((await door(["repo", "--help"])).code).toBe(0);
     });
     test("a declared flag never reads as unknown", async () => {
-      const r = await door(["repo", "read", "--brief"]);
-      expect(r.err).not.toMatch(/unknown flag/i);
+      const r = await door(["repo", "read", "brief=true"]);
+      expect(r.err).not.toMatch(/unknown param/i);
     });
   });
 });

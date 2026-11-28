@@ -273,7 +273,7 @@ export async function cmdBare(params: Readonly<Record<string, string>>, readers:
     readers.say(`── lares ${view.join(" ")}`);
     // A view's own exit never fails the read: the bare door reports, and the sword alone answers by its exit.
     // The rite door asks which face it acts as where several stand lit: the asker's face rides it.
-    await readers.run(view[0] === "rite" && face !== null ? [...view, `--face=${face}`] : [...view]);
+    await readers.run(view[0] === "rite" && face !== null ? [...view, `face=${face}`] : [...view]);
   }
   if (rank === "theme" && helpRun !== undefined) { readers.say("── lares help"); await helpRun(); }
   return exit;

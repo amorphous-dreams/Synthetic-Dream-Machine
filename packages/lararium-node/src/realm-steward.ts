@@ -143,7 +143,7 @@ export function stewardGuard(vault: StewardVault = nodeStewardVault): StewardGua
  */
 export async function faceStewardSigner(nexusAid: string, vault: StewardVault = nodeStewardVault, face?: number): Promise<StewardSigner> {
   const leaf = await readVault("acting face", () => vault.faceLeaf(nexusAid, face));
-  if (!leaf) throw new StewardRefused("face-root-absent", "this vessel holds no root for the face it acts as: name a face it founded (--face N)");
+  if (!leaf) throw new StewardRefused("face-root-absent", "this vessel holds no root for the face it acts as: name a face it founded (face=N)");
   const signer: StewardSigner = { signer: leaf.verifyingKey.toLowerCase(), sign: ed25519SignerFromSeed(leaf.seed) };
   await stewardGuard(vault)(signer, nexusAid);
   return signer;
@@ -214,7 +214,7 @@ export async function runRealmBag(opts: {
     // A NAME ENTERS BY ITS OWN HAND FIRST: this vessel cannot class a key that belongs to another hand, so it
     // writes such a name only where that name's holder already sealed a record of this realm.
     if (!(await target.sealedHere(name))) {
-      throw new StewardRefused("steward-name-unproven", `"${name}" sealed nothing in this realm, so no hand but its own may write it here — that hand asks to keep the bag from its own vessel (\`lares nexus realm-bag <bag> --join\`), and each standing steward consents (\`--cosign\`)`);
+      throw new StewardRefused("steward-name-unproven", `"${name}" sealed nothing in this realm, so no hand but its own may write it here — that hand asks to keep the bag from its own vessel (\`lares nexus realm-bag <bag> join=true\`), and each standing steward consents (\`cosign=true\`)`);
     }
   }
   const signer = await faceStewardSigner(aid, vault, typeof args["face"] === "number" && Number.isSafeInteger(args["face"]) && (args["face"] as number) >= 0 ? args["face"] as number : undefined);

@@ -1,7 +1,7 @@
 /**
  * pulama-publish-hand — THE OFFERING'S SIGNATURE AT THE PŪLAMA'S HAND DOOR (gate-unifier: `nexus publish plugins --apply` under a pūlama).
  *
- * Under a pūlama the vessel holds no face root, so `lares nexus publish plugins … --apply` refused `needs-the-human` with no door to
+ * Under a pūlama the vessel holds no face root, so `lares nexus publish plugins … apply=true` refused `needs-the-human` with no door to
  * ask at. The hand door's `publish` act signs in the lei pattern: the face root opens fresh under the operator's route (a ward act,
  * in the pūlama, where the key rests), signs ONE offering descriptor, and answers the signed offering; the vessel lands it. CUSTODY:
  * the root signs only the CLOSED descriptor shape (offeror · pluginsCid · blobs, the `signPluginOffering` preimage), never bytes a

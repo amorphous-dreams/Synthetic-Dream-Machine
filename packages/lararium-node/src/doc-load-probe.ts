@@ -424,7 +424,7 @@ export function quarantineHoldOf(storageDir: string, documentId: string): Quaran
 }
 
 /** The hand act that ends a hold: the vessel door's own release (`lares vessel release`). */
-export const QUARANTINE_RELEASE_ACT = "with the vessel stopped (`lares vessel stop`), `lares vessel release <documentId>` returns the bytes (the next stand probes them again), `lares vessel release <documentId> --keep` keeps what stands under the id, or `lares vessel release <documentId> --fresh` starts a plane no sibling carries empty while the bytes stay aside";
+export const QUARANTINE_RELEASE_ACT = "with the vessel stopped (`lares vessel stop`), `lares vessel release <documentId>` returns the bytes (the next stand probes them again), `lares vessel release <documentId> keep=true` keeps what stands under the id, or `lares vessel release <documentId> fresh=true` starts a plane no sibling carries empty while the bytes stay aside";
 
 function heldVerdict(hold: QuarantineHold): ProbeResult {
   const m = hold.manifest;
@@ -477,7 +477,7 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
     catch (err) { if ((err as NodeJS.ErrnoException).code === "ENOENT") return false; throw err; }
   });
   if (act !== "kept" && hasBytes) {
-    return { ok: false, documentId, why: `bytes already stand under this id at ${live}; \`lares vessel release ${documentId} --keep\` releases the hold and keeps them` };
+    return { ok: false, documentId, why: `bytes already stand under this id at ${live}; \`lares vessel release ${documentId} keep=true\` releases the hold and keeps them` };
   }
   const newest = held[held.length - 1]!.manifest;
   const freshLands = newest.bagId !== undefined && !isFaceScopedBag(newest.bagId);
@@ -485,8 +485,8 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   // NOTHING LEFT TO KEEP OR RETURN: name only the act that can land. Fresh for a plane no sibling carries; for one a sibling
   // carries, a known copy laid back under the id by hand (from a sibling or a keep bundle), then keep.
   const noBytesAnywhere = freshLands
-    ? `\`lares vessel release ${documentId} --fresh\` starts the id empty`
-    : `this plane rides to sibling devices, so lay a known copy (from a sibling or a keep bundle) at ${live}, then \`lares vessel release ${documentId} --keep\``;
+    ? `\`lares vessel release ${documentId} fresh=true\` starts the id empty`
+    : `this plane rides to sibling devices, so lay a known copy (from a sibling or a keep bundle) at ${live}, then \`lares vessel release ${documentId} keep=true\``;
   if (act === "kept" && !hasBytes) {
     return { ok: false, documentId, why: moved !== undefined
       ? `nothing stands under this id, so a keep would free a blank; \`lares vessel release ${documentId}\` returns the moved bytes`
@@ -495,7 +495,7 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   if (act === "fresh") {
     if (!freshLands) {
       const plane = newest.bagId === undefined ? "the manifest names no plane, so a sibling may carry it" : `${newest.bagId} rides to this face's sibling devices`;
-      return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. ${moved !== undefined ? `\`lares vessel release ${documentId}\` returns the moved bytes` : `Lay a known copy (from a sibling or a keep bundle) at ${live}, then \`lares vessel release ${documentId} --keep\``}` };
+      return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. ${moved !== undefined ? `\`lares vessel release ${documentId}\` returns the moved bytes` : `Lay a known copy (from a sibling or a keep bundle) at ${live}, then \`lares vessel release ${documentId} keep=true\``}` };
     }
     if (existsSync(live)) {
       const aside = mkdtempSync(join(dirname(live), "sync-state-aside-"));

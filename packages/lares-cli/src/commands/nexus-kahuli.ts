@@ -40,9 +40,9 @@ const KAHULI_USAGE: readonly string[] = [
   "             delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;",
   "             the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.",
   "    grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —",
-  "             never the engine CID. Reads the current epoch; --apply re-derives the island (the bake).",
+  "             never the engine CID. Reads the current epoch; apply=true re-derives the island (the bake).",
   "",
-  "  a read NEVER builds — the deliberate build+push lives behind --apply and in `nexus rite kahuli`.",
+  "  a read NEVER builds — the deliberate build+push lives behind apply=true and in `nexus rite kahuli`.",
 ];
 
 /**
@@ -63,7 +63,7 @@ function kahuliEngineHeld(): number {
 /**
  * `lares nexus kahuli grammar` — the FAST ratchet. This first version READS the current grammar epoch
  * (grammarCid) beside the engine CID; a read never builds. The operator's OWN collection reads
- * at `lares nexus publish plugins` — this door names only what it ratchets. `--apply` is where the overturn composes the bake
+ * at `lares nexus publish plugins` — this door names only what it ratchets. `apply=true` is where the overturn composes the bake
  * (`vessel bake` re-derives the island at the freshly-packed plugin) and the mesh-push — both wired next.
  */
 function kahuliGrammar(args: ParsedArgs): number {
@@ -71,8 +71,8 @@ function kahuliGrammar(args: ParsedArgs): number {
   const engineCid  = readGenesisEngineCid();
 
   if (args.flags["apply"]) {
-    console.error("nexus kahuli grammar --apply — HELD (the overturn's payload is wired next).");
-    console.error("  --apply composes the diff-gate → the genesis re-derive (`bakePlan`/`build-genesis-island`,");
+    console.error("nexus kahuli grammar apply=true — HELD (the overturn's payload is wired next).");
+    console.error("  apply=true composes the diff-gate → the genesis re-derive (`bakePlan`/`build-genesis-island`,");
     console.error("  the internal primitive — never a `vessel` door) → the mesh-push, which advances the LIVE");
     console.error("  Nexus's grammar epoch on the DreamNet. ONE hold remains: the push rides the same");
     console.error("  coexistence-span rulings as `kahuli engine`. Ledgered in the kāhuli onboarding memory.");
@@ -90,7 +90,7 @@ function kahuliGrammar(args: ParsedArgs): number {
   console.log("  to OVERTURN the grammar: pack the plugin, then compose the re-derive + push —");
   console.log("    pnpm --filter @lararium/tw5 build:plugin   (pack the memetic-wikitext grammar)");
   console.log("    lares nexus rite kahuli                    (diff-gate → re-derive → push; idempotent, skips-unchanged)");
-  console.log("  the diff-gate (candidate grammarCid vs current) + --apply are wired next.");
+  console.log("  the diff-gate (candidate grammarCid vs current) + apply=true are wired next.");
   return 0;
 }
 

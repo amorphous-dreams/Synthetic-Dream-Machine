@@ -5,7 +5,7 @@
  * (an empty set means delete): two readers resolving differently would let one sweep away a seed the other
  * never saw.
  *
- * ORDER. An explicit declaration (`--genesis`, `LAR_GENESIS`) wins and never falls back; so does a configured
+ * ORDER. An explicit declaration (`genesis=`, `LAR_GENESIS`) wins and never falls back; so does a configured
  * one (`config.resources.genesis`). Otherwise `<corpus>/genesis` when it holds a `seed.json` (a torn one stays
  * the root's to refuse; it never falls back). Otherwise the SHIPPED genesis of the build (`<repo>/genesis`),
  * read in place and never written, when it holds a seed. Otherwise the root path, failing as it always did.

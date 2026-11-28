@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # repo-tunnel-staged — refuse a commit whose index stands off the checkout's declared reality tunnel.
 #
-# A commit that stages the seat lands only while `lares repo read --staged` reads the INDEX aligned: each seed link a
+# A commit that stages the seat lands only while `lares repo read staged=true` reads the INDEX aligned: each seed link a
 # link, CLAUDE.md's import, the scouts' projections of the staged seed, the seedless files, the Codex
 # cap, the rule exclude. The memegraph writes the seed without a build, so this is the moment that
 # catches a seed staged ahead of its scouts. Only a commit that stages one of the seat's own paths (the
@@ -37,12 +37,12 @@ if [ ! -f "$LARES" ]; then
   echo "  build it (pnpm build, or tools/provision-worktree.mjs for a lane) and commit again." >&2
   exit 1
 fi
-# `--root` hands the CLI the committing repository: the CLI may live in another checkout (`LARES_BIN`), and absent a root it
+# `root=` hands the CLI the committing repository: the CLI may live in another checkout (`LARES_BIN`), and absent a root it
 # keeps the checkout it lives in. The refusal names the tree the CLI read, so a wrong tree shows itself.
-if ! out="$(node "$LARES" repo read --staged --root "$REPO" --json)"; then
+if ! out="$(node "$LARES" repo read staged=true root="$REPO" --json)"; then
   echo "[repo-tunnel-staged] REFUSED — the staged checkout stands off its declared reality tunnel:" >&2
   printf '%s\n' "$out" | REPO="$REPO" node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>{try{const d=JSON.parse(s).data;for(const r of d.rows)if(r.state!=="aligned"&&r.state!=="absent")console.error(`  ${r.state} ${r.id}: ${r.detail}`);console.error(`  read the staged seat of ${d.root ?? `${process.env.REPO} (the CLI named no root)`}`)}catch{console.error(s)}})'
-  echo "  run lares repo tend --root \"$REPO\", stage what it wrote, and commit again." >&2
+  echo "  run lares repo tend root=\"$REPO\", stage what it wrote, and commit again." >&2
   exit 1
 fi
 exit 0

@@ -64,7 +64,7 @@ describe("a recard's ledger rows wait for its Archive", () => {
     expect(recard).toMatchObject({ stale: true, reminted: ["lar:///old"] });
     expect(ledger.puts, "the stale pass rested no row").toEqual([]);
     // The Archive rested nothing: the landing refuses archive-unrested and the ledger stands as it stood.
-    await expect(landRecard(recard, { wrote: [], refusals: [], barred: true }, "h2", 2)).rejects.toThrow(/archive-unrested[\s\S]*lares vault recard --face 2/);
+    await expect(landRecard(recard, { wrote: [], refusals: [], barred: true }, "h2", 2)).rejects.toThrow(/archive-unrested[\s\S]*lares vault recard face=2/);
     await expect(landRecard(recard, { wrote: [{}] as never, refusals: [{ message: "a row refused" }] as never, barred: false }, "h2", 2)).rejects.toThrow(/archive-unrested/);
     expect(ledger.rows.get("lar:///old")).toBe("doc-old");
     // The Archive rested: the held rows land.

@@ -1,7 +1,7 @@
 /**
  * nexus-publish — the Node shore of the immutable plugin offering door.
  *
- * This command publishes a LOCAL OFFERING SOURCE — never genesis (H3, R2). `--source <dir>` names a
+ * This command publishes a LOCAL OFFERING SOURCE — never genesis (H3, R2). `source=<dir>` names a
  * directory this operator already holds: `<dir>/offering.json` plus each blob's bytes beside it. The
  * genesis seed carries the boot set alone and names no registry of what an operator may offer:
  * reading `$:/plugins/*` blobs out of it folds to an EMPTY gift (an empty offering that still signs,
@@ -147,11 +147,11 @@ async function descriptorOf(src: ReadSource): Promise<Omit<PluginOffering, "kind
 /**
  * THE TERMS READ (under a pūlama): every check a publish runs over the source, and the face and the CLOSED descriptor its root
  * would sign, for the pūlama's hand door. It signs nothing, writes nothing and asks no route. A signed gift needs no hand
- * signature, so it refuses: `--apply` announces it as signed.
+ * signature, so it refuses: `apply=true` announces it as signed.
  */
 export async function runNexusPublishTerms(opts: Omit<NexusPublishPluginsOptions, "repo" | "signed" | "ward">): Promise<NexusPublishTerms> {
   const src = await readSource(opts);
-  if (src.parsedGift) throw new NexusPublishError("this source carries a signed gift (offering-signed): it announces exactly as signed with --apply, and no hand signs it again");
+  if (src.parsedGift) throw new NexusPublishError("this source carries a signed gift (offering-signed): it announces exactly as signed with apply=true, and no hand signs it again");
   const offering = await descriptorOf(src);
   return { face: src.handleIndex, offering: { offeror: offering.offeror, pluginsCid: offering.pluginsCid, blobs: canonicalBlobsOf(offering) } };
 }
@@ -165,7 +165,7 @@ const sameBytes = (x: Uint8Array, y: Uint8Array): boolean => x.length === y.leng
 
 /** Read one offering source and judge it: the face, the descriptor, the boot set and every blob's bytes, before any signature. */
 async function readSource(opts: Omit<NexusPublishPluginsOptions, "repo" | "signed" | "ward">): Promise<ReadSource> {
-  // The face the act names, else the one face standing open; several and none named refuse by name (--face N).
+  // The face the act names, else the one face standing open; several and none named refuse by name (face=N).
   const handleIndex = await resolveFace(opts.handleIndex).catch((e: unknown) => {
     if (e instanceof FaceNotNamed) throw new NexusPublishError(`publishing requires a face to sign as — ${e.message}`);
     throw e;
@@ -253,7 +253,7 @@ export async function runNexusPublishPlugins(
   if (opts.signed !== undefined) {
     // THE HAND'S SIGNATURE FROM THE PŪLAMA lands only over THIS source's own descriptor, under THIS face's root: the land
     // derives the descriptor afresh and compares the signed preimage byte for byte, so a signature over anything else lands nothing.
-    if (parsedGift) throw new NexusPublishError("this source carries a signed gift (offering-signed): it announces exactly as signed with --apply, and lands no hand signature");
+    if (parsedGift) throw new NexusPublishError("this source carries a signed gift (offering-signed): it announces exactly as signed with apply=true, and lands no hand signature");
     const signed = opts.signed as PluginOffering;
     if (typeof signed !== "object" || signed === null || typeof signed.sig !== "string") throw new NexusPublishError("the hand's answer carries no signed offering (offering-unsigned)");
     const expected = await descriptorOf(src);

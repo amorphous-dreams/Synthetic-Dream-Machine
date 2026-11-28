@@ -1,5 +1,5 @@
 /**
- * doc-census-door — the vessel's own read of every document its stores hold (`lares vessel census --docs`).
+ * doc-census-door — the vessel's own read of every document its stores hold (`lares vessel census docs=true`).
  *
  * The vessel owns its hearth, so the census walks the stores from inside the vessel and never from the host: the root
  * store at the storage dir, and each island store beside it (a folder holding the two-character shards a store rests;

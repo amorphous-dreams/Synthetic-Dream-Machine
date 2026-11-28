@@ -225,7 +225,7 @@ git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
 git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L"
 ```
 
-`lares repo read` names a clone that lacks them as drift; the commit gate (`lares repo read --staged`) reads them absent, since a commit carries no git config. A clone without the tend merges carriers with git's text merge, since git reads an undefined driver as the plain text merge; the seal conflict then stops the merge, and `lares meme normalize <file>` re-seals by hand once the bodies stand merged. Proof: `node --test tools/mem-merge-driver.test.mjs` (scratch repositories, git alone red on the seal, the driver green, a body conflict and an unsealable frame left standing) and `node --test tools/mem-merge-weld.test.mjs` (the driver and the module write one byte string and one verdict over a corpus of carrier triples).
+`lares repo read` names a clone that lacks them as drift; the commit gate (`lares repo read staged=true`) reads them absent, since a commit carries no git config. A clone without the tend merges carriers with git's text merge, since git reads an undefined driver as the plain text merge; the seal conflict then stops the merge, and `lares meme normalize <file>` re-seals by hand once the bodies stand merged. Proof: `node --test tools/mem-merge-driver.test.mjs` (scratch repositories, git alone red on the seal, the driver green, a body conflict and an unsealable frame left standing) and `node --test tools/mem-merge-weld.test.mjs` (the driver and the module write one byte string and one verdict over a corpus of carrier triples).
 
 <<~/ahu>>
 
@@ -253,6 +253,6 @@ git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;e0RUJ1sIYCqKR8LI5VJpGN6Lu6vyAo4bZuu_QmYnZyc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bbm-uh7TGY4d8lLm8RylmqudzUcy1Whc0Kh62SehCB0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

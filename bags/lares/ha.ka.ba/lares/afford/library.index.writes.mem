@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/library.index.writes"
 
 ! library.index.writes ~ the index travels; the bodies stay off every tracked tree
 
-`lares library index <collection> --out <path>` writes the collection's index (one `#/<cid>` slot per entry, origin and licence beside it) to a path the operator tracks. The bodies never move.
+`lares library index <collection> out=<path>` writes the collection's index (one `#/<cid>` slot per entry, origin and licence beside it) to a path the operator tracks. The bodies never move.
 
 <<~/ahu>>
 
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jiV_Jm94Ve-lOTJk8vGGBHjTL9ReOosCehc6cjAfUuw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0T7ZHfeKC1KoJvqPw2ZLzsMQp_30lqmLbejW-1KRmbc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

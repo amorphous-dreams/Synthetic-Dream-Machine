@@ -1,7 +1,7 @@
 /**
  * bag-tier-restamp — the declare act's reach into the standing catalog.
  *
- * `lares bag declare --tier` writes a bag's `meta.mem` on disk and nothing else; the catalog row a standing vessel
+ * `lares bag declare tier=true` writes a bag's `meta.mem` on disk and nothing else; the catalog row a standing vessel
  * registered for that bag keeps the `cap-tier` stamp it carried at registration. A bag re-declared public -> private
  * would then stay on the floor catalog (F, signed and public) until the next registration: a confidentiality window.
  * The declare act therefore asks the standing daemon to RE-STAMP the one row, through this reactor: it reads the bag's

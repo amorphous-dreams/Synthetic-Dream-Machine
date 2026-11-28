@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.member.admits"
 
 ! realm.member.admits ~ an operator's leaf enters the carriage board
 
-`lares nexus contract <operator-pubkey> [--sig <hex>]` admits a joining operator's per-Nexus leaf, signed by the founding-kahu quorum, and emits the carried admit bundle (`--contract` spells the token too; `--sync-url` names the board). Where the seats rest in two vaults, `--out <file>` writes a partial and the other vault's `--from <partial>` judges, cosigns and lands it. Fail closed: an unseated charter, a sub-quorum or an invalid seal refuses and writes nothing.
+`lares nexus contract <operator-pubkey> [sig=<hex>]` admits a joining operator's per-Nexus leaf, signed by the founding-kahu quorum, and emits the carried admit bundle (`--contract` spells the token too; `--sync-url` names the board). Where the seats rest in two vaults, `--out <file>` writes a partial and the other vault's `--from <partial>` judges, cosigns and lands it. Fail closed: an unseated charter, a sub-quorum or an invalid seal refuses and writes nothing.
 
 <<~/ahu>>
 
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h48ej0ipRCjhYwUmCYTGRGtcn20--nctYUr8jmayKHI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dC9158v_iHl0Tw6VIIV3oZPJwg-gf9nUHhU6QG9j4M0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

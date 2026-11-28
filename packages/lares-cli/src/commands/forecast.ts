@@ -1,13 +1,13 @@
 /**
- * `lares sense analyze --lens forecast` — the R early-warning plane: `ews.R` (critical-slowing-down) over an N-signal
+ * `lares sense analyze lens=forecast` — the R early-warning plane: `ews.R` (critical-slowing-down) over an N-signal
  * matrix → a fired / WATCH / QUIET forecast of an approaching regime-shift, read BEFORE `analyze`'s
  * change-point commits. Computed py-side behind the causal-island boundary (the predictive plane is the R
  * plane), the sibling of `couple-r` — both surface the R legs on the `lares` door.
  *
- * The signal rides `--signal <path>` — an NDJSON matrix, one JSON array per line (rows=time, cols=signals).
+ * The signal rides `signal=<path>` — an NDJSON matrix, one JSON array per line (rows=time, cols=signals).
  * Graceful degrade when R / the leg is absent.
  *
- *   lares sense analyze --lens forecast --signal series.ndjson
+ *   lares sense analyze lens=forecast signal=series.ndjson
  *
  * Meme: lar:///ha.ka.ba/lararium/sensorium/bands
  */
@@ -35,8 +35,8 @@ function readSignalMatrix(path: string): number[][] {
 export async function cmdForecast(args: ParsedArgs): Promise<number> {
   const signal = args.options["signal"];
   if (typeof signal !== "string" || signal.length === 0) {
-    emit(args, { ok: false, error: { code: "usage", message: "--lens forecast needs --signal <ndjson> (rows=time, cols=signals)" },
-                 human: () => console.error("lares sense analyze --lens forecast: needs --signal <ndjson> (rows=time, cols=signals)") });
+    emit(args, { ok: false, error: { code: "usage", message: "lens=forecast needs signal=<ndjson> (rows=time, cols=signals)" },
+                 human: () => console.error("lares sense analyze lens=forecast: needs signal=<ndjson> (rows=time, cols=signals)") });
     return exitFor("usage");
   }
   const rows = readSignalMatrix(signal);
@@ -46,7 +46,7 @@ export async function cmdForecast(args: ParsedArgs): Promise<number> {
     did = await vesselDid();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense analyze --lens forecast: ${msg}`) });
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense analyze lens=forecast: ${msg}`) });
     return exitFor("not-found");
   }
 
@@ -55,11 +55,11 @@ export async function cmdForecast(args: ParsedArgs): Promise<number> {
     // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
     const f = verbFailure(err);
     failCode = f.code;
-    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand --foreground`, or run `lares_mcp --standalone` (tool `analyze`, lens `forecast`)." : f.hint;
+    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand foreground=true`, or run `lares_mcp --standalone` (tool `analyze`, lens `forecast`)." : f.hint;
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(hint !== undefined ? { hint } : {}) },
-      human: () => console.error(`lares sense analyze --lens forecast: ${f.message}`),
+      human: () => console.error(`lares sense analyze lens=forecast: ${f.message}`),
     });
     return null;
   });
@@ -67,7 +67,7 @@ export async function cmdForecast(args: ParsedArgs): Promise<number> {
   if (submit.status === "error") {
     const msg = submit.errorMessage ?? "unknown";
     emit(args, { ok: false, requestId: submit.requestId, error: { code: "verb-error", message: msg },
-                 human: () => console.error(`lares sense analyze --lens forecast failed: ${msg}`) });
+                 human: () => console.error(`lares sense analyze lens=forecast failed: ${msg}`) });
     return exitFor("verb-error");
   }
   const result = summaryOutput(submit) ?? {};
@@ -77,7 +77,7 @@ export async function cmdForecast(args: ParsedArgs): Promise<number> {
     data: { lens: "forecast", ...result },
     human: () => {
       const verdict = String(result["verdict"] ?? result["state"] ?? "—");
-      console.log(`lares sense analyze --lens forecast — the R early-warning plane (critical slowing down)`);
+      console.log(`lares sense analyze lens=forecast — the R early-warning plane (critical slowing down)`);
       console.log(`  signals:      ${rows[0]?.length ?? 0} · samples: ${rows.length}`);
       console.log(`  forecast:     ${verdict}`);
       if (result["note"]) console.log(`  note:         ${String(result["note"])}`);

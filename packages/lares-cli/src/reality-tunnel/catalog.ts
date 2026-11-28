@@ -28,7 +28,7 @@ type Spec = Record<string, unknown> & { id: string; host: string; kind: string; 
  */
 export interface Declared { readonly seed: string; readonly hooks: string; readonly repo: Spec[]; readonly home: Spec[] }
 
-/** Reads one repo-relative file, or null when it stands absent: the working tree, or the index for `--staged`. */
+/** Reads one repo-relative file, or null when it stands absent: the working tree, or the index for `staged=true`. */
 export type TextOf = (rel: string) => string | null;
 const treeText = (repo: string): TextOf => (rel) => (existsSync(join(repo, rel)) ? readFileSync(join(repo, rel), "utf8") : null);
 
@@ -234,7 +234,7 @@ export interface HomeContext {
   readonly mcp?: LaresMcpCommand | null;
   /** False keeps Claude's seat to a read of its store (tests, and reads that must stay offline). */
   readonly claudeCli?: boolean;
-  /** The familiar's pet name a tend seats in the familiar's hooks (`lares home tend --familiar <pet>`); absent keeps the seated one. */
+  /** The familiar's pet name a tend seats in the familiar's hooks (`lares home tend familiar=<pet>`); absent keeps the seated one. */
   readonly familiar?: string | null;
 }
 
@@ -271,7 +271,7 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
 const PET_NAME = /^[a-z0-9][a-z0-9-]{0,62}$/;
 
 /**
- * The familiar a home's hooks carry: the tend's `--familiar`, else the pet name a house hook under the hooks folder already
+ * The familiar a home's hooks carry: the tend's `familiar=`, else the pet name a house hook under the hooks folder already
  * carries in this hook file (a tend that names none keeps the one seated), else none.
  */
 function familiarFor(ctx: HomeContext, path: string, folder: string): string | null {
@@ -314,11 +314,11 @@ function homeItem(
       return base({ transform: claudeStatusLine(str(s, "tool"), command), taking: claudeStatusLineTaking(command), foreign: statusLineForeign(str(s, "tool")) });
     }
     case "claude-hook": {
-      // A familiar's hook carries the pet name as its argument (no env var): the tend's `--familiar`, else the one a tend seated.
+      // A familiar's hook carries the pet name as its argument (no env var): the tend's `familiar=`, else the one a tend seated.
       const wants = s["familiar"] === "required" || s["familiar"] === "optional";
       const pet = wants ? familiarFor(ctx, path, d.hooks) : null;
-      if (pet !== null && !PET_NAME.test(pet)) return base({ unreachable: `the familiar "${pet}" reads as no pet name (lower-case letters, digits and hyphens); run \`lares home tend --familiar <pet-name> --yes\`` });
-      if (s["familiar"] === "required" && pet === null) return base({ absent: "no familiar named in this home; `lares home tend --familiar <pet-name> --yes` seats its hooks" });
+      if (pet !== null && !PET_NAME.test(pet)) return base({ unreachable: `the familiar "${pet}" reads as no pet name (lower-case letters, digits and hyphens); run \`lares home tend familiar=<pet-name> --yes\`` });
+      if (s["familiar"] === "required" && pet === null) return base({ absent: "no familiar named in this home; `lares home tend familiar=<pet-name> --yes` seats its hooks" });
       const tail = pet === null ? [] : [pet];
       // `async` lets an event run on without waiting (the hook bounds itself); `status` names the wait the harness shows.
       const extra = { ...(s["async"] === true ? { async: true } : {}), ...(typeof s["status"] === "string" ? { statusMessage: s["status"] } : {}) };

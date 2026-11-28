@@ -69,7 +69,7 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { cmdAct } from "../src/commands/act.js";
-import { parseArgs } from "../src/parse-args.js";
+import { splitCall, type ParsedArgs } from "../src/parse-args.js";
 
 const dirs: string[] = [];
 afterEach(() => {
@@ -89,14 +89,24 @@ function bundleUnderBags(): string {
   return bundle;
 }
 
-function act(...argv: string[]): ReturnType<typeof parseArgs> {
-  return parseArgs(["act", ...argv, "--yes", "--json"]);
+/**
+ * The runner's own parsed shape (`positional: [VERB]`, options and flags), as the call door hands it once it binds the act's
+ * params: `act` heads a call line, so `parseArgs` keeps its params as written and the runner never reads them raw.
+ */
+function act(verb: string, ...params: string[]): ParsedArgs {
+  const options: Record<string, string> = {};
+  const flags: Record<string, boolean> = { yes: true, json: true };
+  for (const [key, value] of Object.entries(splitCall(params).params)) {
+    if (value === "true" || value === "false") flags[key] = value === "true";
+    else options[key] = value;
+  }
+  return { command: "act", positional: [verb], options, flags };
 }
 
 describe("H7/M10 — CLEAR/DROP/CREATE fold --change-id into the effectKey nonce", () => {
   test("★ CLEAR: the SAME --change-id across two attempts keeps the SAME effectKey — the RETRY ★", async () => {
-    expect(await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-fixed"))).toBe(0);
-    expect(await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-fixed"))).toBe(0);
+    expect(await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-fixed"))).toBe(0);
+    expect(await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-fixed"))).toBe(0);
     expect(h.calls).toHaveLength(2);
     const [a, b] = h.calls;
     expect(a!.opts["effectKey"]).toBeDefined();
@@ -107,8 +117,8 @@ describe("H7/M10 — CLEAR/DROP/CREATE fold --change-id into the effectKey nonce
   });
 
   test("★ CLEAR: a DIFFERENT --change-id mints a DIFFERENT effectKey, even though the wire args read identical — a GENUINE new change ★", async () => {
-    expect(await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-one"))).toBe(0);
-    expect(await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-two"))).toBe(0);
+    expect(await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-one"))).toBe(0);
+    expect(await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-two"))).toBe(0);
     expect(h.calls).toHaveLength(2);
     const [a, b] = h.calls;
     expect(a!.args).toEqual(b!.args); // identical wire args
@@ -118,8 +128,8 @@ describe("H7/M10 — CLEAR/DROP/CREATE fold --change-id into the effectKey nonce
 
 
   test("CONTROL: with NO --change-id, each attempt mints its OWN default — two flagless CLEARs read as TWO distinct changes", async () => {
-    expect(await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"))).toBe(0);
-    expect(await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"))).toBe(0);
+    expect(await cmdAct(act("CLEAR", "bag=lar:///test/catalog"))).toBe(0);
+    expect(await cmdAct(act("CLEAR", "bag=lar:///test/catalog"))).toBe(0);
     const [a, b] = h.calls;
     expect(a!.opts["effectKey"]).not.toBe(b!.opts["effectKey"]);
   });
@@ -129,7 +139,7 @@ describe("H7 — REPACK carries NO effectKey at all", () => {
   test("★ the options passed to runVerb for REPACK hold a requestId and no effectKey property ★", async () => {
     const bundle = bundleUnderBags();
     h.reply = { status: "done", requestId: "r", results: { summary: { ok: true, output: { text: "[]", count: 0 } } } };
-    await cmdAct(act("REPACK", "--source", bundle, "--from", "lar:///sdm"));
+    await cmdAct(act("REPACK", `source=${bundle}`, "from=lar:///sdm"));
     expect(h.calls).toHaveLength(1);
     const opts = h.calls[0]!.opts;
     expect(opts["requestId"]).toBeDefined();
@@ -144,7 +154,7 @@ describe("M10 — the outcome-unknown/abandoned/retention-gap hints name the exa
     h.receipt = { requestId: "r", state: "abandoned" };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-abandon"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-abandon"));
     spy.mockRestore();
     expect(code).toBe(6);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
@@ -160,7 +170,7 @@ describe("a read-back that finds the request interrupted names the code and the 
     h.receipt = { requestId: "r", state: "interrupted" };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-interrupted"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-interrupted"));
     spy.mockRestore();
     expect(code).toBe(6);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
@@ -172,7 +182,7 @@ describe("a read-back that finds the request interrupted names the code and the 
     h.reply = { status: "error", requestId: "r", errorMessage: "stopped", refusal: { reason: "interrupted" } };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-live-int"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-live-int"));
     spy.mockRestore();
     expect(code).toBe(6);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
@@ -188,7 +198,7 @@ describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back"
     h.reply = { status: "error", requestId: "r", errorMessage: "evicted", refusal: { reason: "retention-gap" } };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-evicted"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-evicted"));
     spy.mockRestore();
     expect(code).toBe(6);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
@@ -201,7 +211,7 @@ describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back"
     h.reply = { status: "error", requestId: "r", errorMessage: "refused", refusal: { reason: "abandoned" } };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-live-abandon"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-live-abandon"));
     spy.mockRestore();
     expect(code).toBe(6);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
@@ -213,7 +223,7 @@ describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back"
     h.reply = { status: "error", requestId: "r", errorMessage: "torn", refusal: { reason: "receipt-fact-torn" } };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog"));
     spy.mockRestore();
     expect(code).toBe(6);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
@@ -225,7 +235,7 @@ describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back"
     h.reply = { status: "error", requestId: "r", errorMessage: "bag-retired: CLEAR of x refused", refusal: { reason: "bag-retired" } };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog"));
     spy.mockRestore();
     expect(code).toBe(2);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
@@ -237,7 +247,7 @@ describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back"
     h.reply = { status: "error", requestId: "r", errorMessage: "boom" };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog"));
     spy.mockRestore();
     expect(code).toBe(4);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint?: string } };
@@ -251,7 +261,7 @@ describe("`effectOf` surfaces (fed directly — a stand-in for G2's wire field, 
     h.reply = { status: "done", requestId: "r-retry", results: { summary: { ok: true, output: { landed: 1 } } }, effectOf: "r-prior" };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-fixed"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog", "change-id=cid-fixed"));
     spy.mockRestore();
     expect(code).toBe(0);
     const payload = JSON.parse(cap.join("")) as { ok: boolean; data: { effectOf?: string; verb: string } };
@@ -263,7 +273,7 @@ describe("`effectOf` surfaces (fed directly — a stand-in for G2's wire field, 
     h.reply = { status: "done", requestId: "r", results: { summary: { ok: true, output: { landed: 1 } } } };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    await cmdAct(act("CLEAR", "bag=lar:///test/catalog"));
     spy.mockRestore();
     const payload = JSON.parse(cap.join("")) as { data: { effectOf?: string } };
     expect(Object.prototype.hasOwnProperty.call(payload.data, "effectOf")).toBe(false);
@@ -275,7 +285,7 @@ describe("`receipt-fact-torn` (G2's refusal name) maps to exit 6, never verb-err
     h.reply = { status: "error", requestId: "r", errorMessage: "torn", refusal: { reason: "receipt-fact-torn" } };
     const cap: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog"));
     spy.mockRestore();
     expect(code).toBe(6);
     const payload = JSON.parse(cap.join("")) as { error: { code: string } };
@@ -284,7 +294,7 @@ describe("`receipt-fact-torn` (G2's refusal name) maps to exit 6, never verb-err
 
   test("MUTATION: an unrecognized refusal reason still falls to verb-error (exit 4) — the default never silently widens", async () => {
     h.reply = { status: "error", requestId: "r", errorMessage: "???", refusal: { reason: "some-future-reason" } };
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    const code = await cmdAct(act("CLEAR", "bag=lar:///test/catalog"));
     expect(code).toBe(4);
   });
 });

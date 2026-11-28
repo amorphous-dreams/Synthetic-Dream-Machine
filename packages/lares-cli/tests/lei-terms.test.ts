@@ -60,57 +60,57 @@ afterEach(() => { vi.restoreAllMocks(); });
 describe("lares lei terms prints the pūlama's terms, one line", () => {
   test("RED: kui wide names the face, rite, branch, returns and the after it follows (null for the line's first); the face reads the daemon mount where none is named", async () => {
     seam.mount = 2;
-    expect(JSON.stringify(await terms("kui", "--rite", "push", "--branch", "feature/x", "--returns", "3")))
+    expect(JSON.stringify(await terms("kui", "rite=push", "branch=feature/x", "returns=3")))
       .toBe(`{"face":2,"rite":"push","branch":"feature/x","returns":3,"after":null}`);
     expect(seam.calls).toEqual([["mount", {}], ["swarm-show", { rite: "push", branch: "feature/x", face: 2 }]]);
     // A named `after` that IS the line's tip passes; a named face asks no mount.
     seam.lines[1] = lineAt(CID); seam.calls = [];
-    expect(JSON.stringify(await terms("kui", "--rite", "push", "--branch", "feature/x", "--returns", "40", "--yes", "--after", CID, "--face", "1")))
+    expect(JSON.stringify(await terms("kui", "rite=push", "branch=feature/x", "returns=40", "--yes", `after=${CID}`, "face=1")))
       .toBe(`{"face":1,"rite":"push","branch":"feature/x","returns":40,"after":"${CID}","confirm":true}`);
     expect(seam.calls).toEqual([["swarm-show", { rite: "push", branch: "feature/x", face: 1 }]]);
   });
 
   test("RED: kui head pins one head and carries its reach", async () => {
-    expect(JSON.stringify(await terms("kui", "--rite", "kukulu", "--branch", "main", "--reach", "head", "--head", HEAD, "--face", "0")))
+    expect(JSON.stringify(await terms("kui", "rite=kukulu", "branch=main", "reach=head", `head=${HEAD}`, "face=0")))
       .toBe(`{"face":0,"rite":"kukulu","branch":"main","reach":"head","head":"${HEAD}","after":null}`);
   });
 
   test("RED: restring fills `after` from the line's tip, read through the swarm-show row at the face", async () => {
     seam.mount = 1;
     seam.lines[1] = lineAt(TIP);
-    expect(JSON.stringify(await terms("restring", "--rite", "push", "--branch", "feature/x", "--returns", "2")))
+    expect(JSON.stringify(await terms("restring", "rite=push", "branch=feature/x", "returns=2")))
       .toBe(`{"face":1,"rite":"push","branch":"feature/x","returns":2,"after":"${TIP}"}`);
     expect(seam.calls).toEqual([["mount", {}], ["swarm-show", { rite: "push", branch: "feature/x", face: 1 }]]);
     // A spent lei still holds the line's tip, and a restring follows it.
     seam.lines[1] = { standing: false, refusal: "swarm-lei-spent", after: TIP };
-    expect((await terms("restring", "--rite", "push", "--branch", "feature/x", "--reach", "head", "--head", HEAD))["after"]).toBe(TIP);
+    expect((await terms("restring", "rite=push", "branch=feature/x", "reach=head", `head=${HEAD}`))["after"]).toBe(TIP);
   });
 
   test("RED: a kui with no --after takes the line's own tip, a spent line's tip too, so a spent line restrings by the same plain command", async () => {
     seam.lines[0] = { standing: false, refusal: "swarm-lei-returns-spent", after: TIP };
-    expect(JSON.stringify(await terms("kui", "--rite", "keep", "--branch", "house-backup", "--returns", "6", "--face", "0")))
+    expect(JSON.stringify(await terms("kui", "rite=keep", "branch=house-backup", "returns=6", "face=0")))
       .toBe(`{"face":0,"rite":"keep","branch":"house-backup","returns":6,"after":"${TIP}"}`);
   });
 
   test("RED: a named --after that is no tip refuses as the door would, BEFORE the pūlama asks a signature: forked on a standing line, after-moved where the line holds none, forked on a fork unless it names one of its tips", async () => {
     seam.lines[0] = lineAt(TIP);
-    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0", "--after", CID))).toBe("swarm-lei-forked");
-    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0", "--after", TIP))).toBe("no refusal");
+    expect(await refusal(terms("kui", "rite=push", "branch=b", "returns=1", "face=0", `after=${CID}`))).toBe("swarm-lei-forked");
+    expect(await refusal(terms("kui", "rite=push", "branch=b", "returns=1", "face=0", `after=${TIP}`))).toBe("no refusal");
     seam.lines[0] = lineAt(null);
-    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0", "--after", CID))).toBe("swarm-lei-after-moved");
+    expect(await refusal(terms("kui", "rite=push", "branch=b", "returns=1", "face=0", `after=${CID}`))).toBe("swarm-lei-after-moved");
     seam.lines[0] = lineAt(null, { forks: [TIP, CID] });
-    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0"))).toBe("swarm-lei-forked");
-    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0", "--after", "e".repeat(64)))).toBe("swarm-lei-forked");
-    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0", "--after", CID))).toBe("no refusal");
+    expect(await refusal(terms("kui", "rite=push", "branch=b", "returns=1", "face=0"))).toBe("swarm-lei-forked");
+    expect(await refusal(terms("kui", "rite=push", "branch=b", "returns=1", "face=0", `after=${"e".repeat(64)}`))).toBe("swarm-lei-forked");
+    expect(await refusal(terms("kui", "rite=push", "branch=b", "returns=1", "face=0", `after=${CID}`))).toBe("no refusal");
   });
 
   it("RED: `lares lei kui` with no pūlama strings after the line's own tip, and a named non-tip refuses before any route or row", async () => {
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     seam.lines[0] = { standing: false, refusal: "swarm-lei-returns-spent", after: TIP };
-    expect(await cmdLei(parseArgs(["lei", "kui", "--rite", "keep", "--branch", "house-backup", "--returns", "6", "--face", "0", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "kui", "rite=keep", "branch=house-backup", "returns=6", "face=0", "--json"]))).toBe(0);
     expect(seam.calls.filter(([v]) => v === "swarm-lei-kui")).toEqual([["swarm-lei-kui", { rite: "keep", branch: "house-backup", returns: 6, after: TIP, face: 0 }]]);
     seam.calls = [];
-    expect(await cmdLei(parseArgs(["lei", "kui", "--rite", "keep", "--branch", "house-backup", "--returns", "6", "--face", "0", "--after", CID, "--json"]))).not.toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "kui", "rite=keep", "branch=house-backup", "returns=6", "face=0", `after=${CID}`, "--json"]))).not.toBe(0);
     expect(seam.calls.filter(([v]) => v === "swarm-lei-kui" || v === "route")).toEqual([]);
   });
 
@@ -124,7 +124,7 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
         vi.spyOn(console, "log").mockImplementation((line: unknown) => { written.push(`log:${String(line)}\n`); });
         vi.spyOn(console, "error").mockImplementation((line: unknown) => { said.push(String(line)); });
         seam.lines[0] = lineAt(TIP);
-        expect(await cmdLei(parseArgs(["lei", "show", "--rite", "push", "--branch", "b"]))).toBe(0);
+        expect(await cmdLei(parseArgs(["lei", "show", "rite=push", "branch=b"]))).toBe(0);
         expect(written).toHaveLength(1);
         expect(written[0]!.startsWith("log:")).toBe(false);
         expect(written[0]!.trimEnd().split("\n")).toHaveLength(1);
@@ -132,7 +132,7 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
         expect(said).toHaveLength(tty ? 1 : 0);
         // A refusal reads the same shape: one envelope, no second record.
         written.length = 0; said.length = 0;
-        expect(await cmdLei(parseArgs(["lei", "kui", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0", "--after", CID]))).not.toBe(0);
+        expect(await cmdLei(parseArgs(["lei", "kui", "rite=push", "branch=b", "returns=1", "face=0", `after=${CID}`]))).not.toBe(0);
         expect(written).toHaveLength(1);
         expect(JSON.parse(written[0]!)).toMatchObject({ ok: false, error: { code: "swarm-lei-forked" } });
         vi.restoreAllMocks();
@@ -141,7 +141,7 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
   });
 
   test("RED: unstring carries the lei it revokes by cid", async () => {
-    expect(JSON.stringify(await terms("unstring", "--rite", "push", "--branch", "feature/x", "--lei", CID, "--face", "3")))
+    expect(JSON.stringify(await terms("unstring", "rite=push", "branch=feature/x", `lei=${CID}`, "face=3")))
       .toBe(`{"face":3,"rite":"push","branch":"feature/x","lei":"${CID}"}`);
     expect(seam.calls).toEqual([]);
   });
@@ -149,35 +149,35 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
   test("RED: a keep names the keep's face: the face whose keep lei stands (h0 first, then each open face ascending), else h0; the mount never chooses it", async () => {
     seam.mount = 2; seam.open = [0, 2, 1];
     seam.lines[1] = lineAt(TIP);
-    expect(JSON.stringify(await terms("kui", "--rite", "keep", "--branch", "house-backup", "--returns", "6")))
+    expect(JSON.stringify(await terms("kui", "rite=keep", "branch=house-backup", "returns=6")))
       .toBe(`{"face":1,"rite":"keep","branch":"house-backup","returns":6,"after":"${TIP}"}`);
     expect(seam.calls.map(([v, a]) => `${v} ${String(a["face"] ?? "")}`)).toEqual(["swarm-show 0", "swarm-show 1"]);
     // No keep line anywhere: h0, where a house strings its first.
     seam.lines = {}; seam.calls = [];
-    expect((await terms("kui", "--rite", "keep", "--branch", "house-backup", "--returns", "6"))["face"]).toBe(0);
+    expect((await terms("kui", "rite=keep", "branch=house-backup", "returns=6"))["face"]).toBe(0);
     // A keep restring follows the tip read at the keep's face, read once.
     seam.lines[1] = lineAt(TIP); seam.calls = [];
-    expect(JSON.stringify(await terms("restring", "--rite", "keep", "--branch", "house-backup", "--returns", "4")))
+    expect(JSON.stringify(await terms("restring", "rite=keep", "branch=house-backup", "returns=4")))
       .toBe(`{"face":1,"rite":"keep","branch":"house-backup","returns":4,"after":"${TIP}"}`);
     expect(seam.calls.filter(([v]) => v === "swarm-show")).toHaveLength(2);
   });
 
   test("RED: refusals by name: a restring with no lei on the line, a forked line, a keep lei that may stand on a shut face", async () => {
-    expect(await refusal(terms("restring", "--rite", "push", "--branch", "b", "--returns", "1"))).toBe("swarm-lei-nothing-to-restring");
+    expect(await refusal(terms("restring", "rite=push", "branch=b", "returns=1"))).toBe("swarm-lei-nothing-to-restring");
     seam.lines[0] = lineAt(null, { forks: [TIP, CID] });
-    expect(await refusal(terms("restring", "--rite", "push", "--branch", "b", "--returns", "1"))).toBe("swarm-lei-forked");
+    expect(await refusal(terms("restring", "rite=push", "branch=b", "returns=1"))).toBe("swarm-lei-forked");
     seam.lines = {}; seam.shut = [3];
-    expect(await refusal(terms("kui", "--rite", "keep", "--branch", "w", "--returns", "1"))).toBe("keep-lei-unseen");
+    expect(await refusal(terms("kui", "rite=keep", "branch=w", "returns=1"))).toBe("keep-lei-unseen");
     // CONTROL: a named face reads past the shut one.
-    expect(await refusal(terms("kui", "--rite", "keep", "--branch", "w", "--returns", "1", "--face", "0"))).toBe("no refusal");
+    expect(await refusal(terms("kui", "rite=keep", "branch=w", "returns=1", "face=0"))).toBe("no refusal");
   });
 
   test("RED: usage refusals: no act, an act the pūlama holds none for, a missing rite or branch or lei, a count that reads as none, and a flag the act does not take", async () => {
-    for (const line of [[], ["show"], ["land"], ["kui", "--branch", "b"], ["kui", "--rite", "push"], ["unstring", "--rite", "push", "--branch", "b"],
-      ["kui", "--rite", "push", "--branch", "b", "--returns", "0"], ["kui", "--rite", "push", "--branch", "b", "--face", "x"],
-      ["kui", "--rite", "push", "--branch", "b", "--lei", CID], ["restring", "--rite", "push", "--branch", "b", "--after", CID],
-      ["restring", "--rite", "push", "--branch", "b", "--lei", CID], ["unstring", "--rite", "push", "--branch", "b", "--lei", CID, "--returns", "2"],
-      ["unstring", "--rite", "push", "--branch", "b", "--lei", CID, "--yes"], ["unstring", "--rite", "push", "--branch", "b", "--lei", CID, "--head", HEAD]]) {
+    for (const line of [[], ["show"], ["land"], ["kui", "branch=b"], ["kui", "rite=push"], ["unstring", "rite=push", "branch=b"],
+      ["kui", "rite=push", "branch=b", "returns=0"], ["kui", "rite=push", "branch=b", "face=x"],
+      ["kui", "rite=push", "branch=b", `lei=${CID}`], ["restring", "rite=push", "branch=b", `after=${CID}`],
+      ["restring", "rite=push", "branch=b", `lei=${CID}`], ["unstring", "rite=push", "branch=b", `lei=${CID}`, "returns=2"],
+      ["unstring", "rite=push", "branch=b", `lei=${CID}`, "--yes"], ["unstring", "rite=push", "branch=b", `lei=${CID}`, `head=${HEAD}`]]) {
       expect(await refusal(terms(...line)), line.join(" ")).toBe("usage");
     }
     // Nothing read for a usage refusal.
@@ -189,49 +189,49 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     vi.spyOn(console, "log").mockImplementation((line: unknown) => { out.push(String(line)); });
     vi.spyOn(console, "error").mockImplementation(() => {});
     seam.mount = 1; seam.lines[1] = lineAt(TIP);
-    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "--rite", "push", "--branch", "feature/x", "--returns", "2"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "rite=push", "branch=feature/x", "returns=2"]))).toBe(0);
     expect(out).toEqual([`{"face":1,"rite":"push","branch":"feature/x","returns":2,"after":"${TIP}"}`]);
     expect(seam.calls).toEqual([["face.resolve", { worn: true }], ["swarm-show", { rite: "push", branch: "feature/x", face: 1 }]]);
     out.length = 0; seam.calls = []; seam.open = [0, 1]; seam.lines = { 1: lineAt(TIP) };
-    expect(await cmdLei(parseArgs(["lei", "terms", "kui", "--rite", "keep", "--branch", "w", "--returns", "6"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "terms", "kui", "rite=keep", "branch=w", "returns=6"]))).toBe(0);
     expect(out).toEqual([`{"face":1,"rite":"keep","branch":"w","returns":6,"after":"${TIP}"}`]);
     expect(seam.calls[0]).toEqual(["census", {}]);
     // A refusal prints nothing on stdout and exits non-zero.
     out.length = 0; seam.lines = {};
-    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0"]))).not.toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "rite=push", "branch=b", "returns=1", "face=0"]))).not.toBe(0);
     expect(out).toEqual([]);
     // CONTROL: an explicit --json asks the envelope.
     seam.lines = { 0: lineAt(TIP) };
     const written: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { written.push(String(chunk)); return true; });
-    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "--rite", "push", "--branch", "b", "--returns", "1", "--face", "0", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "rite=push", "branch=b", "returns=1", "face=0", "--json"]))).toBe(0);
     expect(JSON.parse(written.join(""))).toEqual({ ok: true, data: { face: 0, rite: "push", branch: "b", returns: 1, after: TIP } });
   });
 
   test("RED: kui --all names one terms object per open face, ascending, each following its own line's tip (null for a line's first); a fork on any face refuses by name", async () => {
     seam.open = [0, 2, 1]; seam.lines[1] = lineAt(TIP);
-    expect(JSON.stringify(await terms("kui", "--rite", "kukulu", "--branch", "main", "--returns", "3", "--all")))
+    expect(JSON.stringify(await terms("kui", "rite=kukulu", "branch=main", "returns=3", "all=true")))
       .toBe(`{"faces":[{"face":0,"rite":"kukulu","branch":"main","returns":3,"after":null},{"face":1,"rite":"kukulu","branch":"main","returns":3,"after":"${TIP}"},{"face":2,"rite":"kukulu","branch":"main","returns":3,"after":null}]}`);
     expect(seam.calls.map(([v, a]) => `${v} ${String(a["face"] ?? "")}`)).toEqual(["swarm-show 0", "swarm-show 1", "swarm-show 2"]);
     seam.lines[2] = lineAt(null, { forks: [TIP, CID] });
-    expect(await refusal(terms("kui", "--rite", "kukulu", "--branch", "main", "--returns", "3", "--all"))).toBe("swarm-lei-forked");
+    expect(await refusal(terms("kui", "rite=kukulu", "branch=main", "returns=3", "all=true"))).toBe("swarm-lei-forked");
     seam.open = [];
-    expect(await refusal(terms("kui", "--rite", "kukulu", "--branch", "main", "--returns", "3", "--all"))).toBe("face-none-open");
+    expect(await refusal(terms("kui", "rite=kukulu", "branch=main", "returns=3", "all=true"))).toBe("face-none-open");
   });
 
   test("RED: --all strings a kui alone, names no face and no after, and no keep (one per house) or exec (one writer) line; CONTROL: push and kukulu take it", async () => {
-    for (const line of [["kui", "--rite", "kukulu", "--branch", "b", "--returns", "1", "--all", "--face", "0"], ["kui", "--rite", "kukulu", "--branch", "b", "--returns", "1", "--all", "--after", CID],
-      ["kui", "--rite", "keep", "--branch", "b", "--returns", "1", "--all"], ["kui", "--rite", "exec", "--scope", `{"wiki":"w","writer":"x","class":"c"}`, "--returns", "1", "--all"], ["restring", "--rite", "kukulu", "--branch", "b", "--returns", "1", "--all"]]) {
+    for (const line of [["kui", "rite=kukulu", "branch=b", "returns=1", "all=true", "face=0"], ["kui", "rite=kukulu", "branch=b", "returns=1", "all=true", `after=${CID}`],
+      ["kui", "rite=keep", "branch=b", "returns=1", "all=true"], ["kui", "rite=exec", `scope={"wiki":"w","writer":"x","class":"c"}`, "returns=1", "all=true"], ["restring", "rite=kukulu", "branch=b", "returns=1", "all=true"]]) {
       expect(await refusal(terms(...line)), line.join(" ")).toBe("usage");
     }
-    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--all"))).toBe("no refusal");
+    expect(await refusal(terms("kui", "rite=push", "branch=b", "returns=1", "all=true"))).toBe("no refusal");
   });
 
-  it("RED: `lares lei kui --all` with no pūlama: ONE route for every open face, each face's kui at its own line's tip, and the answer names each face's cid", async () => {
+  it("RED: `lares lei kui all=true` with no pūlama: ONE route for every open face, each face's kui at its own line's tip, and the answer names each face's cid", async () => {
     const out: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; });
     seam.open = [0, 1]; seam.lines[1] = lineAt(TIP);
-    expect(await cmdLei(parseArgs(["lei", "kui", "--rite", "kukulu", "--branch", "main", "--returns", "2", "--all", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "kui", "rite=kukulu", "branch=main", "returns=2", "all=true", "--json"]))).toBe(0);
     const route = [{ kind: "passphrase", passphrase: "the-route" }];
     expect(seam.calls.filter(([v]) => v === "route")).toHaveLength(1);
     expect(seam.calls.filter(([v]) => v === "swarm-lei-kui")).toEqual([
@@ -241,18 +241,18 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     expect(JSON.parse(out.join("")).data).toEqual({ rite: "kukulu", branch: "main", faces: [{ face: 0, rite: "kukulu", branch: "main", lei: "cid-h0" }, { face: 1, rite: "kukulu", branch: "main", lei: "cid-h1" }] });
   });
 
-  it("RED: `lares lei show --rite --branch` naming no face lists every open face's line; CONTROL: one face open, or a face named, reads the one line as it stood", async () => {
+  it("RED: `lares lei show rite=true branch=true` naming no face lists every open face's line; CONTROL: one face open, or a face named, reads the one line as it stood", async () => {
     const out: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; });
     seam.open = [1, 0]; seam.lines[1] = lineAt(TIP);
-    expect(await cmdLei(parseArgs(["lei", "show", "--rite", "kukulu", "--branch", "main", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "--json"]))).toBe(0);
     expect(JSON.parse(out.join("")).data).toEqual({ rite: "kukulu", branch: "main", faces: [
       { face: 0, lei: { standing: false, refusal: "absent", after: null } }, { face: 1, lei: lineAt(TIP) }] });
     out.length = 0; seam.open = [0]; seam.calls = [];
-    expect(await cmdLei(parseArgs(["lei", "show", "--rite", "kukulu", "--branch", "main", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "--json"]))).toBe(0);
     expect(seam.calls.filter(([v]) => v === "swarm-show")).toEqual([["swarm-show", { rite: "kukulu", branch: "main" }]]);
     out.length = 0; seam.open = [0, 1]; seam.calls = [];
-    expect(await cmdLei(parseArgs(["lei", "show", "--rite", "kukulu", "--branch", "main", "--face", "1", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "face=1", "--json"]))).toBe(0);
     expect(seam.calls).toEqual([["swarm-show", { rite: "kukulu", branch: "main", face: 1 }]]);
   });
 
@@ -262,6 +262,6 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     expect(help).toMatch(/lares lei land /);
     expect(help).toMatch(/lares lei terms /);
     expect(helpLines("lei terms").join("\n")).toMatch(/kui/);
-    expect(helpLines("lei kui").join("\n")).toMatch(/lares lei kui --rite kukulu --branch main .*--all/);
+    expect(helpLines("lei kui").join("\n")).toMatch(/lares lei kui rite=kukulu branch=main .*all=true/);
   });
 });

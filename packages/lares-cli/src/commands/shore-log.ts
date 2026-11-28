@@ -1,12 +1,12 @@
 /**
  * lares shore log — the vessel's log as records: one per distinct event (`@lararium/mesh/shore-log`).
  *
- *   lares shore log [--kind <k>] [--held] [--boot <id>]
+ *   lares shore log [kind=<k>] [held=true] [boot=<id>]
  *
  * The vessel folds its console at the source (`vessel-log-sink`): each event's record rests in the worn face's daemon temp
  * layer, where `$:/lares/shore/log` renders it. This reads the same records through the tiddler door's `wiki-filter` over the
- * daemon wiki (`--recipe default`): `--kind` names one kind, `--held` keeps the records no hand acknowledged (or that recurred
- * past the seq their ack named), `--boot` names one boot's ring.
+ * daemon wiki (`recipe=default`): `kind=` names one kind, `held=true` keeps the records no hand acknowledged (or that recurred
+ * past the seq their ack named), `boot=` names one boot's ring.
  *
  * THE FLAT FALLBACK: where no vessel answers (the door dark, the face shut), this reads `run/vessel-live.log` (the live log's
  * closing slice, one record per event) and the month ash older boots folded into (`run/shore-ash/*.jsonl`), and names that it
@@ -46,8 +46,8 @@ const OPERAND = /^[^\][\n\r]{1,200}$/;
 export function shoreLogQuery(args: ParsedArgs): ShoreLogQuery | { readonly usage: string } {
   const kind = args.options["kind"]?.trim() || null;
   const boot = args.options["boot"]?.trim() || null;
-  if (kind !== null && !OPERAND.test(kind)) return { usage: `--kind names a kind (no brackets): "${kind}"` };
-  if (boot !== null && !/^[0-9a-f]{1,32}$/.test(boot)) return { usage: `--boot names a boot id (hex, as \`lares shore log\` prints it): "${boot}"` };
+  if (kind !== null && !OPERAND.test(kind)) return { usage: `kind= names a kind (no brackets): "${kind}"` };
+  if (boot !== null && !/^[0-9a-f]{1,32}$/.test(boot)) return { usage: `boot= names a boot id (hex, as \`lares shore log\` prints it): "${boot}"` };
   return { kind, held: args.flags["held"] === true, boot };
 }
 

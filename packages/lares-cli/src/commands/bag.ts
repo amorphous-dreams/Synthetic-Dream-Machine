@@ -11,17 +11,17 @@
  * about itself until it carried a declaration of its own.
  *
  * Verbs:
- *   pin <url> [--reason <text>]   — never evict this bag from RAM
+ *   pin <url> [reason=<text>]   — never evict this bag from RAM
  *   unpin <url>                   — remove the cooling exemption (bag rejoins the LRU sweep)
  *   stats                         — pinned / wela / anu residency snapshot
  *   register-cold <url>           — mark URL as known-but-not-loaded (the oracle entry alone)
  *   compact <url>                 — DXOS-style snapshot-restart; bounds history
- *   cas [--all] [--fetch <cid>] [--pin <cid>] [--release <cid>] [--sweep [--dry-run]]
+ *   cas [all=true] [fetch=<cid>] [pin=<cid>] [release=<cid>] [sweep=true [dry-run=true]]
  *                                 — the cid/ CAS tier: blobs · referenced · unreferenced · bytes; fetch · pin · release · sweep
  *   show                          — every bag: declared tier + home, and whether it sits where it belongs
  *   show <bag>                    — one bag's declaration, resolved on this vessel
- *   declare <bag> --tier --home   — write/amend the declaration (moves no bytes)
- *   home <bag> --to <home> --approve  — MOVE the bytes and re-anchor the declaration together
+ *   declare <bag> tier= home=   — write/amend the declaration (moves no bytes)
+ *   home <bag> to=<home> approve=true  — MOVE the bytes and re-anchor the declaration together
  *   repo <list|add|drop>          — the repo registry; bags name IDs, never paths
  */
 
@@ -58,7 +58,7 @@ export async function cmdBagCompact(args: ParsedArgs): Promise<number> {
     // UDS fast path, WS fallback (the lares↔lararium binding).
     r = await runVerb("bag-compact", { bagUrl }, did, { timeoutMs: 30_000 });
   } catch (err) {
-    // M3′: told apart by the error's own TYPE — a LOCAL WAIT ENDING (the write door `watch --apply`
+    // M3′: told apart by the error's own TYPE — a LOCAL WAIT ENDING (the write door `watch apply=true`
     // uses this verb through) is not an absent daemon.
     const f = verbFailure(err);
     console.error(`lares bag: ${f.message}`);

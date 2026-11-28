@@ -70,7 +70,7 @@ export interface PalaceProc {
   readonly pid:        number;
   readonly ppid:       number;
   readonly kind:       ProcKind;
-  /** What it serves: a `--palace <path>`, a `--wing <w>`, `ws:<port>`, or the kind label. */
+  /** What it serves: a `--palace <path>`, a `--wing <w>` (the python processes' own argv), `ws:<port>`, or the kind label. */
   readonly serves:     string;
   readonly uptimeSec:  number | null;
   /** The parent's short command (teaches kill-the-parent), or "init (orphaned)" when reparented. */
@@ -177,7 +177,7 @@ function shortCmd(args: string, max = 140): string {
 
 /**
  * Shorten a SPAWNER command, keeping the TAIL — the informative bit of a parent is
- * the end (the script's file name, the `lares sense capture … --wing w`),
+ * the end (the script's file name, the `lares sense capture … wing=w`),
  * never the leading `bash /very/long/path`. So front-elide when over `max`.
  */
 function shortSpawner(args: string, max = 80): string {

@@ -133,7 +133,7 @@ describe("the share door", () => {
     const standing = serializeShareFile([{ slug: "cold-shelf", kind: "wiki", read: "the referee", write: "", owner: "joshua-fontany" }]);
     const f = fake({ file: standing });
     expect(await cmdShare("bag", f.doors)(args(["cold-shelf"], { read: "h1 h2" }))).toBe(2);
-    expect(f.err.join("\n")).toMatch(/share-kind-standing: "cold-shelf" stands shared as a wiki row.*unshare it first \(`lares wiki share cold-shelf --remove`\)/);
+    expect(f.err.join("\n")).toMatch(/share-kind-standing: "cold-shelf" stands shared as a wiki row.*unshare it first \(`lares wiki share cold-shelf remove=true`\)/);
     expect(f.file(), "the wiki row stands whole").toBe(standing);
     expect(f.verbs).toEqual([]);
     expect(await cmdShare("wiki", f.doors)(args(["cold-shelf"], {}, { remove: true }))).toBe(0);
@@ -286,7 +286,7 @@ describe("the share door", () => {
     expect(f.verbs.map((v) => v.name)).toEqual(["share-set", "share-apply", "share-set", "share-apply"]);
     expect(f.verbs[2]!.args).toMatchObject({ slug: "notes", read: "joshua-fontany-engineer [[the referee]]" });
     expect(f.err.join("\n")).toMatch(/joshua-fontany-engineer \(h1\) still reads notes/);
-    expect(f.err.join("\n")).toMatch(/lares vault unlock --face N/);
+    expect(f.err.join("\n")).toMatch(/lares vault unlock face=N/);
     expect(f.out.join("\n")).not.toMatch(/reads for the referee \(h2\), writes/);
   });
 

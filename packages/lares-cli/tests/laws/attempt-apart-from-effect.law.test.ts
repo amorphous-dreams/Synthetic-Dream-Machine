@@ -28,7 +28,7 @@ vi.mock("../../src/env.js", async (orig) => ({
 }));
 
 import { cmdAct } from "../../src/commands/act.js";
-import { parseArgs } from "../../src/parse-args.js";
+import type { ParsedArgs } from "../../src/parse-args.js";
 
 beforeEach(() => { vi.spyOn(process.stdout, "write").mockImplementation(() => true); });
 afterEach(() => { h.calls.length = 0; vi.restoreAllMocks(); });
@@ -58,8 +58,9 @@ const fieldsFor = (verb: string): fc.Arbitrary<Fields> =>
 const verbs = Object.keys(EFFECT_FIELDS);
 const verbAndFields = fc.constantFrom(...verbs).chain((verb) => fieldsFor(verb).map((f) => [verb, f] as const));
 
-const argvOf = (verb: string, f: Fields): ReturnType<typeof parseArgs> =>
-  parseArgs(["act", verb, ...Object.entries(f).flatMap(([k, v]) => [`--${k}`, v]), "--yes", "--json"]);
+/** The runner's own parsed shape, as the call door hands it once it binds the act's params (`act` heads a call line). */
+const argvOf = (verb: string, f: Fields): ParsedArgs =>
+  ({ command: "act", positional: [verb], options: { ...f }, flags: { yes: true, json: true } });
 
 async function attempt(verb: string, f: Fields): Promise<{ requestId: string; effectKey: string }> {
   const before = h.calls.length;

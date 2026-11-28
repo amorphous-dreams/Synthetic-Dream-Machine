@@ -37,7 +37,7 @@ Node emits `boot`, `repo-open`, and `catalog-ready` while opening its repository
 
 The shared wiki cap emits `wiki-ready` and `vessel-ready` after `mountWikiSlot`; the shared mount cap emits `tw5-booted` and `live` after `mountPrimaryWiki` (`packages/lararium-tw5/src/core-caps.ts`). `mountWikiSlot` resolves the draft handle, but these caps emit no `draft-ready` (`core-caps.ts`). The resulting full-vessel callback order places `corpus-ready` before `wiki-ready`, despite its later place in the type declaration (`open-vessel-core.ts`; `core-caps.ts`).
 
-A canon crossing into `@crossroads` passes `lares meme promote --approval <file>`; the charter's seats approve the exact carrier bytes before the move (`packages/lares-cli/src/commands/meme-promote.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/chartered-classes).
+A canon crossing into `@crossroads` passes `lares meme promote approval=<file>`; the charter's seats approve the exact carrier bytes before the move (`packages/lares-cli/src/commands/meme-promote.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/chartered-classes).
 
 <<~/ahu>>
 
@@ -51,6 +51,6 @@ A canon crossing into `@crossroads` passes `lares meme promote --approval <file>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-7DL43w66cHAWAGvHAF_iJtPw8d1B-JG6YETAR3Wb-o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Oln_eF2A1nXKmx2ehYPE_HHKnkwQYgRa0X1waCgA5cg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

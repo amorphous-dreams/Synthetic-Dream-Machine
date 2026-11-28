@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.steward.seals"
 
 ! realm.steward.seals ~ a name enters a record by its own hand first
 
-`lares nexus realm-bag <bag-uri> [--realm <id>] [--join | --cosign [--with <key>]] [--steward <key>…] [--tier <t>] [--expiry <rolls>] [--charter <key>=<realm-id>…]` seals the record of who keeps a realm bag, riding the key the acting face (`--face N`) presents to the realm's Nexus. `--join` asks to keep a bag another hand keeps; `--cosign` consents to a record naming this vessel's steward. With no `--realm` the act lands in the charter-derived realm.
+`lares nexus realm-bag <bag-uri> [realm=<id>] [join=true | cosign=true [with=<key>]] [steward=<key>…] [tier=<t>] [expiry=<rolls>] [charter=<key>=<realm-id>…]` seals the record of who keeps a realm bag, riding the key the acting face (`--face N`) presents to the realm's Nexus. `--join` asks to keep a bag another hand keeps; `--cosign` consents to a record naming this vessel's steward. With no `--realm` the act lands in the charter-derived realm.
 
 <<~/ahu>>
 
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YqfRdha28D-leTQZXQBDjGuA_AK3A1Rb2PtqMdCLlZc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SG_QYSCQucBIeFl9upG27YaqZ9x2xbKBfPGSKvg5Z9Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

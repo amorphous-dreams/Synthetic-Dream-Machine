@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
  * PostToolUse on SubagentHandback (async: it bounds itself): a tasked spirit's report arrives as the tool's `message`, and the
- * hook runs the one return door every fire runs (`lares spirit handback <pet>[#<n>] --file -`, the report whole on stdin, the
+ * hook runs the one return door every fire runs (`lares spirit handback <pet>[#<n>] file=-`, the report whole on stdin, the
  * strict guard over it). The door lands the record first, as residue under the pet, then names it on the summons edge where one
  * stands for that instance. Who returns reads off the report's filing line by the one table (`FILING`: `<pet> (Lares Spirit)`,
  * `<pet>#<n>` for an instance), else the agent's id; the landing keys idempotently by session and agent, so a repeated fire
@@ -26,7 +26,7 @@ try {
       const agent = String(input.agent_id ?? input.agent_type ?? "spirit");
       const who = handbackWho(message, agent);
       const key = `${String(input.session_id ?? "")}:${agent}`.replace(/[^A-Za-z0-9:_-]/g, "-");
-      await settle(run(spiritArgv(FILING.verb, who, "--file", "-", "--key", key), message, RESIDUE_BUDGET_MS), RESIDUE_BUDGET_MS);
+      await settle(run(spiritArgv(FILING.verb, who, "file=-", `key=${key}`), message, RESIDUE_BUDGET_MS), RESIDUE_BUDGET_MS);
     }
   }
 } catch { /* A handback that cannot land stays in the transcript. */ }

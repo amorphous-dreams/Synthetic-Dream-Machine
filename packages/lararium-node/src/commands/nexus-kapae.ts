@@ -121,7 +121,7 @@ function seatedRosterOrRefuse(sealHome: string): KahuQuorumSeats {
 /** The antigen door's sub-quorum refusal — it names the act a short quorum would have minted. */
 const subQuorum = (held: number, k: number): NexusKapaeError => new NexusKapaeError(
   `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seat key(s) of the seated roster, but a valid antigen act carries ${k} distinct founding-kahu signatures. ` +
-  `Where the other seats rest in another vault, the act crosses as a partial: \`lares nexus kapae <nym> --nexus <aid> --out <file>\` here, then \`--from <file>\` there.`,
+  `Where the other seats rest in another vault, the act crosses as a partial: \`lares nexus kapae <nym> nexus=<aid> out=<file>\` here, then \`from=<file>\` there.`,
 );
 
 /** The charter home an act reads: the carried charter `aid` names, else the primary. Refuses an AID this vessel never carried. */
@@ -283,7 +283,7 @@ export async function runNexusKapaeOpen(opts: NexusKapaeOptions): Promise<NexusK
  */
 export async function runNexusKapaePartial(opts: {
   readonly partial: unknown; readonly sealHome: string; readonly repo: Repo;
-  /** The act the person named (`kapae --from` or `un_kapae --from`): a file that carries the other act refuses before any judge. */
+  /** The act the person named (`kapae from=` or `un_kapae from=`): a file that carries the other act refuses before any judge. */
   readonly action?: KapaeAction;
 }): Promise<NexusKapaePartialResult> {
   const read = readNexusActPartial(opts.partial);
@@ -321,7 +321,7 @@ export async function runNexusKapaePartial(opts: {
   }
 }
 
-/** Read the currently-Kapae'd set + the raw board entries (the `--list` fold). Read-only; materializes a blank
+/** Read the currently-Kapae'd set + the raw board entries (the `list=true` fold). Read-only; materializes a blank
  *  board on a cold first boot (denies nobody). FAILS CLOSED to the empty set on an unseated charter. */
 export async function runNexusKapaeList(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }): Promise<NexusKapaeListResult> {
   const home       = charterHomeOrRefuse(opts.sealHome, opts.aid);

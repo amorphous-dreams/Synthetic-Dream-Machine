@@ -107,7 +107,7 @@ export class CustodyLocked extends Error {
 export class FaceLocked extends CustodyLocked {
   override readonly name = "FaceLocked";
   constructor(readonly fcid: string) {
-    super(`face ${fcid.slice(0, 8)} rests unopened, so its sealed rows stay shut: open it with \`lares vault unlock --face <N>\``);
+    super(`face ${fcid.slice(0, 8)} rests unopened, so its sealed rows stay shut: open it with \`lares vault unlock face=<N>\``);
   }
 }
 /** A face row was asked for and the floor index names no face that owns it. */

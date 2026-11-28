@@ -6,7 +6,7 @@
  * identical acts. So every door that MINTS a root is named here, and each is the founding of a face:
  *
  *   · node `runFoundTheFace` (`lares persona new N` founds the face, its root among it);
- *   · node `foundSeedCharter`, inside the Stable founding act (`lares vessel found --hearth`): persona zero's root
+ *   · node `foundSeedCharter`, inside the Stable founding act (`lares vessel found hearth=true`): persona zero's root
  *     mints before its face, since the root's seat claim seats the seed charter the face then binds;
  *   · the browser's founding branch and its `persona-mint` verb (the browser twin of founding a face);
  *   · the platform-blind core and its two shores (`persona-vault`, the node and browser identity modules),
