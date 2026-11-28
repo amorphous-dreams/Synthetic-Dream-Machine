@@ -23,7 +23,8 @@ module-type: startup
  * and the stamp never does. A watch record's own digest and count leave its hash, so a watch that lists watches settles.
  *
  * CUSTODY SITS FACE AGAINST FACE: each watch names its OWNER, the presenter the session door verified for the face worn. The
- * record reads to its owner alone (the door's reader view), an id stays its owner's until that owner unasks it (`claims`),
+ * record reads to its owner alone (the door's reader view), an id stays its owner's until that owner unasks it (`claims`; an id
+ * the bound let go keeps its claim among that owner's last `WATCH_BOOK_MAX` such ids),
  * and the bound counts per owner: `WATCH_BOOK_MAX` watches each, a bind past it letting go that owner's own longest-bound
  * watch no call holds, and refusing (`watch-bound`) where every one stands held. No face's bind moves another face's watch.
  *
@@ -96,8 +97,9 @@ export interface WatchEntry extends WatchSpec {
   hashes: Map<string, string | null>;
   /** The filter runs this watch cost, counted. */
   runs: number;
-  /** The re-run this watch waits on (a reweigh in flight), so its runs land in change order. */
-  pending: Promise<void>;
+  /** A reweigh runs for this watch now; `again` marks one more owed after it (the queue folds: one runs, one waits). */
+  weighing: boolean;
+  again: boolean;
 }
 
 /** A record's hash as a watch reads it: every field but the residency stamp (a watch record's digest and count left out too). */
@@ -121,6 +123,8 @@ export class WatchBook {
   private readonly holding = new Map<string, number>();
   /** Each id's owner, standing until that owner unasks it (or its own watch ends): no other face takes a freed id. */
   private readonly claims = new Map<string, string>();
+  /** The ids each owner's bound let go whose claims still stand, oldest first; past `WATCH_BOOK_MAX` the oldest claim leaves. */
+  private readonly freed = new Map<string, string[]>();
   /** Watch records the book last moved by their digest alone: their next change re-runs no watch. */
   private readonly quiet = new Set<string>();
   /** Every filter run the book made, across its watches. */
@@ -155,11 +159,13 @@ export class WatchBook {
           throw new VerbRefusal("watch-bound", `watch-bound: this face holds ${own.length} watches in this wiki, every one held by a call; let one answer, or drop one with \`lares watch id=<id> mu=unask\` (list yours: \`lares get filter='[prefix[${WATCH_PREFIX}]]'\`).`);
         }
         this.let(idle.id);
+        this.keepFreed(spec.owner, idle.id);
       }
     }
     if (prior !== undefined) this.entries.delete(spec.id);
     this.claims.set(spec.id, spec.owner);
-    const entry: WatchEntry = { ...spec, title: watchTitleOf(spec.id), digest: prior?.digest ?? "", titles: [], hashes: new Map(), runs: prior?.runs ?? 0, pending: Promise.resolve() };
+    this.unfree(spec.owner, spec.id);
+    const entry: WatchEntry = { ...spec, title: watchTitleOf(spec.id), digest: prior?.digest ?? "", titles: [], hashes: new Map(), runs: prior?.runs ?? 0, weighing: false, again: false };
     this.entries.set(spec.id, entry);
     this.rerun(entry, prior === undefined || prior.filter !== spec.filter || prior.until !== spec.until || prior.owner !== spec.owner);
     return entry;
@@ -180,6 +186,7 @@ export class WatchBook {
     const claimed = this.claims.get(id);
     if (claimed !== undefined && claimed !== owner) throw otherOwner(id);
     this.claims.delete(id);
+    this.unfree(owner, id);
     return this.let(id);
   }
 
@@ -202,6 +209,29 @@ export class WatchBook {
     entry.runs++;
     return entry.view.filterTiddlers(entry.until).filter((t) => entry.visible(t, this.wiki.getTiddler(t)));
   }
+
+  /** An id the owner's bound let go keeps its claim, at most `WATCH_BOOK_MAX` such claims per owner: the oldest leaves first. */
+  private keepFreed(owner: string, id: string): void {
+    const list = this.freed.get(owner) ?? [];
+    list.push(id);
+    while (list.length > WATCH_BOOK_MAX) {
+      const oldest = list.shift()!;
+      if (this.claims.get(oldest) === owner && !this.entries.has(oldest)) this.claims.delete(oldest);
+    }
+    this.freed.set(owner, list);
+  }
+
+  /** An id its owner binds again, or unasks, leaves the owner's freed list. */
+  private unfree(owner: string, id: string): void {
+    const list = this.freed.get(owner);
+    if (list === undefined) return;
+    const at = list.indexOf(id);
+    if (at >= 0) list.splice(at, 1);
+    if (list.length === 0) this.freed.delete(owner);
+  }
+
+  /** Claims standing for ids no watch holds now (the owners' freed lists), counted: each owner keeps `WATCH_BOOK_MAX` at most. */
+  freedClaims(owner: string): number { return this.freed.get(owner)?.length ?? 0; }
 
   /** Let a watch go (its record leaves the wiki; its claim stays where the caller keeps it). Answers whether one stood. */
   private let(id: string): boolean {
@@ -230,14 +260,27 @@ export class WatchBook {
     for (const entry of [...this.entries.values()]) {
       if (this.entries.get(entry.id) !== entry) continue;
       if (!titles.some((t) => this.couldSee(entry, t, changed[t]?.deleted === true))) continue;
-      const reweigh = entry.reweigh;
-      if (reweigh === undefined) { this.rerun(entry, false); continue; }
-      // THE REACH WEIGHS AGAIN FIRST: a watch whose owner lost the wiki's read stops tracking and drops with its record.
-      entry.pending = entry.pending.then(reweigh).then(
-        () => { if (this.entries.get(entry.id) === entry) this.rerun(entry, false); },
-        () => { if (this.entries.get(entry.id) === entry) this.end(entry.id); },
-      );
+      if (entry.reweigh === undefined) { this.rerun(entry, false); continue; }
+      this.weigh(entry);
     }
+  }
+
+  /**
+   * THE REACH WEIGHS AGAIN FIRST, the queue folded: at most one weigh runs and one waits per watch, however many changes land
+   * meanwhile. A watch whose owner lost the wiki's read stops tracking and drops with its record.
+   */
+  private weigh(entry: WatchEntry): void {
+    if (entry.weighing) { entry.again = true; return; }
+    const reweigh = entry.reweigh;
+    if (reweigh === undefined) return;
+    entry.weighing = true;
+    void reweigh().then(
+      () => { if (this.entries.get(entry.id) === entry) this.rerun(entry, false); },
+      () => { if (this.entries.get(entry.id) === entry) this.end(entry.id); },
+    ).finally(() => {
+      entry.weighing = false;
+      if (entry.again && this.entries.get(entry.id) === entry) { entry.again = false; this.weigh(entry); }
+    });
   }
 
   /** Run the watch's filter over its view; land its record where the digest moved, or where `force` asks (a new spec). */

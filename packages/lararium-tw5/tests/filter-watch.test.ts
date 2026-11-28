@@ -229,6 +229,34 @@ describe.skipIf(wikiSkip)(`custody sits face against face${skipNote}`, () => {
     expect(r.book.bind(stub("a-0", "did:b")).owner).toBe("did:b");
   });
 
+  test("RED: the claims an owner's bound leaves stand at most WATCH_BOOK_MAX; past it the oldest claim leaves and its id frees", async () => {
+    const r = await rig();
+    for (let i = 0; i < WATCH_BOOK_MAX * 3; i++) r.book.bind(stub(`a-${i}`, "did:a"));
+    expect(r.book.freedClaims("did:a")).toBe(WATCH_BOOK_MAX);
+    expect(r.book.ownerOf("a-0"), "the oldest freed claim left").toBeUndefined();
+    expect(r.book.ownerOf(`a-${WATCH_BOOK_MAX}`), "a recent freed claim stands").toBe("did:a");
+    expect(r.book.bind(stub("a-0", "did:b")).owner).toBe("did:b");
+    expect(() => r.book.bind(stub(`a-${WATCH_BOOK_MAX}`, "did:b"))).toThrow(/watch-other-face/);
+  });
+
+  test("RED: the weigh queue folds: one weigh runs and one waits per watch, however many changes land meanwhile", async () => {
+    const r = await rig();
+    let weighs = 0;
+    let release: (() => void) | undefined;
+    const slow = (): Promise<void> => { weighs++; return new Promise((resolve) => { release = resolve; }); };
+    r.book.bind({ ...stub("fold", "did:f"), reweigh: slow });
+    await settle();
+    weighs = 0;
+    for (let i = 0; i < 5; i++) { r.wiki.addTiddler({ title: `Burst ${i}`, text: String(i) }); await settle(2); }
+    expect(weighs).toBe(1);
+    release!();
+    await settle();
+    expect(weighs).toBe(2);
+    release!();
+    await settle();
+    expect(weighs).toBe(2);
+  });
+
   test("RED: the bound holds while every watch is held: a face past it refuses watch-bound by name", async () => {
     const r = await rig();
     for (let i = 0; i < WATCH_BOOK_MAX; i++) { r.book.bind(stub(`c-${i}`, "did:c")); r.book.hold(`c-${i}`, 1); }
