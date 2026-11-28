@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.walk.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read where this vessel walks: hearth, Nexus, grant and wallet"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.walk.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.walk.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.walk.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.walk.reads ~ walk ~ where this vessel walks
+
+Bare `lares walk` reads, per hearth this vessel walks at: the Nexus, the relay, whether its invite still waits for a dial to redeem it, the grant it holds (its epoch, lineage and rolls survived), and how many invites its wallet holds. A vessel walks at one hearth, as one face. The act runs inside the standing vessel, else here under this command's own key session.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ custody
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`custody` params=`who/seat-or-hand ~ one sealed act frame on the custody door under the vessel key; the walk record never rests in the clear`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ refused · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`refused` params=`~ the custody door refused the act; the message names why`>>
+<<has entity=`refusal` name=`error` params=`~ the act failed outside the door's refusals`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ walks
+
+```memetic-wikitext
+<<has entity=`band` name=`walks` params=`exit/0 fields/[[walks via]] ~ each walk, and via naming daemon or direct`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares walk
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares walk]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TKykeHNnBp9TdhBGqs-De3U5UHNtAVkqHiLaOPGamgA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

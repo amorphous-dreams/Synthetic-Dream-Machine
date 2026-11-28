@@ -1,0 +1,100 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.invite.hands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "hand the newest invite out of the wallet as one string to carry"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.invite.hands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.invite.hands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.invite.hands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.invite.hands ~ invite ~ one invite out of the wallet
+
+`lares walk invite` hands the newest invite out of the wallet as one string to carry to one newcomer; it redeems once, at the hearth's own gate. The answer names how many stay in the wallet.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ hand
+
+```memetic-wikitext
+<<has entity=`example` name=`hand` params=`~ print the newest invite`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ custody
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`custody` params=`who/seat-or-hand ~ one sealed act frame on the custody door under the vessel key; the walk record never rests in the clear`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ refused · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`refused` params=`~ the custody door refused the act; the message names why`>>
+<<has entity=`refusal` name=`error` params=`~ the act failed outside the door's refusals`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ handed
+
+```memetic-wikitext
+<<has entity=`band` name=`handed` params=`exit/0 fields/[[gatePubKey invite left via]] ~ the invite string and what stays in the wallet`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares walk invite
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares walk invite]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VvXt4d1l7iigm-MN3WCuychLA4BWb9u_GixPRNrr3pk`>>
+
+<<^ code=`&#x0004;` to=`?`>>
