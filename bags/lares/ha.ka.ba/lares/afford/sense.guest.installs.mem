@@ -1,0 +1,99 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.guest.installs`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "install the mempalace sidecar's library deps and link its bins"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.guest.installs", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.guest.installs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.guest.installs"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.guest.installs ~ the sidecar's library deps, outside the vessel root
+
+`lares mempalace install` installs the read-only sidecar submodule's library deps into the operator's own Python environment, then links its console scripts into `~/.local/bin` so a hook or MCP environment finds them without the venv. Founding never reaches it; already installed reads as a skip. A failed step skips the link and exits 1.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ install
+
+```memetic-wikitext
+<<has entity=`example` name=`install` params=`~ install the sidecar deps`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ writes the operator's own Python environment, outside the vessel root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`error` params=`cure/[[sense.guest.installs]] ~ an install step failed; the steps name which`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ installed
+
+```memetic-wikitext
+<<has entity=`band` name=`installed` params=`exit/0 fields/[[steps]] ~ each step ran, failed or skipped`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mempalace install
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares mempalace install]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AL8lgpwUh-39tIiuqu_W5FA4DNjmE1kTrHtrO3-tY1Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

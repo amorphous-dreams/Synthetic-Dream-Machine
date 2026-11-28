@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.guest.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read every guest daemon, holder, mine and hook leg with its spawner"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.guest.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.guest.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.guest.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.guest.reads ~ the live topology, and who spawned each
+
+`lares mempalace status` prints every guest daemon, holder, mine and hook leg beside its spawner, read off the live process table (no pidfile), so the output teaches killing the spawner, never the children.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ status
+
+```memetic-wikitext
+<<has entity=`example` name=`status` params=`~ the live guest topology`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's process table; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ read
+
+```memetic-wikitext
+<<has entity=`band` name=`read` params=`exit/0 ~ the topology table`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mempalace status
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares mempalace status]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c_eJjPnmIBi92aOtePhFzNmBUZ84QkTGCWPwYbykpeE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

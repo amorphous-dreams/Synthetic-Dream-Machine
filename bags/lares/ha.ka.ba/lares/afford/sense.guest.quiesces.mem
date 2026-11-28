@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.guest.quiesces`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "pause the guest hooks, drain its daemons and confirm zero"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.guest.quiesces", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.guest.quiesces"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.guest.quiesces"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.guest.quiesces ~ graceful stop-the-world, idempotent
+
+`lares mempalace quiesce` pauses the hooks first (stops the minting), then SIGTERM-drains the warm daemons with a bounded SIGKILL, and confirms zero holders; a second run on a quiet system reads a clean no-op. `--hold` keeps the hooks paused for a later resume.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ quiesce · hold
+
+```memetic-wikitext
+<<has entity=`example` name=`quiesce` params=`~ drain the guest`>>
+<<has entity=`example` name=`hold` params=`hold/true ~ drain and keep the hooks paused`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ hold
+
+```memetic-wikitext
+<<has entity=`arg` name=`hold` params=`~ keep the hooks paused after the drain`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ signals this host's guest processes; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ conflict
+
+```memetic-wikitext
+<<has entity=`refusal` name=`conflict` params=`cure/[[sense.guest.reads]] ~ a holder survived SIGTERM and SIGKILL; read the status`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ quiet
+
+```memetic-wikitext
+<<has entity=`band` name=`quiet` params=`exit/0 ~ zero holders stand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mempalace quiesce
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares mempalace quiesce]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oc8qC3YxHL63Mw7Koci5o1Ms5ZRMQ_6HZ0tJ-lJRzgY`>>
+
+<<^ code=`&#x0004;` to=`?`>>
