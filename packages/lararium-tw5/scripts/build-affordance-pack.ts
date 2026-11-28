@@ -33,6 +33,9 @@
  *               `by/filter`) claims no route of its own, and its door gathers every choice, the spine each reads first
  *   index       the `lares --help` lines of every carrier, through the index template
  *   shelves     per oracle kind: the shelf index's title and the `method` it declares (`three-coins`)
+ *   records     per title: the text of every record a call reads off a baked carrier (its root, each `#/slot` child, and
+ *               every shared slot those call by `kahea`), the floor rung a vessel's `call` reads where its live stack holds
+ *               no carrier for a spelling or address (`floorReaderOf` in `modules/call.ts`)
  *   hash        sha256 over the pack's canonical bytes with the hash field absent
  *
  * `--check` regenerates in memory and compares bytes with the tracked pack (witness W3); a stale or hand-edited pack exits 1
@@ -49,7 +52,7 @@ import { fileURLToPath } from "node:url";
 import { bccOf, headUriOf } from "@lararium/memetic-frame";
 import { bootTestWiki } from "../tests/test-wiki.js";
 import { TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
-import { AFFORDANCE_TAG, AFFORD_SLOTS, AFFORD_SURFACES, addressOfTitle, bareAddressOf, type AffordSurface } from "../src/affordance-rows.js";
+import { AFFORDANCE_TAG, AFFORD_SLOTS, AFFORD_SURFACES, addressOfTitle, bareAddressOf, kaheaTitles, type AffordSurface } from "../src/affordance-rows.js";
 import { routesOf, rowsOf, skinRows, type TextOf } from "../src/affordance-read.js";
 import { KIND_RE, ORACLE_SHELF_PREFIX } from "@lararium/mesh/oracle-cast";
 import { kaheaTarget } from "@lararium/mesh/oracle-loop";
@@ -118,6 +121,7 @@ export interface AffordancePack {
   readonly doors: Record<string, { readonly addresses: readonly string[]; readonly brief: string; readonly help: readonly string[] }>;
   readonly index: Record<string, readonly string[]>;
   readonly shelves: Record<string, AffordancePackShelf>;
+  readonly records: Record<string, string>;
 }
 
 /** A shelf index's path under a canon source: `.../library/oracles/<kind>/index.mem`. */
@@ -154,6 +158,13 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     lines(engine.wiki.renderTiddler("text/plain", SKIN(surface), { variables: { currentTiddler: title, ...variables } }));
 
   const carriers: Record<string, AffordancePackCarrier> = {};
+  /** THE CALL'S FLOOR RUNG: each record a call reads off a baked carrier, by title, its text as canon wrote it. */
+  const records: Record<string, string> = {};
+  const keep = (title: string): string | undefined => {
+    const text = textOf(title);
+    if (text !== undefined) records[title] = text;
+    return text;
+  };
   // THE ROUTES READ BY THE ONE RULE THE LIVE STACK READS BY (`routesOf`): the bake runs it over canon's carriers, so the floor a
   // sleeping vessel answers from and a standing vessel's own stack derive spelling to address alike.
   const derived = routesOf(textOf, tagged, {
@@ -175,12 +186,15 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     // THE CARRIER THAT ANSWERS: where two titles carry one address, the one `carrierOf` seats bakes.
     if (derived.carriers[address] !== title) continue;
     // ONE CLOSED SLOT SET: a carrier slot the set never names would bake silently unrendered, so it refuses the bake by name.
-    for (const child of engine.wiki.filterTiddlers(`[prefix[${title}#/]]`)) {
+    const children = engine.wiki.filterTiddlers(`[prefix[${title}#/]]`);
+    for (const child of children) {
       const slot = `#/${child.slice(title.length + 2).split("/")[0]}`;
       if (!(AFFORD_SLOTS as readonly string[]).includes(slot)) {
         throw new Error(`affordance-slot-unknown: ${title} holds ${slot}, outside the closed slot set (${AFFORD_SLOTS.join(" · ")}); rename the slot or name it in lar:///ha.ka.ba/lares/api/pono/affordance and AFFORD_SLOTS together`);
       }
     }
+    // The root, each slot, and every shared slot a slot calls by `kahea`, read in place by the call as the stack would read them.
+    for (const held of [title, ...children]) for (const called of kaheaTitles(keep(held) ?? "")) keep(called);
     const role = String((engine.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields?.["role"] ?? "");
     const renders: Record<string, Record<string, readonly string[]>> = {};
     for (const surface of AFFORD_SURFACES) {
@@ -271,9 +285,9 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     if (method !== "") shelves[kind] = { title, method };
   }
 
-  const body = { title: PACK_TITLE, carriers, routes, doors, index, shelves };
+  const body = { title: PACK_TITLE, carriers, routes, doors, index, shelves, records };
   const hash = `sha256-${createHash("sha256").update(canonicalJson(body)).digest("hex")}`;
-  return { title: PACK_TITLE, hash, carriers, routes, doors, index, shelves };
+  return { title: PACK_TITLE, hash, carriers, routes, doors, index, shelves, records };
 }
 
 /**

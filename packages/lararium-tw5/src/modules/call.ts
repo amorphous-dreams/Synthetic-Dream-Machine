@@ -38,6 +38,11 @@ module-type: startup
  * `signs` row). A seat that walks no dry path, or a door the host runs, refuses the dry carry `mu-cell-empty` and names the
  * plain call (`dryUnwalked`), so a preview never lands as a write, whatever a layer above tables.
  *
+ * THE PACK STANDS AS THE FLOOR RUNG (`floorReaderOf`): where the live stack holds no record for a title the plan reads, the
+ * baked affordance pack's record answers in its place, the lowest layer beneath the stack's own cascade, as the oracle's loop
+ * read falls stack → pack. A carrier the stack holds still wins; the pack fills only where the stack stands silent, and an
+ * answer its floor shaped names `bag/pack base/<pack hash>`. A house whose canon lags its checkout still routes and binds.
+ *
  * In the VM the call dispatches through `$tw.lares.callDoor`, the host's seat of the registry; where no host seats one, the
  * call answers its plan (`handler/host`, the bound params), so a reader sees what would run.
  *
@@ -47,7 +52,7 @@ import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { LaresCallDoor, LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance } from "../types/tiddlywiki.js";
-import { AFFORDANCE_TAG, AFFORD_SURFACES, type AffordSurface, type HasRow, bareAddressOf, renderCall, skinOmits, skinRow } from "../affordance-rows.js";
+import { AFFORDANCE_TAG, AFFORD_SURFACES, type AffordSurface, type HasRow, addressOfTitle, bareAddressOf, renderCall, skinOmits, skinRow } from "../affordance-rows.js";
 import { argOnSurface, carrierOf, routeOfCall, routesOf, seatHintRows, skinRows, takesRows, type AffordRoutes, type CarrierView, type TextOf } from "../affordance-read.js";
 import { param } from "../has-line.js";
 import { isDryCarry, isMuFault, lookupMu, muCellsOf, muWordsOf, readMu, type MuFault, type MuReading } from "./mu.js";
@@ -471,6 +476,35 @@ export function callReaderOf(wiki: ReaderWiki): CallReader {
       const f = fieldsOf(title) ?? {};
       return { carrier: title, bag: f["$origin-bag"] || "wiki", base: recordBase(f) };
     },
+  };
+}
+
+/** The baked floor a call reads where the live stack stands silent: each baked carrier record's text by title, and the pack's hash. */
+export interface CallFloor {
+  readonly records: Readonly<Record<string, string>>;
+  readonly hash: string;
+}
+
+/**
+ * THE FLOOR RUNG: a reader over the live stack with the baked pack beneath it. Each title the plan reads answers from the stack
+ * where the stack holds it, else from the pack's record (`floor.records`), so the pack stands as the lowest layer of the same
+ * cascade: a carrier any layer seats (at the bare root or the stable seat) wins, and a slot the stack leaves out reads canon's
+ * as baked. A carrier record the floor answered hands `bag/pack base/<pack hash>`. No floor, or an empty one, reads the stack alone.
+ */
+export function floorReaderOf(stack: CallReader, floor: CallFloor | null | undefined): CallReader {
+  if (floor === null || floor === undefined) return stack;
+  const records = floor.records;
+  const held = (title: string): boolean => Object.prototype.hasOwnProperty.call(records, title);
+  if (Object.keys(records).length === 0) return stack;
+  const roots = Object.keys(records).filter((title) => !title.includes("#/"));
+  return {
+    textOf: (title) => stack.textOf(title) ?? (held(title) ? records[title] : undefined),
+    titles: () => new Set([...stack.titles(), ...Object.keys(records)]),
+    carriers: {
+      has: (title) => stack.carriers.has(title) || held(title),
+      tagged: (address) => [...new Set([...(stack.carriers.tagged?.(address) ?? []), ...roots.filter((title) => addressOfTitle(title) === address)])],
+    },
+    receiptOf: (title) => (!stack.carriers.has(title) && held(title) ? { carrier: title, bag: "pack", base: floor.hash } : stack.receiptOf(title)),
   };
 }
 

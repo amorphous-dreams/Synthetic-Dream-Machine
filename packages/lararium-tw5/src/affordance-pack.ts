@@ -58,6 +58,11 @@ export interface AffordancePack {
   readonly index: Readonly<Record<string, readonly string[]>>;
   /** Per oracle kind (`e-jing`, `doa`): the shelf `library/oracles/<kind>/` whose index declares a method. */
   readonly shelves?: Readonly<Record<string, AffordancePackShelf>>;
+  /**
+   * Per title: the text of every record a call reads off a baked carrier (its root, each slot, every shared slot those call by
+   * `kahea`), the floor rung the daemon `call` reads where the live stack holds no carrier for a spelling or address.
+   */
+  readonly records?: Readonly<Record<string, string>>;
 }
 
 const EMPTY: AffordancePack = Object.freeze({ title: "", hash: "", carriers: {}, routes: {}, doors: {}, index: {} });
