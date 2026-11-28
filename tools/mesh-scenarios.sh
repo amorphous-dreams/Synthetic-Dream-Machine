@@ -1227,7 +1227,7 @@ run_meme() {
 
   step "A promotes the meme from the book's working layer into its canon: act MOVE"
   local LD MV
-  MV=$($COMPOSE exec -T lararium-a $LARES act MOVE --title "$URI" --from "$BOOK_WORKING" --to "$BOOK_BAG" --yes --json 2>&1)
+  MV=$($COMPOSE exec -T lararium-a $LARES act lar:///carriage.bag.moves title="$URI" from="$BOOK_WORKING" to="$BOOK_BAG" yes=true --json 2>&1)
   if printf '%s' "$MV" | grep -q '"ok":true' && printf '%s' "$MV" | grep -qE '"moved":[1-9]'; then ok
   else bad "the promotion MOVE refused"; printf '%s\n' "$MV" | tail -3 | sed 's/^/      /'; clear_all; return; fi
 
@@ -1326,9 +1326,9 @@ run_meme() {
   step "★ a PUBLIC pointer's bytes: the Herm's read-face serves A's staged blob ★"
   local PNG_CID BULB_CODE
   $COMPOSE exec -T lararium-a sh -c 'mkdir -p /tmp/blob/bags/meme-witness-book/t.witness.blob && printf "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png && printf "type: image/png\n" > /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png.meta' 2>/dev/null
-  LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/blob/bags/meme-witness-book/t.witness.blob --to "$BOOK_WORKING" --yes --json 2>&1)
+  LD=$($COMPOSE exec -T lararium-a $LARES act lar:///carriage.bag.loads source-uri=/tmp/blob/bags/meme-witness-book/t.witness.blob to="$BOOK_WORKING" yes=true --json 2>&1)
   if printf '%s' "$LD" | grep -q '"ok":true'; then
-    MV=$($COMPOSE exec -T lararium-a $LARES act MOVE --title "lar:///t.witness.blob/photo" --from "$BOOK_WORKING" --to "$BOOK_BAG" --yes --json 2>&1)
+    MV=$($COMPOSE exec -T lararium-a $LARES act lar:///carriage.bag.moves title="lar:///t.witness.blob/photo" from="$BOOK_WORKING" to="$BOOK_BAG" yes=true --json 2>&1)
     printf '%s' "$MV" | grep -q '"ok":true' || LD="$MV"
   fi
   PNG_CID=$($COMPOSE exec -T lararium-a sh -c 'sha256sum /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png' 2>/dev/null | cut -c1-64)

@@ -145,15 +145,20 @@ function computedSites(files: readonly string[]): Map<string, number> {
  * `from`/`out`/`title`/`plane`; `sense` reaches `help-mempalace` only through the guest door), so no user
  * line carries them. Named per command, each with its reason, so an exemption never covers a user flag.
  */
+/** What the act runner reads off the args the call door builds from a residency act's bound params. */
+const ACT_BUILT = ["source", "from", "dry-run", "out", "in-wiki", "title", "to", "change-id", "shadow", "bag", "plane", "source-uri"] as const;
+
 const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
   vessel: ["from", "out", "title", "plane", "source", "to", "source-uri", "draft", "watch", "debounce"],   // seed builds its act/ingest lines; both doors now carry a fold
   sense:  ["help-mempalace"],                  // the guest comparator's help rides `lares mempalace`
   // THE CALL SHAPE: a call verb reads no flag off the line. `face=N` rides as a param, and cmdCall seats it on the options it
   // hands the door's face reader; the shared door helpers (meme-shared's target reader) answer other doors' flags.
-  get:    ["face", "target"],
-  put:    ["face", "target"],
-  delete: ["face", "target"],
-  rename: ["face", "target"],
+  // THE ONE ACT'S HOST DOOR (landing 9): the call door hands a residency act's bound params to its runner as the parsed shape it
+  // builds (`actArgsOf`), so the runner's reads arrive from the vessel's binding, never off the line.
+  get:    ["face", "target", ...ACT_BUILT],
+  put:    ["face", "target", ...ACT_BUILT],
+  delete: ["face", "target", ...ACT_BUILT],
+  rename: ["face", "target", ...ACT_BUILT],
 };
 
 /**

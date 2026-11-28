@@ -112,7 +112,7 @@ describe.skipIf(wikiSkip)(`the record port's call ask: the glass speaks the one 
     const ran: Array<Record<string, unknown>> = [];
     const verbs = () => {
       const table = new VerbTable();
-      table.register("echo-word", async (args) => { ran.push({ ...args }); return { has: "<<~ has name=`echo`>>", echoed: args["word"] }; });
+      table.register("echo-word", async (args) => { ran.push({ ...args }); return { has: "<<~ has name=`echo` params=`said/word`>>", echoed: args["word"] }; });
       table.answer(ECHO, "echo-word");
       return table;
     };

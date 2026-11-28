@@ -219,7 +219,7 @@ test("a door that answers no open key stops the driver by name", async () => {
 test("bag creates a bag through act CREATE and prints its URI", async () => {
   const r = await run(["bag", "aki-fixture"]);
   assert.equal(r.status, 4, "the fake answers no ok:true, so the driver names the refusal");
-  assert.match(r.calls, /act CREATE --bag lar:\/\/\/ha\.ka\.ba\/bags\/aki-fixture --yes/);
+  assert.match(r.calls, /act lar:\/\/\/carriage\.bag\.creates bag=lar:\/\/\/ha\.ka\.ba\/bags\/aki-fixture yes=true/);
   assert.equal((await run(["bag", "Bad Name"])).status, 2);
 });
 

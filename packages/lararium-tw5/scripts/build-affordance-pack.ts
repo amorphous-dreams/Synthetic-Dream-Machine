@@ -129,6 +129,9 @@ export interface AffordancePack {
   readonly voice?: Record<string, string>;
 }
 
+/** Iris-Sprite's shrine's path under a canon source. */
+const SHRINE_FILE = /\/ha\.ka\.ba\/lares\/spirit\/iris-sprite\.mem$/;
+
 /** A shelf index's path under a canon source: `.../library/oracles/<kind>/index.mem`. */
 const SHELF_INDEX = /\/library\/oracles\/([a-z0-9]+(?:-[a-z0-9]+)*)\/index\.mem$/;
 
@@ -352,8 +355,8 @@ export function canonTexts(bags: string, extra: readonly string[] = []): string[
   const files = memFiles(bags);
   const carriers = [...files, ...extra].map((f) => readFileSync(f, "utf8")).filter((t) => t.includes(AFFORDANCE_TAG));
   const shelves = files.filter((f) => SHELF_INDEX.test(f.split(path.sep).join("/"))).map((f) => readFileSync(f, "utf8")).filter((t) => !t.includes(AFFORDANCE_TAG));
-  // Iris-Sprite's shrine rides the bake for her templates alone (the pack's `voice`).
-  const shrine = files.map((f) => readFileSync(f, "utf8")).filter((t) => !t.includes(AFFORDANCE_TAG) && headUriOf(t) === IRIS_SHRINE);
+  // Iris-Sprite's shrine rides the bake for her templates alone (the pack's `voice`): one file, found by its path, read once.
+  const shrine = files.filter((f) => SHRINE_FILE.test(f.split(path.sep).join("/"))).map((f) => readFileSync(f, "utf8")).filter((t) => headUriOf(t) === IRIS_SHRINE);
   return [...carriers, ...shelves, ...shrine];
 }
 

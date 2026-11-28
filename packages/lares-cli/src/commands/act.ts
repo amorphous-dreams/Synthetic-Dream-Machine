@@ -154,7 +154,7 @@ export function actArgsOf(args: ParsedArgs, verb: string | null, params: Readonl
     else options[key] = String(value);
   }
   if (carry !== null && carry.includes("_")) flags["dry-run"] = true;
-  for (const global of ["json", "plain"]) if (args.flags[global] === true) flags[global] = true;
+  if (args.flags["json"] === true) flags["json"] = true;
   return { command: "act", positional: verb === null ? [] : [verb], options, flags };
 }
 

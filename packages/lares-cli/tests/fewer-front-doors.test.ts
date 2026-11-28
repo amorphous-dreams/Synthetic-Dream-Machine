@@ -5,7 +5,7 @@
  *
  *   receipt · cancel   -> vessel request <id> [--cancel]
  *   watch              -> ingest --watch
- *   draft              -> act --draft <uri>
+ *   draft              -> act lar:///carriage.draft.pulls uri=<uri>
  *   raise sign         -> persona raise-sign <challenge-json>
  *   wing-of · test-quine -> out of the front door (tools/wing-of.mjs; `pnpm --filter @lararium/node test:quine`)
  *

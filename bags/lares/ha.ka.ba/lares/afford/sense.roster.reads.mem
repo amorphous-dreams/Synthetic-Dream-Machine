@@ -63,13 +63,13 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/edges`>>
 
-!! edges ~ affordance · lares-mcp
+!! edges ~ affordance · voices
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lararium/sensorium/lares-mcp`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/seat-lares`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uubRP4-_ZL_juMAtA_-FKbvXzovYvEWt1NTKDjt7NGs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xim99e_neAbOMcwrRG29EVx7SrqmWVW_CBlSDxHhexE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

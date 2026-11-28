@@ -13,16 +13,20 @@
 import { describe, expect, test } from "vitest";
 import { COMMAND_HELP } from "../../src/command-help.js";
 import { COMMAND_NAMES } from "../../src/bin/lares.js";
+import { isCallHead } from "../../src/commands/call.js";
+
+/** Every door: each COMMANDS row, and the one act's call head (`lares act lar:///<address> …`), which stands no row of its own. */
+const DOOR_NAMES: readonly string[] = [...COMMAND_NAMES, ...["act"].filter((head) => isCallHead(head) && !COMMAND_NAMES.includes(head))];
 import { REBAKE, pack } from "./affordance-harness.js";
 
 /** The legacy count today: `oracle`, `ddate`, `law`, wave 2's seven, wave 3a's six and the call verbs flipped. Lower it in the commit that flips the next door; never raise it. */
 const LEGACY_CEILING = 28;
 
 function census(flippedDoors: readonly string[], help: Readonly<Record<string, unknown>> = COMMAND_HELP) {
-  const flipped = COMMAND_NAMES.filter((d) => flippedDoors.includes(d));
-  const legacy = COMMAND_NAMES.filter((d) => !flippedDoors.includes(d));
+  const flipped = DOOR_NAMES.filter((d) => flippedDoors.includes(d));
+  const legacy = DOOR_NAMES.filter((d) => !flippedDoors.includes(d));
   const twoHomes = flipped.filter((d) => Object.keys(help).some((k) => k === d || k.startsWith(`${d} `)));
-  const strays = flippedDoors.filter((d) => !COMMAND_NAMES.includes(d));
+  const strays = flippedDoors.filter((d) => !DOOR_NAMES.includes(d));
   return { flipped, legacy, twoHomes, strays };
 }
 
@@ -36,7 +40,7 @@ describe("the census ratchet: flipped + legacy = doors; legacy only falls; one h
   });
 
   test("★ every door counts once, flipped or legacy ★", () => {
-    expect(c.flipped.length + c.legacy.length).toBe(COMMAND_NAMES.length);
+    expect(c.flipped.length + c.legacy.length).toBe(DOOR_NAMES.length);
     expect(c.strays).toEqual([]);
   });
 

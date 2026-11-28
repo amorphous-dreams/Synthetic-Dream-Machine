@@ -225,7 +225,7 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
   });
 
   it("an argument that only looks like a path stays untouched", () => {
-    expect(ok(["act", "REPACK", "--source", `${W}/b.tid`, "--from", "some/bag/like"])).toEqual(["act", "REPACK", "--source", "/workspace/b.tid", "--from", "some/bag/like"]);
+    expect(ok(["act", "lar:///carriage.bundle.repacks", `source=${W}/b.tid`, "from=some/bag/like"])).toEqual(["act", "lar:///carriage.bundle.repacks", "source=/workspace/b.tid", "from=some/bag/like"]);
     expect(ok(["get", "title=lar:///a/b", "bag=./not/a/path"])).toEqual(["get", "title=lar:///a/b", "bag=./not/a/path"]);
     expect(ok(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"])).toEqual(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"]);
     expect(ok(["persona", "new", "0", "--name", "/etc/passwd"])).toEqual(["persona", "new", "0", "--name", "/etc/passwd"]);

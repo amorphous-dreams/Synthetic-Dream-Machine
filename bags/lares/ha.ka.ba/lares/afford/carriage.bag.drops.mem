@@ -94,7 +94,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares act lar:///carriage.bag.drops
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host dry/walks spells/[[lares act lar:///carriage.bag.drops]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
+<<has entity=`skin` name=`cli` params=`handler/host dry/walks grammar/call spells/[[lares act lar:///carriage.bag.drops]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-v9cnibSgddzGgj3uVWZ9HavcPLSdsHKctPy0DE7SW4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rjM8tLgTErehOe_Aj7N4yo8UDIkf3CF0PPVwe9uN5_A`>>
 
 <<^ code=`&#x0004;` to=`?`>>
