@@ -1,0 +1,123 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.house.keeps`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "keep the house in the operator's repo: cut, commit, push, land"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.house.keeps", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.house.keeps"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.house.keeps"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.house.keeps ~ keep ~ the host half of the keep rite
+
+`lares rite keep --workspace <name>` runs on the host: it guards the bound workspace, flushes the shore, runs `keep-cut` in the vessel, then commits `<into>`, rebases, pushes, and lands the tessera at the bundle id the pushed tree holds. `--if-due` keeps only where the house moved since the bundle its remote-tracking branch holds (or a keep still waits for its push or landing), and with no `--workspace` reads the configured keep workspace: the one call `down` makes. `--sessions` / `--no-sessions` keeps the sensoriums or leaves them; with neither, LARES_KEEP_SESSIONS decides. A keep run by hand offers a spent lei's refill.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ keep · if-due
+
+```memetic-wikitext
+<<has entity=`example` name=`keep` params=`workspace/keep ~ keep into the bound workspace`>>
+<<has entity=`example` name=`if-due` params=`if-due/true ~ keep only where the house moved`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ workspace · into · accept-omissions · face · if-due · sessions
+
+```memetic-wikitext
+<<has entity=`arg` name=`workspace` params=`takes/name ~ the bound workspace the bundle lays into`>>
+<<has entity=`arg` name=`into` params=`takes/path ~ the path inside the workspace`>>
+<<has entity=`arg` name=`accept-omissions` params=`~ land the bundle though some memory stays behind`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the keep's face, a whole persona index from 0`>>
+<<has entity=`arg` name=`if-due` params=`~ keep only where the house moved since the last kept bundle`>>
+<<has entity=`arg` name=`sessions` params=`~ keep the sensoriums too; --no-sessions leaves them`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ host git commits and pushes; the vessel half spends a return of the keep lei strung for the workspace`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · keep-host-half-in-vessel · keep-workspace-unbound · keep-workspace-not-a-repo · keep-workspace-detached · keep-tree-unclean · keep-remote-absent · keep-secret-shaped · keep-commit-refused · keep-rebase-refused · keep-push-refused · keep-pushed-differs · keep-lei-unseen
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.house.keeps workspace/keep]] ~ no workspace and no if-due, or a malformed face`>>
+<<has entity=`refusal` name=`keep-host-half-in-vessel` params=`~ the host half runs on the host, never inside the vessel`>>
+<<has entity=`refusal` name=`keep-workspace-unbound` params=`~ the workspace binds no directory`>>
+<<has entity=`refusal` name=`keep-workspace-not-a-repo` params=`~ the workspace holds no git repo`>>
+<<has entity=`refusal` name=`keep-workspace-detached` params=`~ the workspace stands on a detached head`>>
+<<has entity=`refusal` name=`keep-tree-unclean` params=`~ the workspace tree holds unkept changes`>>
+<<has entity=`refusal` name=`keep-remote-absent` params=`~ the workspace names no remote`>>
+<<has entity=`refusal` name=`keep-secret-shaped` params=`~ the bundle holds secret-shaped strings`>>
+<<has entity=`refusal` name=`keep-commit-refused` params=`~ git refused the commit`>>
+<<has entity=`refusal` name=`keep-rebase-refused` params=`~ git refused the rebase`>>
+<<has entity=`refusal` name=`keep-push-refused` params=`~ git refused the push`>>
+<<has entity=`refusal` name=`keep-pushed-differs` params=`~ the pushed tree holds another bundle`>>
+<<has entity=`refusal` name=`keep-lei-unseen` params=`~ no keep lei stands strung for the workspace`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ kept · not-due · stopped
+
+```memetic-wikitext
+<<has entity=`band` name=`kept` params=`exit/0 ~ the bundle stands pushed and the rite landed`>>
+<<has entity=`band` name=`not-due` params=`exit/0 fields/[[rite due workspace why]] ~ nothing moved, or no keep workspace named`>>
+<<has entity=`band` name=`stopped` params=`exit/1 fields/[[refusal message]] ~ the keep stopped where the refusal names`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite keep
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares rite keep]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bZN-k1vd5l6OgbocwoBdqJaJNHv-VwC3Z8p12xG25OU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

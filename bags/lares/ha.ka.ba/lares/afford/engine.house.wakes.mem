@@ -1,0 +1,99 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.house.wakes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stand and wake the keeper and the vessel through the host shim"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.house.wakes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.house.wakes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.house.wakes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.house.wakes ~ hoala ~ hoʻāla, the host shim walks it
+
+hoʻāla stands and wakes containers, so the host shim walks it (`tools/lares-container.sh rite hoala`): run `lares rite hoala` on the host with LAR_ROOT unset, and the shim answers it. No CLI row plans it; reached by the CLI inside a house, the door refuses `usage` and names the shim.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ wake
+
+```memetic-wikitext
+<<has entity=`example` name=`wake` params=`~ on the host, with LAR_ROOT unset, the shim walks it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ the host shim stands containers; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ the CLI plans no single row for hoala; the host shim answers it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ refused
+
+```memetic-wikitext
+<<has entity=`band` name=`refused` params=`exit/2 ~ the CLI names the shim's line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite hoala
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares rite hoala]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VQG-0bLF1RMNzHj6o0oM7EkNYXOPyn63kohmCZAni1Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

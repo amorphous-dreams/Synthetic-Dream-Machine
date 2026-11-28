@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.rite.offers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "rest the offer the next vessel carries: one vouch per lent face"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.rite.offers", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.rite.offers"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.rite.offers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.rite.offers ~ offer ~ rite-offer in the standing vessel
+
+`lares rite offer --branch <name> --head <commit> --image <digest>` runs `rite-offer` in the standing vessel between the build and the lowering: it gathers every lent face's line, signs one vouch per face over the image the host built, and rests the offer the next vessel carries to the pūlama. A keeper move rides as `--keeper-to <64 hex> --keeper-next sha256:<64 hex>`, both or neither. `--base` names the resting offer's hash this line read (`rite receipts --rite kukulu` answers it as `offerBase`); an overwrite without it refuses `conflict`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ offer
+
+```memetic-wikitext
+<<has entity=`example` name=`offer` params=`branch/main head/<commit> image/<digest> ~ rest the offer over the built image`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ branch · head · image · keeper-to · keeper-next · base · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`branch` params=`takes/name needs/required ~ the lei's line`>>
+<<has entity=`arg` name=`head` params=`takes/commit needs/required ~ the head the image built from`>>
+<<has entity=`arg` name=`image` params=`takes/digest needs/required ~ the image the host built`>>
+<<has entity=`arg` name=`keeper-to` params=`takes/hex needs/all-of:keeper-to,keeper-next ~ the successor keeper's key, 64 hex`>>
+<<has entity=`arg` name=`keeper-next` params=`takes/digest needs/all-of:keeper-to,keeper-next ~ the committed closure, sha256:<64 hex>`>>
+<<has entity=`arg` name=`base` params=`takes/hash ~ the resting offer's hash this line read`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ one face, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-vouch ~ signs one vouch per lent face over the image`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · rite-offer-malformed · conflict
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.rite.offers branch/main head/<commit> image/<digest>]] ~ the branch, head or image missing, or a half keeper move`>>
+<<has entity=`refusal` name=`rite-offer-malformed` params=`~ the offer reads malformed`>>
+<<has entity=`refusal` name=`conflict` params=`cure/[[face.rite.reads rite/kukulu]] ~ the resting offer moved past the base, or no base named over one`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ offered
+
+```memetic-wikitext
+<<has entity=`band` name=`offered` params=`exit/0 ~ the offer rests; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite offer
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares rite offer]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1yQ_sF8Nz4GpBvm_aUteSUvDDSGt2osxLGExhvWzQNM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

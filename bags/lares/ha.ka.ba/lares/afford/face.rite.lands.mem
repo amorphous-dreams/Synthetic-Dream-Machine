@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.rite.lands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "land a rite's host half, or set a stale begun half down by hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.rite.lands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.rite.lands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.rite.lands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.rite.lands ~ land ~ rite-land, or rite-abandon
+
+`lares rite land --tessera <id>` runs `rite-land` in the vessel that stands after: it rests the host half, naming the begun half; a `--head` or `--image` named must match what the half began at, or it refuses `rite-land-differs`. `land --abandon --tessera <id>` (`rite-abandon`) sets a stale begun half down instead: a hand act that spends nothing, records no par, and frees the face to begin fresh; it names no head or image.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ land · abandon
+
+```memetic-wikitext
+<<has entity=`example` name=`land` params=`tessera/<id> head/<commit> ~ land the host half`>>
+<<has entity=`example` name=`abandon` params=`abandon/true tessera/<id> ~ set a stale begun half down by hand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ tessera · head · image · abandon · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`tessera` params=`takes/id needs/required ~ the begun half's tessera`>>
+<<has entity=`arg` name=`head` params=`takes/commit ~ the head; must match the begun half`>>
+<<has entity=`arg` name=`image` params=`takes/digest ~ the image; must match the begun half`>>
+<<has entity=`arg` name=`abandon` params=`~ set the begun half down instead of landing it`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ one face, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ a landing rides any seat; an abandon reads the hand gate, and a seat refuses hand-act-only`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · rite-begun-absent · rite-land-differs · rite-tree-differs · hand-act-only · hand-unattested
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.rite.lands tessera/<id>]] ~ no tessera, or an abandon naming a head or image`>>
+<<has entity=`refusal` name=`rite-begun-absent` params=`~ no begun half stands under the tessera`>>
+<<has entity=`refusal` name=`rite-land-differs` params=`~ the head or image differs from the begun half`>>
+<<has entity=`refusal` name=`rite-tree-differs` params=`~ the tree differs from the begun half's`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ an abandon from an AI seat; a person runs the line`>>
+<<has entity=`refusal` name=`hand-unattested` params=`~ nothing attests the branch as a hand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 ~ the host half rests, or the begun half stands abandoned; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite land
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares rite land]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hZcXmxPUQxXEMxqzooN4pcky5QC__7t2JWvxMu_FQRY`>>
+
+<<^ code=`&#x0004;` to=`?`>>
