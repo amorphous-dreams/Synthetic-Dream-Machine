@@ -1,0 +1,136 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/lares.lararium.status`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "the house's one status line, then its pins layered house to face to mandate, then the keys the keypad routes"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///lares.lararium.status", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/lares.lararium.status"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/lares.lararium.status"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! lares.lararium.status ~ the bare door: how the house stands, what it pins, which keys it routes
+
+The bare `lares` reads `lares mu=00 aperture=beat`, this carrier's terminal spelling. It answers in three parts and moves nothing, ever: where an act waits it names the door that takes it.
+
+The status line stands the same for every caller: the revision the checkout stands at against develop's head (N behind) · lit or dark, with the standing the vessel published · lit by · faces · canon lag and the pending removals · keep due · a begun half waiting. A field the door cannot read in one cheap step names the door that reads it, never a guess. A dark house answers as a report ("the house stands dark"), never a refusal.
+
+The pins layer as TiddlyWiki stacks layers, so the asker's context picks: the house list (canon, lar:///ha.ka.ba/lares/lararium/pins), then the worn face's own (its daemon wiki, lar:///ha.ka.ba/kahua/lararium/pins), then a mandate's (the mandate record's `pins` field; a spirit's summons names its mandate). A person sees house and face; a summoned spirit sees house, face and mandate. Every pin rides as a runnable call sigil, one per line: a person reads it, a spirit copies and runs it as written. Any hand re-pins by writing the list record in its own layer.
+
+The keys line names the act keys the keypad routes (`keys: get= put= delete= rename= filter= act= rite= bag= …`); the full door list moved behind `lares help`.
+
+The two dials read as the `set` panel reads them (lar:///ha.ka.ba/lares/api/noosphere-boot #/set-and-setting): `mu` the lens, its cells below naming each view and the door it runs until the carriers of the next landings fold them into one call; `aperture` the range, defaulting to `beat`. The terminal's own door walks the views; these rows stand as its testimony.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ the-ground · every-lit-wiki · the-verdict · the-residue · the-checklist · one-line
+
+```memetic-wikitext
+<<has entity=`example` name=`the-ground` params=`~ the status line, the layered pins, the keys: what the bare door answers`>>
+<<has entity=`example` name=`every-lit-wiki` params=`mu/wand ~ every lit wiki and its islands`>>
+<<has entity=`example` name=`the-verdict` params=`mu/sword ~ one verdict for the hearth, the worn daemon wiki and the asker's face, its exit code beside it`>>
+<<has entity=`example` name=`the-residue` params=`mu/pentacle ~ owed mirrors, pending removals, begun halves`>>
+<<has entity=`example` name=`the-checklist` params=`mu/precision aperture/arc ~ the pre-restand checklist in one call, the verdict's exit beside it`>>
+<<has entity=`example` name=`one-line` params=`mu/sword aperture/pulse ~ one line asserted, a spirit's cheapest check`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ mu · aperture · face · mandate
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/aperture`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`aperture` params=`takes/range skins/console,cli default/beat ~ the range; this door's default reads 6/beat: the status line, the pins and the keys`>>
+<<has entity=`cell` name=`00` params=`mu/rest ~ the ground: the status line, the layered pins, the keys`>>
+<<has entity=`cell` name=`*0` params=`mu/wand via/[[lares wiki status]] ~ every lit wiki and its islands, lit or dark`>>
+<<has entity=`cell` name=`?0` params=`mu/cup via/[[lares vessel roster]] ~ the relation map: who holds each face and seat, and how the worn face reaches each wiki`>>
+<<has entity=`cell` name=`!0` params=`mu/sword ~ one verdict with an exit code for three: the hearth, the worn face's daemon wiki, the asker's own face; dark answers 1 as a report, and a spirit that reads it waits on the house's next event`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle via/[[lares shore]],[[lares rite receipts]] ~ the hidden residue: owed mirrors and pending removals, begun halves`>>
+<<has entity=`cell` name=`*!` params=`mu/detail ~ the board verified: every lit wiki, then the verdict`>>
+<<has entity=`cell` name=`*?` params=`mu/relation ~ the live graph: every lit wiki beside the relation map`>>
+<<has entity=`cell` name=`_!` params=`mu/precision ~ the pre-restand checklist: the residue, then the verdict and its exit`>>
+<<has entity=`cell` name=`_?` params=`mu/overview ~ what the residue would block: each line naming the act it holds back`>>
+<<has entity=`cell` name=`*_` params=`mu/signal-jam ~ an explicit debug dump: every lit wiki and the residue, every door at once`>>
+<<has entity=`cell` name=`?!` params=`mu/dubious-move ~ the relation map answered with a warning: relations read on trust, the verdict named as the next call`>>
+<<has entity=`arg` name=`face` params=`takes/handle ~ the lit face the read rides; the verdict reads that face's own standing`>>
+<<has entity=`arg` name=`mandate` params=`takes/title ~ the mandate record whose pins field layers above the face's; absent, LARES_MANDATE names it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a read of the house's standing and its pin records; it writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ mu-malformed · aperture-malformed · act-key-unnamed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`mu-malformed` params=`~ mu names a tool-carry: *0 ?0 !0 _0 00 *! *? _! _? *_ ?! or the seed's word (exit 2)`>>
+<<has entity=`refusal` name=`aperture-malformed` params=`~ aperture names N/rank, the rank or the number on 0 to 20 (exit 2)`>>
+<<has entity=`refusal` name=`act-key-unnamed` params=`~ a key beside the dials names no act; an act key names the act (exit 2)`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ lit · dark · verdict-dark
+
+```memetic-wikitext
+<<has entity=`band` name=`lit` params=`exit/0 ~ the status line, the pins and the keys, and the lens's views`>>
+<<has entity=`band` name=`dark` params=`exit/0 ~ the house stands dark: a report, never a refusal; the pins wait on the raise`>>
+<<has entity=`band` name=`verdict-dark` params=`exit/1 ~ under the sword, a dark hearth, daemon wiki or face reads 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares]] grammar/call ~ the terminal; the bare line, its dials as keys (lares mu=_0 aperture=arc)`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · noosphere-boot
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RlRdRvNJ9673fYqsLExY2odcGXGLJ9mNSbY9hwSrLYs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

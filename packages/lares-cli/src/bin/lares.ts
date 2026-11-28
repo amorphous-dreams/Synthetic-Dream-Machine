@@ -41,6 +41,7 @@ import { cmdEvents }                  from "../commands/events.js";
 import { cmdWiki, wikiHelpLines }                  from "../commands/wiki.js";
 import { cmdCall, isCallHead, CALL_VERBS as CALL_WORDS } from "../commands/call.js";
 import { BURNED_FLAGS, KeypadUsage, isKeypadLine, positionalCure, readKeypad, type KeypadLine } from "../keypad.js";
+import { BARE_ADDRESS, cmdBare, liveReaders } from "../commands/bare.js";
 import { cmdIngest }                  from "../commands/ingest.js";
 import { cmdExport }                  from "../commands/export.js";
 import { cmdImport }                  from "../commands/import.js";
@@ -471,7 +472,16 @@ export function keypadArgv(argv: readonly string[]): { readonly line: KeypadLine
   catch (err) { if (err instanceof KeypadUsage) return { refused: err.message }; throw err; }
   if (line.kind === "call") return { line, argv: [line.verb, ...Object.entries(line.params).map(([k, v]) => `${k}=${v}`)] };
   if (line.kind === "door") return { line, argv: line.argv };
-  return { line, argv: [] };
+  return { line, argv: [BARE_ADDRESS, ...Object.entries(line.params).map(([k, v]) => `${k}=${v}`)] };
+}
+
+/**
+ * THE BARE DOOR (`commands/bare.ts`): bare `lares` reads `lares mu=00 aperture=beat`, the terminal spelling of
+ * lar:///lares.lararium.status. It runs here, at the terminal, whether or not the house answers: a dark house reads as a
+ * report. Its views run other doors through this dispatcher; `aperture=theme` adds the full door list `lares help` prints.
+ */
+async function bareDoor(params: Readonly<Record<string, string>>): Promise<number> {
+  return await cmdBare(params, liveReaders((argv) => dispatch(argv)), COMMAND_NAMES, async () => { printHelp(); return 0; });
 }
 
 /** The set line a keypad call rode, echoed on stderr where it names any of the panel's own keys. */
@@ -486,7 +496,6 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   if (keyed !== null) {
     if ("refused" in keyed) { console.error(`lares: ${keyed.refused}`); return 2; }
     echoSet(keyed.line);
-    if (keyed.line.kind === "bare") { printHelp(); return 1; }
     return await dispatch(keyed.argv);
   }
   const argv = spellHelp(rawArgv);
@@ -499,13 +508,23 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   }
   // Keyhive's trace, asked by name: set before any command stands a provider or a vessel.
   askKeyhiveTrace(args.flags);
-  // Global help: bare `lares`, `lares help`, or `lares --help` with no command.
+  // Global help: `lares help`, or `lares --help` with no command (bare `lares` speaks the house, above).
   //
   // A NAME THAT DOES NOT ANSWER MUST NOT ANSWER SOFTLY. Routing an unknown command to the global menu
   // returns 0 and prints a full page, which reads exactly like a door that opened — so a caller probing
   // `lares <name> --help` cannot tell a live verb from a name no door answers, and the collapse's own law
   // (one spelling per door) stops being checkable from outside. The unknown-command refusal
   // below therefore owns EVERY unknown name, flags included.
+  // BARE `lares` SPEAKS THE HOUSE (the keypad head): the status line, the layered pins, the keys; the full door list moved behind
+  // `lares help`. A bare line that names a flag (`lares --json`, `--surface`) still asks the menu's machine shape.
+  const bareFlags = [...Object.keys(args.options), ...Object.keys(args.flags)];
+  if (args.command === null && bareFlags.length === 0) return await bareDoor({});
+  // The bare door's address, as the bridge forwards a bare line or a keypad line naming no act key into the vessel's host.
+  if (args.command === BARE_ADDRESS) {
+    const params: Record<string, string> = {};
+    for (const token of args.positional) { const eq = token.indexOf("="); if (eq > 0) params[token.slice(0, eq)] = token.slice(eq + 1); }
+    return await bareDoor(params);
+  }
   if (args.command === null || args.command === "help") {
     const surface = args.options["surface"] ?? VERB_SURFACE.cli;
     const execOnly = args.flags["executable"] === true;
@@ -664,8 +683,9 @@ export function runCli(): void {
   // A KEYPAD LINE ROUTES AS THE LINE IT READS: the host reads it once (its set line echoed here), and the line it runs crosses the
   // bridge, so `lares rite=kukulu` stands where `lares rite kukulu` stands and `lares get=<title>` forwards into the vessel.
   const keyed = keypadArgv(argv);
-  if (keyed !== null && !("refused" in keyed) && keyed.line.kind !== "bare") echoSet(keyed.line);
-  const routed = keyed !== null && !("refused" in keyed) && keyed.line.kind !== "bare" ? [...keyed.argv] : argv;
+  if (keyed !== null && !("refused" in keyed)) echoSet(keyed.line);
+  // A BARE LINE ROUTES AS THE BARE DOOR'S ADDRESS, so a container house answers it from the vessel's own host.
+  const routed = keyed !== null && !("refused" in keyed) ? [...keyed.argv] : argv.length === 0 ? [BARE_ADDRESS] : argv;
   bridge(forwardedArgv(routed, budgetMs), COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(routed)).then(
     async (code) => {
       disarm?.();
