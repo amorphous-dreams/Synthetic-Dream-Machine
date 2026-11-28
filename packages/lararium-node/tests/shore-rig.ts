@@ -249,7 +249,7 @@ export class ShoreRig {
       syncedTree: this.tree,
       capture: (moved) => {
         this.captures.push(moved);
-        return this.captureAnswer !== null ? this.captureAnswer(moved) : Promise.resolve({ kind: "refused", why: "the rig stands no capture answer" });
+        return this.captureAnswer !== null ? this.captureAnswer(moved) : Promise.resolve<CaptureOutcome>({ kind: "refused", why: "the rig stands no capture answer" });
       },
       onRefusal: (info) => { this.refusals.push(`${info.uri}: ${info.reason}`); },
       ...({
