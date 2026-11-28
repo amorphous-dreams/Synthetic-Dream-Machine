@@ -40,7 +40,7 @@ async function exportFromFirstRoot(): Promise<{ root: string; mirrorRoot: string
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: bag, mirrorRoot }],
     carrierFileFn: async (uri) => ({ ext: ".mem", body: framed(uri, `the ${uri} prose`), defaultRelPath: `${uri.slice("lar:///".length)}.mem` }),
-    recoveryStore: () => store,
+    bagStore: () => store,
     bagsHolding: async (uri) => { const record = await store.get(uri); return record && !record.meta?.deleted ? [bag] : []; },
     syncedTree: new SyncedTree(join(root, "synced")),
   });
