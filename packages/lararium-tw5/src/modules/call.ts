@@ -253,7 +253,8 @@ export const LARES_STATUS_DOOR = "lar:///lares.lararium.status";
  * the status door; two refuse `sigil-malformed`.
  */
 export function laresActOf(given: Readonly<Record<string, unknown>>, source = "<<~ lares …>>"): { word: string; params: Record<string, unknown> } {
-  const { emote: _emote, ...params } = given;
+  const params: Record<string, unknown> = { ...given };
+  delete params["emote"];
   const keys = LARES_ACT_KEYS.filter((key) => typeof params[key] === "string" && params[key] !== "");
   if (keys.length > 1) throw new CallRefusal("sigil-malformed", `${source} carries ${keys.length} act keys (${keys.join(", ")}); one call carries one`, cureCall("lares", { [keys[0]!]: params[keys[0]!] }));
   if (keys.length === 0) return { word: LARES_STATUS_DOOR, params };
