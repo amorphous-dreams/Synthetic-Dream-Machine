@@ -15,7 +15,7 @@
  *
  * {@link LAW_INDEX_FILTER} calls `lares.law`, which composes the two: the canon pins first, then the canon law the pins left out.
  * Every surface that offers the index (`lares law index`, the MCP seat's `law_index`, the SessionStart wake) runs that one call; the
- * function lives in canon alone (`house-filters`), so no working-layer record redefines it.
+ * function reads from the filters carrier as the stack seats it (`house-filters`), so a layer above re-seats it as it re-seats any carrier.
  *
  * WHY A CONFIG TIDDLER AND NOT A `pin` FIELD. A field on a law meme patches house canon: the canon layer takes no put
  * (promotion-only), and a copy-up into the working layer would shadow the law's text with a copy the index then withholds.

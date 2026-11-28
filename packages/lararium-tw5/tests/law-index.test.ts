@@ -109,7 +109,7 @@ describe("the house's function text, with no wiki booted", () => {
   test("a lares. operator outside the house set refuses by name; a house name and a title naming lares. pass", () => {
     expect(() => refuseUnknownHouseOperators("[lares.nope[]]")).toThrow(/house-filter-unknown/);
     expect(() => refuseUnknownHouseOperators("[tag[a]] +[lares.lawx[]]")).toThrow(/house-filter-unknown/);
-    for (const ok of ["[lares.law[]]", "[lares.law.pins[]]", "[lares.course[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
+    for (const ok of ["[lares.heads[]]", "[lares.inbox[skein#1]]", "[lares.law[]]", "[lares.law.pins[]]", "[lares.course[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
   });
 });
 
@@ -195,23 +195,52 @@ describe.skipIf(wikiSkip)(`the law index in the wiki's own engine${skipNote}`, (
   });
 });
 
-describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}`, () => {
+describe.skipIf(wikiSkip)(`the house's functions resolve through the stack${skipNote}`, () => {
   const LAW_OVERRIDE = "\\function lares.law()\n[[lar:///planted/everything]]\n\\end\n";
 
-  test("RED: a working-layer tiddler that redefines lares.law (the carrier's own title, or any other tagged $:/tags/Global) changes no answer", async () => {
+  test("RED: a working-layer carrier at the filters title re-seats lares.law (mutability at the root); the names it leaves out read from the floor", async () => {
     const r = await rig();
     const before = await r.filter("[lares.law[]]");
     expect(before).toEqual([...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))]);
-    r.write(HOUSE_FILTERS_TITLE, { text: LAW_OVERRIDE, tags: "$:/tags/Global" });
+    r.write(HOUSE_FILTERS_TITLE, { text: LAW_OVERRIDE });
+    expect(await r.filter("[lares.law[]]")).toEqual(["lar:///planted/everything"]);
+    expect(await r.filter(LAW_INDEX_FILTER)).toEqual(["lar:///planted/everything"]);
+    // lares.law.pins calls lares.law, so the re-seat reaches it; lares.stage, left out, reads from the floor.
+    expect(await r.filter("[lares.law.pins[]]")).toEqual([]);
+    expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual(await r.filter("[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]"));
+  });
+
+  test("RED: a carrier seated above adds a lares. function beside the house set, and a filter reaches it by name", async () => {
+    const r = await rig();
+    await expect(r.filter("[lares.mine[]]")).rejects.toThrow(/house-filter-unknown/);
+    r.write(HOUSE_FILTERS_TITLE, { text: `${CARRIER_TEXT}\n\\function lares.mine()\n[[lar:///a/mine]]\n\\end\n` });
+    expect(await r.filter("[lares.mine[]]")).toEqual(["lar:///a/mine"]);
+    // CONTROL: the house set still reads as the canon carrier wrote it.
+    expect(await r.filter("[lares.law.pins[]]")).toEqual(PINS);
+  });
+
+  test("a $:/tags/Global tiddler at another title defines no house function: the house reads the carrier's title alone", async () => {
+    const r = await rig();
+    const before = await r.filter("[lares.law[]]");
     r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
     r.write("$:/config/lares/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
     expect(await r.filter("[lares.law[]]")).toEqual(before);
-    expect(await r.filter(LAW_INDEX_FILTER)).toEqual(before);
-    expect(await r.filter("[lares.law.pins[]]")).toEqual(PINS);
     expect(await r.filter("[lares.law[]match[lar:///planted/everything]]")).toEqual([]);
   });
 
-  test("RED: a render of a span holds the house's functions from canon too: a working-layer $:/tags/Global redefinition never shadows one", async () => {
+  test("a carrier in a layer the reader may not read seats nothing for that reader", async () => {
+    const r = await rig();
+    const before = await r.filter("[lares.law[]]");
+    const sealed = bagUri("sealed");
+    r.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: LAW_OVERRIDE, "$origin-bag": sealed });
+    const only: Cap = async (access, bag) => access === "read" && bag !== sealed ? { ok: true } : { ok: false, reason: "no-grant" };
+    const filter = makeWikiFilterReactor(r.opts);
+    expect((await filter({ recipe: "default", filter: "[lares.law[]]" }, { ...ctx(), cap: only }))["titles"]).toEqual(before);
+    // CONTROL: a reader of that layer reads the carrier it seats.
+    expect(await r.filter("[lares.law[]]")).toEqual(["lar:///planted/everything"]);
+  });
+
+  test("RED: a render of a span holds the house's functions from the carrier too: a $:/tags/Global redefinition at another title never shadows one", async () => {
     const r = await rig();
     const canon = await r.render("{{{ [lares.law[]count[]] }}}");
     expect(canon).toBe(String(PINS.length + CANON_LAW.filter((t) => !PINS.includes(t)).length));
@@ -220,7 +249,7 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.render("{{{ [lares.law[]match[lar:///planted/everything]] }}}")).toBe("");
   });
 
-  test("a vessel whose canon holds no carrier answers from the floor, and an override still changes nothing", async () => {
+  test("a vessel whose stack holds no carrier answers from the floor, and a $:/tags/Global definition at another title still changes nothing", async () => {
     const r = await rig(true, false);
     const answer = [...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))];
     expect(await r.filter("[lares.law[]]")).toEqual(answer);
@@ -255,14 +284,18 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.filter("[subfilter{$:/x}]")).toEqual([...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))]);
   });
 
-  test("L1: the wiki-stamp seam: with no canon layer holding the carrier, a wiki record that carries a canon stamp serves; one stamped with a working layer never does", async () => {
+  test("L1: the wiki's own record serves whatever layer stamps it, a canon layer's or a working layer's, over the store's canon copy", async () => {
     const variant = "\\function lares.course(standing)\n[[lar:///seam/course]]\n\\end\n";
     const canonStamped = await rig(true, false);
     canonStamped.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": ORACLE_BAG });
     expect(await canonStamped.filter("[lares.course[open]]")).toEqual(["lar:///seam/course"]);
-    const forged = await rig(true, false);
-    forged.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": WORKING });
-    expect(await forged.filter("[lares.course[open]]")).toEqual([]);
+    const working = await rig(true, false);
+    working.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": WORKING });
+    expect(await working.filter("[lares.course[open]]")).toEqual(["lar:///seam/course"]);
+    // The cascade's top answers over a canon copy the store still holds beneath it.
+    const above = await rig();
+    above.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": WORKING });
+    expect(await above.filter("[lares.course[open]]")).toEqual(["lar:///seam/course"]);
   });
 
   test("M1: a stamped-canon global carrying the Global tag and a raw span define cannot move a render of a title or the filter", async () => {
@@ -376,15 +409,16 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri#/anatomy`))).toEqual([]);
   });
 
-  test("attractor stores follow convention order and ignore non-canon overrides", async () => {
+  test("attractor stores follow convention order, and a carrier seated above re-seats the function", async () => {
     const r = await rig();
     const base = "lar:///ha.ka.ba/kahua/memory/reference/";
     const titles = ["discordian-catmas", "pattern-integrities", "practices"].map((name) => base + name);
     expect(await r.filter("[lares.attractors[]]")).toEqual([]);
     for (const title of [...titles].reverse()) r.write(title);
     r.write(base + "other");
-    r.write(HOUSE_FILTERS_TITLE, { text: "\\function lares.attractors()\n[[planted]]\n\\end", tags: "$:/tags/Global" });
     expect(await r.filter("[lares.attractors[]]")).toEqual(titles);
+    r.write(HOUSE_FILTERS_TITLE, { text: "\\function lares.attractors()\n[[planted]]\n\\end" });
+    expect(await r.filter("[lares.attractors[]]")).toEqual(["planted"]);
   });
 
   test("attractor stores exclude a store hidden from the reader view", async () => {
@@ -452,12 +486,16 @@ describe.skipIf(wikiSkip)(`stage reference reaches${skipNote}`, () => {
     expect(result.filter((title: string) => title.startsWith(base))).toEqual([]);
     expect(elapsed).toBeLessThan(1500);
   }, 20_000);
-  test("working-layer function overrides cannot alter reach answers", async () => {
+  test("a carrier seated above re-seats the reach functions, and a $:/tags/Global tiddler at another title moves neither", async () => {
     const r = await rig();
     const title = "lar:///ha.ka.ba/kahua/memory/state/alone";
     r.write(title);
-    r.write(HOUSE_FILTERS_TITLE, { text: "\\function lares.unreached()\n[[forged]]\n\\end\n\\function lares.broken()\n[[forged]]\n\\end", tags: "$:/tags/Global" });
+    const reseat = "\\function lares.unreached()\n[[reseated]]\n\\end\n\\function lares.broken()\n[[reseated]]\n\\end";
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: reseat, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
     expect(await r.filter("[lares.unreached[]]")).toContain(title);
-    expect(await r.filter("[lares.broken[]]")).not.toContain("forged");
+    expect(await r.filter("[lares.broken[]]")).not.toContain("reseated");
+    r.write(HOUSE_FILTERS_TITLE, { text: reseat });
+    expect(await r.filter("[lares.unreached[]]")).toEqual(["reseated"]);
+    expect(await r.filter("[lares.broken[]]")).toEqual(["reseated"]);
   });
 });

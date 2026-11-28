@@ -1,0 +1,182 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.msg.lands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "land one entry in a stream; read the inbox; withdraw an unanswered entry"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.msg.lands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.msg.lands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.msg.lands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.msg.lands ~ one entry lands in its stream, pointers and a one-line note
+
+A msg lands one entry in the stream `stream` names (`<pet>#<n>`, one body's log). With no `to` it lands as a thought on the caller's own stream; with `to` it addresses an entity (`lares-alpha`) or one instance (`lares-alpha#00003`). The msg lands and only lands: a `watch` on the addressee's inbox wakes whoever holds it. The address stays a candidate until the operator reads the landing's list.
+
+The first msg founds the stream's root at `lar:///ha.ka.ba/kahua/memory/stream/<pet>-<n>`, naming the stream's seat, face, model and mandate. Each entry lands at `<root>-<h8>-<slug>`: `h8` takes the first eight hex of the SHA-256 over the entry's birth fields (stream, prev, re, to, about, note) and never recomputes, so an edit of the note keeps the title; the slug comes from the note's first words, or from `slug`. The `#` of `pet#n` stays out of titles, and the `stream` and `to` fields carry it whole.
+
+An entry carries two edges. `prev` names the one entry before it in its own stream, and the door takes the stream's one head for it; a stream showing two heads refuses `stream-forked` and names each head as a call. `re` names the entries it answers or braids, in any stream; a hand-back's `re` names its mandate. A msg carries pointers, never prose briefs: `about` names a title at its hash, `note` holds one line of 72 characters or fewer, and the entry's fields carry the writer's set panel (`mode`, `mood`, `stance`, `aperture`, `drift-ward`, and the tool-carry `carry`, which lands as the entry's `mu` field, since the call's own `mu` names its depth).
+
+`mu=?0` reads the stream's inbox as has lines: the entries addressed to the stream or its entity that no entry of the stream names directly in `re`, over the caller's view alone. `mu=00` withdraws the caller's own entry (`title`, else the stream's one head) while the view shows no record naming it in `re` and no later entry of the stream naming it as `prev`; the answer counts the records behind another face's wall that name it (`withheld`). Once answered, an entry stands in the history, and a reply corrects it. A stream's heads read `lares get filter='[lares.heads[<pet>#<n>]]'`, and its inbox `lares get filter='[lares.inbox[<pet>#<n>]]'`.
+
+Every write rides the put law: the root and the entry land through `engine.record.puts` with `create`, under the face's write cap and the Kahu predicate, each with its receipt; a retract rides `engine.record.removes`. A dry carry walks the entry's put to the last step and lands nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ a-thought · a-msg · a-braid · a-hand-back · the-inbox · a-retract
+
+```memetic-wikitext
+<<has entity=`example` name=`a-thought` params=`stream/lares-alpha#00003 note/[[the facet law keeps manufacturing exceptions]] ~ no to: the entry lands on the caller's own stream`>>
+<<has entity=`example` name=`a-msg` params=`stream/skein#1 to/lares-alpha#00003 about/<title>@<hash> note/[[landing 14 built; floor ticket inside]] ~ addressed to one instance; its inbox reads it until an entry of that stream names it in re`>>
+<<has entity=`example` name=`a-braid` params=`stream/lares-alpha#00003 re/[[<entry-a> <entry-b>]] note/[[decided: library.oracle.speaks]] ~ re names several entries; a braid needs no verb`>>
+<<has entity=`example` name=`a-hand-back` params=`stream/skein#1 to/lares-alpha re/<mandate> about/<handback>@<hash> note/[[built; floor ticket inside]] ~ a hand-back names its mandate in re`>>
+<<has entity=`example` name=`the-inbox` params=`stream/lares-alpha#00003 mu/?0 ~ the inbox as has lines, unseen entries alone`>>
+<<has entity=`example` name=`a-retract` params=`stream/lares-alpha#00003 mu/00 ~ the stream's head leaves while no reply names it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ stream · note · to · re · about · slug · prev · carry · mode · mood · stance · aperture · drift-ward · seat · model · mandate · title · container · face · mu
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`mu` params=`takes/depth ~ the depth: ?0 the inbox, 00 a retract, _ a dry landing; none lands the entry`>>
+<<has entity=`cell` name=`?` params=`mu/relate ~ the inbox: entries addressed to the stream that no entry of it names in re, as has lines`>>
+<<has entity=`cell` name=`0` params=`mu/unask ~ a retract: the caller's own entry leaves while no record names it in re`>>
+<<has entity=`cell` name=`_` params=`mu/dry ~ a dry landing: the entry's put walks its law to the last step and answers the summary, landing nothing`>>
+<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: the title, the prev it takes, the bag and layer, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and the entry's fields as they would land, landing nothing`>>
+<<has entity=`arg` name=`stream` params=`takes/stream needs/required ~ the stream the msg writes as, <pet>#<n>: the summoned instance's name`>>
+<<has entity=`arg` name=`note` params=`takes/words ~ one line, 72 characters or fewer; a landing needs it`>>
+<<has entity=`arg` name=`to` params=`takes/address ~ an entity or one instance; none lands a thought on the caller's own stream`>>
+<<has entity=`arg` name=`re` params=`takes/list ~ the entries it answers or braids, any stream, as TiddlyWiki writes a list`>>
+<<has entity=`arg` name=`about` params=`takes/pointer ~ a title at its hash, the thing the msg points at`>>
+<<has entity=`arg` name=`slug` params=`takes/words ~ the title's slug; absent, the note's first words`>>
+<<has entity=`arg` name=`prev` params=`takes/title ~ the entry this one follows in its stream; absent, the stream's one head`>>
+<<has entity=`arg` name=`carry` params=`takes/tool-carry ~ the writer's mu, a tool-carry (*! · _? · 00); lands as the entry's mu field`>>
+<<has entity=`arg` name=`mode` params=`takes/words ~ the writer's set panel: the form the exchange takes`>>
+<<has entity=`arg` name=`mood` params=`takes/words ~ the writer's set panel: the weather`>>
+<<has entity=`arg` name=`stance` params=`takes/words ~ the writer's set panel: the standpoints`>>
+<<has entity=`arg` name=`aperture` params=`takes/band ~ the writer's set panel: N/rank`>>
+<<has entity=`arg` name=`drift-ward` params=`takes/words ~ the writer's set panel: the ward, in prose`>>
+<<has entity=`arg` name=`seat` params=`takes/words ~ the stream root's seat: the harness the body runs in`>>
+<<has entity=`arg` name=`model` params=`takes/words ~ the stream root's model`>>
+<<has entity=`arg` name=`mandate` params=`takes/title ~ the stream root's mandate, where a summons named one`>>
+<<has entity=`arg` name=`title` params=`takes/title ~ beside mu=00, the entry withdrawn; absent, the stream's one head`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ocap/write-on-the-landing-bag ~ each write rides the put law: the Kahu predicate, then the face's write cap on the bag the cascade lands in`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ stream-unnamed · stream-malformed · stream-forked · prev-unknown · note-needed · note-one-line · note-too-long · to-malformed · field-one-line · msg-absent · msg-not-yours · msg-answered · msg-followed · wiki-not-anchored
+
+```memetic-wikitext
+<<has entity=`refusal` name=`stream-unnamed` params=`cure/[[engine.msg.lands stream/<pet>#<n> note/<one-line>]] ~ a msg names the stream it writes as`>>
+<<has entity=`refusal` name=`stream-malformed` params=`cure/[[engine.msg.lands stream/<pet>#<n> note/<one-line>]] ~ a stream reads <pet>#<n>, lowercase and hyphen-joined`>>
+<<has entity=`refusal` name=`stream-forked` params=`~ the stream shows two heads or more; the answer names each as a call with prev set`>>
+<<has entity=`refusal` name=`prev-unknown` params=`~ prev names no entry of the stream this view holds; read the stream's heads`>>
+<<has entity=`refusal` name=`note-needed` params=`cure/[[engine.msg.lands stream/<pet>#<n> note/<one-line>]] ~ a landing carries one line of note`>>
+<<has entity=`refusal` name=`note-one-line` params=`~ a note holds one line`>>
+<<has entity=`refusal` name=`note-too-long` params=`~ a note holds 72 characters or fewer; a longer thought rides about as a pointer`>>
+<<has entity=`refusal` name=`to-malformed` params=`~ to names an entity or one instance`>>
+<<has entity=`refusal` name=`field-one-line` params=`~ a panel or pointer field holds one line`>>
+<<has entity=`refusal` name=`msg-absent` params=`~ the retract names no entry this view holds, or the stream holds none`>>
+<<has entity=`refusal` name=`msg-not-yours` params=`~ a retract withdraws the caller's own entry; a reply answers another's`>>
+<<has entity=`refusal` name=`msg-answered` params=`~ a record names the entry in re, so it stands in the history; a reply corrects it`>>
+<<has entity=`refusal` name=`msg-followed` params=`~ a later entry of the stream names it as prev; withdraw the head first`>>
+<<has entity=`refusal` name=`wiki-not-anchored` params=`~ a msg reads its stream in a wiki's own engine; a bag names none`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed · founded · inbox · retracted · exists · dry
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 fields/[[title stream prev root decision bag layer hash]] ~ the entry landed through the put law; decision reads put`>>
+<<has entity=`band` name=`founded` params=`exit/0 fields/[[founded root]] ~ the first msg of a stream founded its root beside the entry`>>
+<<has entity=`band` name=`inbox` params=`exit/0 fields/[[stream inbox total]] ~ the unseen entries addressed to the stream, each with its has line`>>
+<<has entity=`band` name=`retracted` params=`exit/0 fields/[[title decision withheld]] ~ the caller's own unanswered entry left`>>
+<<has entity=`band` name=`exists` params=`exit/4 ~ the same birth fields already landed this entry; nothing moved`>>
+<<has entity=`band` name=`dry` params=`exit/0 fields/[[dry needs founds]] ~ a dry landing: what the entry's put would land; nothing landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp · console
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares msg
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares msg]] grammar/call ~ the terminal; quote a mu carry (mu='?0'), since a shell reads ? and ! itself`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///engine.msg.lands
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/[[act lar:///engine.msg.lands]] omits/bag,realm,face ~ the seat; the vessel runs it and answers the entry's receipt, the inbox, or the retract`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/console`>>
+
+!!! msg
+
+```memetic-wikitext
+<<has entity=`skin` name=`console` params=`spells/msg ~ the one call; msg lands one entry in its stream`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · engine.record.puts · filters · comms-ux
+
+The intent door's `prev` keeps its own meaning, a chain head for a co-sign; this carrier's `prev` names an entry's place in its stream.
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/engine.record.puts`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/filters`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D8111h_5FQgL9f3iakIe4f1SF1lRHSMDvWyOy6Rt9Ww`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -128,7 +128,7 @@ import { AFFORDANCE_TAG, bareAddressOf } from "./affordance-rows.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
-import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
+import { filtersText, functionPragmasOf, houseNamesOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -421,12 +421,13 @@ function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; 
   view.allTitles = () => wiki.allTitles().filter(shown);
   view.allShadowTitles = () => wiki.allShadowTitles().filter(shown);
   if (house) {
-    // THE HOUSE'S FUNCTIONS COME FROM CANON ALONE: a filter run with no widget of its own runs under the widget the canon
-    // carrier's text builds (house-filters), never under the wiki's `$:/tags/Global` imports, which a working-layer record shadows.
+    // THE HOUSE'S FUNCTIONS COME FROM THE CARRIER AS THE READER'S STACK SEATS IT: a filter run with no widget of its own runs
+    // under the widget that carrier's text builds (house-filters), never under the wiki's `$:/tags/Global` imports.
     let widget: unknown;
+    const known = houseNamesOf(house.text);
     const run = wiki.filterTiddlers as unknown as (this: unknown, filter: string, widget?: unknown, source?: unknown) => string[];
     view["filterTiddlers"] = (filter: string, given?: unknown, source?: unknown): string[] => {
-      refuseUnknownHouseOperators(filter);
+      refuseUnknownHouseOperators(filter, known);
       if (given === undefined) {
         // EVERY FILTER THE CALLER GIVES NO WIDGET RUNS UNDER THE HOUSE WIDGET, an indirect one (`[subfilter{$:/x}]`) included.
         widget ??= houseWidgetOf(view as never, house.document, house.text);
@@ -463,9 +464,29 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
     }
   }
   const visible: Visible = (title, tiddler) => !withheldFromReads(title) && !shutAlerts.has(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
-  const text = await canonFiltersText(opts.composite, wiki, mayRead);
+  const text = await filtersText(opts.composite, wiki, mayRead);
   const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
   return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
+}
+
+/** What a sibling door reads of a reader's view: each record, one record, a filter run under the house widget. */
+export interface ReaderViewWiki {
+  each(callback: (tiddler: { readonly fields: Readonly<Record<string, unknown>> }, title: string) => void): void;
+  getTiddler(title: string): { readonly fields: Readonly<Record<string, unknown>> } | undefined;
+  filterTiddlers(filter: string): string[];
+}
+
+/**
+ * THE READER'S VIEW, LENT TO A SIBLING DOOR (the msg door, `msg-verbs.ts`): the wiki a call's container reaches (the daemon wiki,
+ * or a named wiki in its own engine), read as the caller's face may read it (`viewFor`), beside the whole wiki and the predicate
+ * that built the view, so the door counts what the view withholds. A bag names no engine and refuses `wiki-not-anchored`.
+ */
+export async function readerViewOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, ctx: VerbContext, verb: string): Promise<{ readonly recipe: string; readonly view: ReaderViewWiki; readonly wiki: ReaderViewWiki; readonly visible: (title: string) => boolean }> {
+  const at = (await namedWikiOptions(opts, args, verb, false)) ?? opts;
+  const anchor = anchorOf(at, args, verb);
+  const { view, visible } = await viewFor(at, anchor, ctx.cap);
+  const wiki = anchor.engine.wiki;
+  return { recipe: anchor.recipe, view: view as unknown as ReaderViewWiki, wiki: wiki as unknown as ReaderViewWiki, visible: (title) => visible(title, wiki.getTiddler(title)) };
 }
 
 /**

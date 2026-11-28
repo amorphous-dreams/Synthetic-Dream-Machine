@@ -5,7 +5,7 @@
 
 ```toml meta
 cacheable = true
-role      = "the house's named filters: the law index, course standing, waves and the memory stage as canon functions; canon only"
+role      = "the house's named filters: the law index, course standing, waves and the memory stage as functions any layer may re-seat"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/filters"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -84,14 +84,22 @@ TiddlyWiki resolves a user function as a filter operator only where its name hol
 
 <<~/ahu>>
 
-<<~ ahu slot=`#/canon-only`>>
+<<~ ahu slot=`#/the-stack`>>
 
-!! Canon only
+!! The stack seats it
 
-The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the functions from it; a house name that fails to parse from the carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name. The carrier carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy. A working-layer tiddler that redefines `lares.law`, `lares.law.pins`, `lares.course`, its helpers, `lares.waves` or `lares.stage`, at this title or tagged `$:/tags/Global` elsewhere, changes no answer of `lares get filter=…`, the MCP seat's `get(filter=…)`, `lares wiki render` or the record port's filter ask. A filter naming any other `lares.` operator refuses by name. A raw `\import` a hand writes into its own wikitext stands outside that guarantee.
+The daemon reads this carrier's text as the reader's bag stack seats it, TiddlyWiki's own cascade: the topmost layer the reader may read that holds this title answers, a working layer's above canon's, and the functions build from that text. A spirit or an operator re-seats a house function by seating this carrier above (mutability at the root reaches every layer fence); the door's ocap check, its receipts and the base guard still hold for the write that seats it. A house name that fails to parse from the seated carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name, and a `lares.` function the carrier adds beyond the house set rides beside them. The functions reach `lares get filter=…`, the MCP seat's `get(filter=…)`, `lares wiki render` and the record port's filter ask from this title alone, never from a `$:/tags/Global` tiddler at another title. A filter naming a `lares.` operator nothing resolves refuses by name.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aU2X0xPe1Hu4DlPb3Ns32NgBJp7iRUwoSfMsV0Zjee8`>>
+<<~ ahu slot=`#/operators`>>
+
+!! The operators beside the functions
+
+Two house reads stand as filter operator modules in the wiki VM rather than functions here, since each reads the whole log graph at once: `[lares.heads[]]` answers each stream's heads (an entry no other entry of its stream names as `prev`; `[lares.heads[<pet>#<n>]]` one stream's, two reading a fork) and `[lares.inbox[<pet>#<n>]]` the entries addressed to that instance or its entity that no entry of its stream names directly in `re`. No clock and no `modified` sort decides either. A layer re-seats one by seating a module tiddler at its title (`lar:///ha.ka.ba/lararium/tw5/filters/stream`), as it re-seats any module; the msg door (`lar:///ha.ka.ba/lares/afford/engine.msg.lands`) reads the same log law.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;osp7eTM8yY4oHq2gcB2jEjv46JFtFLduz-wzAfLDzXs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -23,7 +23,7 @@ import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js
 import { VerbTable, makeCallReactor, type VerbContext } from "./verb-dispatcher.js";
 import { callReaderOf, type MacroCallParse } from "./modules/call.js";
 import { checkFilter, pageFilterAnswer, type FilterRow } from "./filter-page.js";
-import { canonFiltersText, houseFilterWikiOf } from "./house-filters.js";
+import { filtersText, houseFilterWikiOf } from "./house-filters.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
@@ -459,8 +459,8 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const wiki = $tw.wiki;
         const filter = msg.subject ?? "";
         checkFilter(wiki, filter);
-        // The port's filter ask runs under the house widget too: a house function reads from canon, never the wiki's globals.
-        const house = houseFilterWikiOf(wiki as never as Parameters<typeof houseFilterWikiOf>[0], ($tw as unknown as { fakeDocument: { createElement(tag: string): unknown } }).fakeDocument, await canonFiltersText(ctx.composite, wiki as never, async () => true)) as unknown as typeof wiki;
+        // The port's filter ask runs under the house widget too: a house function reads from the carrier as the stack seats it, never the wiki's globals.
+        const house = houseFilterWikiOf(wiki as never as Parameters<typeof houseFilterWikiOf>[0], ($tw as unknown as { fakeDocument: { createElement(tag: string): unknown } }).fakeDocument, await filtersText(ctx.composite, wiki as never, async () => true)) as unknown as typeof wiki;
         const titles = house.filterTiddlers(filter).filter(title => visible(title, port));
         const names = msg.fields;
         const rowOf = names === undefined ? undefined : (title: string): FilterRow => {
