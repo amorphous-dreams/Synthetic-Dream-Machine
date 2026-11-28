@@ -25,11 +25,11 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ surface · pointer · bulk · writeback · dry-run · wing · room · project · limit · sensorium
+!! takes ~ surface · pointer · bulk · writeback · dry-run · wing · room · project · limit · sensorium · all · reason
 
 ```memetic-wikitext
 <<has entity=`arg` name=`surface` params=`takes/word ~ the transcript surface (claude, codex, copilot; all with bulk)`>>
-<<has entity=`arg` name=`pointer` params=`takes/word ~ the transcript to capture`>>
+<<has entity=`arg` name=`pointer` params=`takes/word skins/mcp ~ the transcript to capture`>>
 <<has entity=`arg` name=`bulk` params=`~ capture every local transcript in one pass`>>
 <<has entity=`arg` name=`writeback` params=`~ re-enrich a wing`>>
 <<has entity=`arg` name=`dry-run` params=`~ preview one pointer's capture`>>
@@ -37,7 +37,9 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 <<has entity=`arg` name=`room` params=`takes/word ~ the room a capture lands in`>>
 <<has entity=`arg` name=`project` params=`takes/word ~ narrow claude to one project`>>
 <<has entity=`arg` name=`limit` params=`takes/count ~ cap each surface's transcripts, oldest first`>>
-<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
+<<has entity=`arg` name=`all` params=`skins/cli ~ walk the whole tending movement: quiesce, baseline, drawers, bearing, projection, verify, resume`>>
+<<has entity=`arg` name=`reason` params=`takes/word skins/cli ~ a word the door's row shares with the capture hooks' pause (lares hooks pause), which the pour's own pause leaves unread`>>
 ```
 
 <<~/ahu>>
@@ -56,7 +58,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense pour
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense pour]] ~ the terminal; one leg at a time: --all, --bulk or --writeback`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -79,6 +91,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IZzgLh6W7omlHwxSTPX7SqSYu2P_vmapKUT5hn4_AB4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zud8Pyuvbf7uLb7TJY5ju0Yw_SUx9Smqwmfbgfnmf28`>>
 
 <<^ code=`&#x0004;` to=`?`>>

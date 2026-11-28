@@ -22,20 +22,10 @@ import { repoRoot } from "@lararium/mesh/node";
 
 const CLI = join(repoRoot, "packages", "lares-cli", "src");
 
-/** Every verb the `sense` summary names in backticks, minus the words that name lenses/plane values. */
+/** Every verb the `sense` door's brief names: the baked pack's door entry, which the row's summary reads (packedAccount). */
 function claimedVerbs(): Set<string> {
-  const src = readFileSync(join(CLI, "bin", "lares.ts"), "utf8");
-  const line = src.split("\n").find((l) => l.includes('{ name: "sense",')) ?? "";
-  // Words that name a LENS VALUE or a sibling door rather than a sense verb. `structure` and `status`
-  // are deliberately ABSENT from this set: each reads as both a lens value and a read-verb, and dropping
-  // them would let the door hide a verb behind a name the help happens to use twice.
-  const NOT_VERBS = new Set(["content", "form", "persistence", "lens", "memory", "mempalace", "approve"]);
-  const out = new Set<string>();
-  for (const m of line.matchAll(/`([a-z-]+)`/g)) {
-    const w = m[1]!;
-    if (!NOT_VERBS.has(w)) out.add(w);
-  }
-  return out;
+  const pack = JSON.parse(readFileSync(join(repoRoot, "packages", "lararium-tw5", "affordance-pack.json"), "utf8")) as { doors: Record<string, { brief: string }> };
+  return new Set(pack.doors["sense"]!.brief.split("·").map((w) => w.trim()).filter((w) => /^[a-z-]+$/.test(w)));
 }
 
 /** Every verb the dispatcher actually routes — the LIFECYCLE table plus the lens-parameterised reads. */

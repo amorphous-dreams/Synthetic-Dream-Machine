@@ -91,7 +91,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares vessel rotate
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel rotate]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vessel rotate]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bCTtYiZqJ9Hx9EZSLx5425OBtl3wWiL742Pf4sFHhgw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_i-kd3fU972Cp8YV1qhaTdbrMRzZrKgqDs9NRxZ1K54`>>
 
 <<^ code=`&#x0004;` to=`?`>>

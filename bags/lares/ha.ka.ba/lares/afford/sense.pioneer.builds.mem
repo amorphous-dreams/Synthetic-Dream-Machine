@@ -25,11 +25,12 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ name · half-life
+!! takes ~ name · half-life · ephemeral
 
 ```memetic-wikitext
-<<has entity=`arg` name=`name` params=`takes/word needs/required ~ the sensorium by name`>>
-<<has entity=`arg` name=`half-life` params=`takes/count ~ the pioneer's decay`>>
+<<has entity=`arg` name=`name` params=`takes/word needs/required seat/1 as/<name> ~ the sensorium by name`>>
+<<has entity=`arg` name=`half-life` params=`takes/count skins/mcp ~ the pioneer's decay`>>
+<<has entity=`arg` name=`ephemeral` params=`skins/cli ~ the pioneer stands ephemeral, the one shape the terminal mints`>>
 ```
 
 <<~/ahu>>
@@ -48,7 +49,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense build
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense build]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -71,6 +82,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ni8eoutb3kOc_8BOCeSdT3a3AMzW6IoNHEkfebkbGlA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rcW-jxnd3GpBp17X1Vh4Mxidv9HJi5r_3SQyOtRE69o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

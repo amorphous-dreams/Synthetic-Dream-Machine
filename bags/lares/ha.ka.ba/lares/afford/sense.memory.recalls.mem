@@ -28,7 +28,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 !! takes ~ query · k · wing · imago · list · agent · surface · speaker · channel · function · pair · lens · sensorium
 
 ```memetic-wikitext
-<<has entity=`arg` name=`query` params=`takes/word needs/required ~ the query`>>
+<<has entity=`arg` name=`query` params=`takes/words needs/required seat/1 as/<query…> ~ the query`>>
 <<has entity=`arg` name=`k` params=`takes/count ~ how many turns answer`>>
 <<has entity=`arg` name=`wing` params=`takes/word ~ the wing`>>
 <<has entity=`arg` name=`imago` params=`takes/word ~ fetch one turn verbatim`>>
@@ -39,8 +39,8 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 <<has entity=`arg` name=`channel` params=`takes/word ~ one channel stratum (speech, thought, tool)`>>
 <<has entity=`arg` name=`function` params=`takes/word ~ one function stratum (steering, surface, ...)`>>
 <<has entity=`arg` name=`pair` params=`~ answer each block beside its turn's siblings`>>
-<<has entity=`arg` name=`lens` params=`takes/word ~ the plane or instrument`>>
-<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+<<has entity=`arg` name=`lens` params=`takes/word skins/mcp ~ the plane or instrument`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
 ```
 
 <<~/ahu>>
@@ -59,7 +59,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense recall
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense recall]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -82,6 +92,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nsAqrxAys9Hjd1Ic0DEY4ojSNHcn7qWpBvus0lNa4Rw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;49scetetjyp8EbugKpdN0CpeMUH3aEJ1QSsPdDXJyIM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

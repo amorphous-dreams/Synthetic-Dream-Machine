@@ -85,7 +85,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares sense harden
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense harden]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense harden]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;olspSphoNMUkooAdP79w6s_iD0GwA66oDRS7EXs18BI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n8yLWSosvs_FZQJ4ILNfzK2_arO-MN5fzeT7oELE-U0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -47,7 +47,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel roster
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vessel roster]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -70,6 +80,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bxUCIX3GOg50XWdb_jpUorWJfFWKcH54xq51J_wZkjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bKmbj4FxGa4ZybTPyHVfGSVYi9plxC5Pqvi46UTQjzk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

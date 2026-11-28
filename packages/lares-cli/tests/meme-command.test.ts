@@ -244,7 +244,7 @@ describe("lares meme (bare)", () => {
     spy.mockRestore();
     const usage = lines.join("\n");
     for (const sub of ["normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
-    expect(usage).toMatch(/--to <md\|html\|tid\|json>/);
+    expect(usage).toMatch(/lares meme project  render a meme to a target: md, html, tid or json/);
   });
 });
 

@@ -62,12 +62,12 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-ceremony-e2e", from: "ceremony-e2e",
     holds: "a founding, an unlock and one ward act through the ceremony document",
-    files: [red("tests/e2e/ceremony.e2e.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): K3 waits 90 s for the page's load event and times out; the page never loads, likely behind the vessel's ~3-minute boot (the control and daemon slot loads, seal-manifest-diet)")],
+    files: [lit("tests/e2e/ceremony.e2e.test.ts", "floor-lamps-trued3 2026-11-28 (#00001, 3c07ec7ce, the fresh-base house): lamp-ceremony-e2e 7/7; the 90 s K3 wait holds once the control loads in seconds")],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-hearth-e2e", from: "golden-whole-road-e2e",
     holds: "two tabs, one house; a mirror boot that asks the network nothing",
-    files: [lit("tests/e2e/glass-tabs.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), red("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts", "floor run 2026-11-28 (#00001, 07ad9e9a1 + develop): read red inside the widened lamp-hearth-e2e, after 2026-11-27 read it 3/3 alone; whether the cause is load from the walks that joined or the vessel boot stays open until a run alone reads it"), unproven("tests/e2e/golden-whole-road.e2e.test.ts"), unproven("tests/e2e/rest-before-reload.e2e.test.ts"), unproven("tests/e2e/glass-mirror.e2e.test.ts")],
+    files: [lit("tests/e2e/glass-tabs.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), lit("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts", "floor-lamps-rerun 2026-11-28 (#00001, c8ab21635, the fresh-base house): 2/2 alone; the widened run's red read as the slow boot the fresh base cured"), unproven("tests/e2e/golden-whole-road.e2e.test.ts"), unproven("tests/e2e/rest-before-reload.e2e.test.ts"), unproven("tests/e2e/glass-mirror.e2e.test.ts")],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-web-browser", from: "web-browser",
@@ -102,7 +102,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
       unproven("tests/glass-theme.page.test.ts"),
       unproven("tests/glass-console-readings.page.test.ts"),
       unproven("tests/glass-boot.page.test.ts"),
-      red("tests/glass-doors.page.test.ts", "floor run 2026-11-28 (#00001, 07ad9e9a1 + develop): red on chromium and firefox; the first floor read of this page since the Luna static read classed it lighting as it stands"),
+      lit("tests/glass-doors.page.test.ts", "floor-lamps-trued3 2026-11-28 (#00001, 3c07ec7ce): lamp-web-browser 22/22 on chromium and firefox, the StartupAction under the new law"),
       unproven("tests/glass-walk.page.test.ts"),
       unproven("tests/interaction-goldens.page.test.ts"),
       unproven("tests/interaction-goldens-offers.page.test.ts"),

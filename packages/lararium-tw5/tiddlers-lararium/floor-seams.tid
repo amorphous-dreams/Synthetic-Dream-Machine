@@ -124,7 +124,7 @@ MOVES meme-grammar path packages/lararium-memetic-frame/src/** packages/tree-sit
 GUARDS meme-grammar e2e corpus-feed meme-orphan-walk
 
 SEAM cli-door-table whole=packages/lares-cli
-MOVES cli-door-table c verb-table* verb-call* verb-result* parse-args* command-help* help-meme* problems* store-door* render* target-option* face-option* reality-tunnel/**
+MOVES cli-door-table c verb-table* verb-call* verb-result* parse-args* command-help* problems* store-door* render* target-option* face-option* reality-tunnel/**
 MOVES cli-door-table path packages/lares-cli/bin/**
 MOVES cli-door-table n store-door-registry* store-door-verbs* routing-arg*
 MOVES cli-door-table t affordance-pack* affordance-read* affordance-rows* filters/afford* modules/afford-face*

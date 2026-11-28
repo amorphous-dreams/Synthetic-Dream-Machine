@@ -4,8 +4,8 @@
  * Inputs: the baked pack's routes against the live tables: `COMMANDS` and each door's verb table, or the call door's `act`
  * head with the address it names (cli), the `@mcp.tool` functions of the seat, `act` with the address it names (mcp), the
  * widget modules (tw5). A skin naming a door no table holds reads red; a flipped door whose
- * verbs some carrier leaves unrouted reads red (a door flips whole; a `door/part` skin gathers no door entry, so its door keeps
- * its own table and counts legacy until every verb holds a carrier). Two carriers claiming one spelling refuse at the bake
+ * verbs some carrier leaves unrouted reads red (a door flips whole; a `door/part` skin would gather no door entry, so its door
+ * would keep its own table and count legacy until every verb held a carrier; none stands). Two carriers claiming one spelling refuse at the bake
  * (`affordance-door-claimed-twice`), before this law reads. Seed: `oracle cast` routes to lar:///library.oracle.speaks.
  * Control: a planted orphan skin reads red.
  *
@@ -125,12 +125,22 @@ describe("W1 · every door names one address; every skin names a live door", () 
     // The seat's `get` skins both read carriers by the same `by/` choice the terminal's does, so it claims no route either.
     expect(routes["mcp"]?.["get"], REBAKE).toBeUndefined();
     expect(pack().doors["tiddler"], REBAKE).toBeUndefined();
-    expect(pack().doors["wiki"], "the wiki door keeps its own table").toBeUndefined();
-    // FOUR DOORS HOLD `door/part` SKINS beside their own tables (comms course landings 10 + 23): `meme`, `wiki` and `sense` keep
-    // the verbs landing 9's carriers own (engine.meme.projects, realm.offer.signs · shows, engine.layer.reads, engine.wiki.*,
-    // render.sidebar.lays, the sense.* reads) until those carriers take their cli skins, and `vessel` keeps `roster` until
-    // face.roster.reads takes it. Each flips whole in the commit that routes its last verb, and leaves this list then.
-    expect(partDoors(), "the part doors wait on landing 9's cli skins").toEqual(["meme", "sense", "vessel", "wiki"]);
+    // NO DOOR HOLDS A `door/part` SKIN: the seat carriers took their cli skins ([22 + 24]), so `meme`, `wiki`, `sense` and
+    // `vessel` route every verb to a carrier and gather a door entry like every other door.
+    expect(partDoors(), REBAKE).toEqual([]);
+    for (const door of ["meme", "wiki", "sense", "vessel"]) expect(pack().doors[door], `${door}; ${REBAKE}`).toBeDefined();
+  });
+
+  test("SEED: the last four part doors route their seat carriers' verbs, `wiki compact` beside `bag compact`", () => {
+    expect(pack().routes["cli"], REBAKE).toMatchObject({
+      "meme project": "lar:///engine.meme.projects", "meme offer": "lar:///realm.offer.signs", "meme offer show": "lar:///realm.offer.shows",
+      "wiki switch": "lar:///engine.wiki.switches", "wiki keep": "lar:///engine.wiki.keeps", "wiki unkeep": "lar:///engine.wiki.unkeeps",
+      "wiki render": "lar:///engine.wiki.renders", "wiki status": "lar:///engine.layer.reads", "wiki compact": "lar:///carriage.bag.compacts",
+      "sense status": "lar:///sense.taxonomy.counts", "sense recall": "lar:///sense.memory.recalls", "sense pour": "lar:///sense.capture.pours",
+      "sense worldline": "lar:///sense.worldline.reads", "sense analyze": "lar:///sense.rhythm.analyzes", "sense plane-record": "lar:///sense.plane.reads",
+      "sense roster": "lar:///sense.roster.reads", "sense reconcile": "lar:///sense.source.reconciles", "sense build": "lar:///sense.pioneer.builds",
+      "vessel roster": "lar:///face.roster.reads",
+    });
   });
 
   test("★ every skin in the pack names a door a live table holds ★", () => {

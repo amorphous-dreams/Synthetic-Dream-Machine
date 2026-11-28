@@ -1,8 +1,8 @@
 /**
  * L3 · HELP AND REFUSAL RENDER FROM ONE SOURCE: `--help` prints exactly the lines a refusal prints.
  *
- * Both halves run through the real dispatcher. Inputs: every key in the live help registry (a door, or
- * a `"<door> <sub>"` sub-door) for `--help`; and for the refusal, every door whose source refuses
+ * Both halves run through the real dispatcher. Inputs: every door the baked pack gathers an entry for,
+ * for `--help`; and for the refusal, every door whose source refuses
  * through `refuseUsage(…, helpLines(door))`, read from the command sources, plus the tunnel doors.
  * Each door runs under a scratch LAR_ROOT and HOME, so a door that reads an unknown word as an
  * argument reaches nothing of the operator's. Control: two doors render different bytes, and a
@@ -20,7 +20,7 @@ import { commands, door, helpKeys, UNKNOWN, verbTables } from "./harness.js";
 
 const SRC = join(import.meta.dirname, "..", "..", "src", "commands");
 
-/** The doors whose source refuses with the registry's lines, read from the command sources. */
+/** The doors whose source refuses with the pack's lines, read from the command sources. */
 function refusingDoors(): string[] {
   const found = new Set<string>();
   for (const f of readdirSync(SRC)) {
@@ -33,12 +33,12 @@ function refusingDoors(): string[] {
   return [...found].sort();
 }
 
-/** A key `helpLines` answers from one home: the registry, or the baked pack where the door flipped to its carriers. */
+/** A key `helpLines` answers from one home: the baked pack, a door's entry or one verb's carrier. */
 const answersHelp = (k: string): boolean => helpKeys().includes(k) || packDoor(k) !== undefined || packRoute("cli", k) !== undefined;
 
 /**
- * The lines a door answers with, by the dispatcher's own rule: the longest registry or pack key that leads the door (a sub-door
- * with no row of its own answers with its parent's), else the sub-verb table the door keeps itself (`wiki`, `bag`, `shore`).
+ * The lines a door answers with, by the dispatcher's own rule: the longest pack key that leads the door (a sub-door with no
+ * carrier of its own answers with its parent's).
  */
 function doorKey(key: string): string | null {
   const words = key.split(" ");
@@ -48,7 +48,7 @@ function doorKey(key: string): string | null {
 function doorLines(key: string): string[] {
   const k = doorKey(key);
   if (k !== null) return helpLines(k);
-  return [...(commands().find((c) => c.name === key.split(" ")[0])?.help?.() ?? helpLines(key))];
+  return helpLines(key);
 }
 
 /** A refusal reads true when it exits 2 and its stderr ends with the door's lines. */
@@ -70,7 +70,7 @@ afterAll(() => {
 });
 
 describe("L3 · help and refusal render the same bytes", () => {
-  test.each(helpKeys().map((k) => [k]))("`%s --help` at the door prints exactly the registry's lines", async (key) => {
+  test.each(helpKeys().map((k) => [k]))("`%s --help` at the door prints exactly the pack's lines", async (key) => {
     const r = await door([...key.split(" "), "--help"]);
     expect(r.code).toBe(0);
     expect(r.out.trimEnd()).toBe(helpLines(key).join("\n").trimEnd());
@@ -84,15 +84,15 @@ describe("L3 · help and refusal render the same bytes", () => {
     expect(refusalCarries(r, key)).toBe(true);
   });
 
-  test.each(helpKeys().map((k) => [k]))("`%s`: the lines lead with its usage spine", (key) => {
+  // A door one carrier answers reads that carrier's whole, whose first line spells the usage spine; a door of several reads an index.
+  test.each(helpKeys().filter((k) => packDoor(k)!.addresses.length === 1).map((k) => [k]))("`%s`: the lines lead with its usage spine", (key) => {
     expect(helpLines(key)[0]).toMatch(new RegExp(`^usage: lares ${key}`));
   });
 
-  test("the source scan finds the refusing doors, and each names a registry key", () => {
+  test("the source scan finds the refusing doors, and each names a pack key", () => {
     const doors = refusingDoors();
     expect(doors.length).toBeGreaterThan(10);
-    // Each answers from a registry key, a pack door, or the sub-verb table it keeps itself.
-    expect(doors.filter((d) => doorKey(d) === null && commands().find((c) => c.name === d.split(" ")[0])?.help === undefined)).toEqual([]);
+    expect(doors.filter((d) => doorKey(d) === null)).toEqual([]);
   });
 
   test("the root door: bare `lares` speaks the house (lar:///lares.lararium.status), and the menu moved behind `lares help`", async () => {

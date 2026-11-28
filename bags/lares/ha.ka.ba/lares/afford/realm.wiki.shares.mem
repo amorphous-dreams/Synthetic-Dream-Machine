@@ -95,7 +95,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares wiki share
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki share]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki share]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zDSiz9wJ7je9wiRbXpfZGvNxQibbYhmowCJ_A1-Tj0k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rlx2n9zRy5rN0vMyepNbikD6Xg0c6EG4ym4O592sS7c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

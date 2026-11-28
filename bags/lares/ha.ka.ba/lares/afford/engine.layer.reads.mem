@@ -25,11 +25,14 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ recipe · target
+!! takes ~ recipe · target · bag · face · realm
 
 ```memetic-wikitext
 <<has entity=`arg` name=`recipe` params=`takes/word ~ the wiki (default names the worn face's daemon wiki)`>>
 <<has entity=`arg` name=`target` params=`takes/word ~ another lit face to visit (h1, or a pet name)`>>
+<<has entity=`arg` name=`bag` params=`takes/slug skins/cli ~ one bag's layer alone`>>
+<<has entity=`arg` name=`face` params=`takes/handle skins/cli ~ the lit face this call wears, by handle or pet name`>>
+<<has entity=`arg` name=`realm` params=`takes/id skins/cli ~ beside bag, the realm whose registration resolves it`>>
 ```
 
 <<~/ahu>>
@@ -48,7 +51,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki status
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki status]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -71,6 +84,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SwKf7xkN5Cze2tJjbPZc0maRdcBeDw3mrTLdKbo2D0E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QZ7n__wRtU15IIO5eiNkvWOCHBNp9xL7Q7tAmp6S4bY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

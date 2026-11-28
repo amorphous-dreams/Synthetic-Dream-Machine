@@ -1,39 +1,33 @@
 /**
- * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: a door's usage spine names exactly the verbs
- * its dispatch table declares, so a verb the table gains or loses moves the spine in the same act.
+ * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: a door's index names exactly the verbs
+ * its dispatch table declares, so a verb the table gains or loses moves the index in the same act.
  *
- * Inputs: every door whose verbs stand in an exported table. Control: a spine that drops a verb reads
- * as disagreeing.
+ * Inputs: every door whose verbs stand in an exported table, its help read off the baked pack (a door of several carriers reads
+ * an index, one `lares <door> <verb>` line per carrier and per `also` spelling). Control: an index that drops a verb reads as
+ * disagreeing.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/L2
  */
 import { describe, expect, test } from "vitest";
-import { COMMAND_HELP, helpLines } from "../../src/command-help.js";
-import { COMMANDS } from "../../src/bin/lares.js";
+import { packDoor } from "@lararium/tw5/affordance-pack";
+import { helpLines } from "../../src/command-help.js";
 import { MEMPALACE_OWN_VERBS } from "../../src/commands/mempalace.js";
 import { verbTables } from "./harness.js";
 
-/**
- * The verbs a usage spine names: every `<a|b|c>` group on the usage line, and each bare word a `lares <door> <verb>` clause
- * spells out (`lares sense analyze --lens <lens>`). A spine of one clause reads its one group, as before.
- */
-const spineVerbs = (door: string): string[] => {
-  const line = helpLines(door)[0] ?? "";
-  const groups = [...line.matchAll(/<\s*([a-z-]+(?:\s*\|\s*[a-z-]+)+)\s*>/g)].flatMap((m) => m[1]!.split("|").map((v) => v.trim()));
-  // A clause spells its verb, or its verbs bare (`lares lei show|kui|unstring|restring`).
-  const spelled = [...line.matchAll(new RegExp(`lares ${door} ([a-z][a-z-]*(?:\\|[a-z][a-z-]*)*)(?![a-z-])`, "g"))].flatMap((m) => m[1]!.split("|"));
-  return [...new Set([...groups, ...spelled])];
-};
+/** The verbs a door's index names: the first word past `lares <door>` on each line that opens with the door's spelling. */
+const spineVerbs = (door: string, lines: readonly string[] = helpLines(door)): string[] =>
+  [...new Set(lines.flatMap((l) => [...l.matchAll(new RegExp(`^\\s*lares ${door} ([a-z][a-z_-]*)(?![a-z_-])`, "g"))].map((m) => m[1]!)))];
 
-/** A door's whole account: its registry help, and the sub-verb table it prints where it keeps one (`wiki`, `bag`). */
-const account = (door: string): string => [...helpLines(door), ...(door.includes(" ") ? [] : COMMANDS.find((c) => c.name === door)?.help?.() ?? [])].join("\n");
+/** A door's whole account: its help, read off the pack. */
+const account = (door: string): string => helpLines(door).join("\n");
 const names = (text: string, verb: string): boolean => new RegExp(`(^|[^a-z_-])${verb}([^a-z_-]|$)`).test(text);
 
-// A door, and each sub-door that holds its own registry row (`nexus approve`, `meme offer`), answers for its spine.
-const tables = verbTables().filter((t) => !t.door.includes(" ") || t.door in COMMAND_HELP)
+// A door answers for its index; a sub-door (`meme offer`) rides its parent's.
+const tables = verbTables().filter((t) => !t.door.includes(" "))
   .map((t) => (t.door === "mempalace" ? { door: t.door, verbs: MEMPALACE_OWN_VERBS.filter((v) => v !== "help") } : t))
   .map((t) => ({ door: t.door, verbs: t.verbs.filter((v) => v !== "help") }));
-const spined = tables.filter((t) => spineVerbs(t.door).length > 1);
+// A door of several carriers reads an index; a door one carrier answers reads that carrier whole, whose examples spell flags.
+const spined = tables.filter((t) => (packDoor(t.door)?.addresses.length ?? 0) > 1);
 
 describe("L2 · a door's usage spine names exactly the verbs its table declares", () => {
   test.each(spined.map((t) => [t.door, t.verbs] as const))("`%s`", (door, verbs) => {
@@ -45,16 +39,16 @@ describe("L2 · a door's usage spine names exactly the verbs its table declares"
     expect(verbs.filter((v) => !names(text, v))).toEqual([]);
   });
 
-  test("the spine reader reads every spelling the registry still writes: bracketed, spaced, and a spelled clause", () => {
-    // `lei` and `edge` flipped to their carriers (landings 10 + 23); the registry doors left spell the bracketed, the spaced and the clause forms.
-    expect(spineVerbs("vessel")).toEqual(expect.arrayContaining(["unbound", "found", "rite"]));
-    expect(spineVerbs("meme")).toEqual(expect.arrayContaining(["normalize", "check", "offer"]));
-    expect(spineVerbs("sense")).toEqual(expect.arrayContaining(["search", "analyze", "harden"]));
+  test("SEED: the index reader reads the last four part doors' verbs off their carriers", () => {
+    expect(spineVerbs("vessel")).toEqual(expect.arrayContaining(["unbound", "found", "rite", "roster"]));
+    expect(spineVerbs("meme")).toEqual(expect.arrayContaining(["normalize", "check", "offer", "project"]));
+    expect(spineVerbs("sense")).toEqual(expect.arrayContaining(["search", "analyze", "harden", "recall"]));
+    expect(spineVerbs("wiki")).toEqual(expect.arrayContaining(["init", "render", "status", "compact"]));
   });
 
-  test("CONTROL: a spine missing a verb disagrees with its table", () => {
+  test("CONTROL: an index missing a verb disagrees with its table", () => {
     const [door, verbs] = [spined[0]!.door, spined[0]!.verbs];
-    expect(spineVerbs(door).slice(1).sort()).not.toEqual([...verbs].sort());
+    expect(spineVerbs(door, helpLines(door).filter((l) => !l.includes(`lares ${door} ${verbs[0]}`))).sort()).not.toEqual([...verbs].sort());
     expect(names(account(door), "zz-no-such-name")).toBe(false);
   });
 });

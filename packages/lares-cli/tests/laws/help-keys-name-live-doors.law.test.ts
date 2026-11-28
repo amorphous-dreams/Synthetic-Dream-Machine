@@ -1,21 +1,16 @@
 /**
- * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: every help registry key names a live door.
+ * L2 · A DECLARATION AGREES WITH WHAT THE DOOR ANSWERS: every door the baked pack gathers names a live door.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
  */
 /**
- * THE HELP REGISTRY NAMES ONLY COMMANDS THAT EXIST.
+ * THE PACK'S DOORS NAME ONLY COMMANDS THAT EXIST.
  *
- * The registry is SPARSE by design — a command without an entry renders its dispatch summary — so a
- * missing entry is legal and silent. The reverse is not: an entry for a command nobody can run reaches
- * no reader, contradicts nothing, and fails no build. It simply rots, and the surface it describes is
- * the one an operator would have trusted.
- *
- * The vessel collapse left exactly two behind (`status`, `wake`), which is how this test came to exist.
+ * A door's help reads its carriers through the baked pack, one home. An entry for a command nobody can run reaches no reader,
+ * contradicts nothing, and fails no build: it rots, and the surface it describes holds the words an operator would have trusted.
  */
 import { describe, test, expect, vi } from "vitest";
-import { COMMAND_HELP } from "../../src/command-help.js";
-import { affordancePack, packRoute } from "@lararium/tw5/affordance-pack";
+import { affordancePack, packDoor, packRoute } from "@lararium/tw5/affordance-pack";
 import { COMMAND_NAMES, dispatch } from "../../src/bin/lares.js";
 import { SHIM_VERBS } from "../../src/host-bridge.js";
 import { COMMANDS } from "../../src/bin/lares.js";
@@ -30,25 +25,22 @@ async function said(argv: string[]): Promise<{ code: number; out: string; err: s
   finally { log.mockRestore(); error.mockRestore(); }
 }
 
-describe("the per-command help registry", () => {
-  test("★ every entry names a command that answers ★", () => {
-    // A key MAY name a SUB-DOOR (`vessel wire`) — the dispatcher prefers the longer key when the
-    // positional matches. Either way the FIRST token must name a command an operator can reach.
-    const live = new Set(COMMAND_NAMES);
-    const orphans = Object.keys(COMMAND_HELP).filter((k) => !live.has(k.split(" ")[0]!));
+describe("the per-command help, read off the pack", () => {
+  test("★ every pack door names a command that answers, or the one act's head ★", () => {
+    const live = new Set([...COMMAND_NAMES, "act"]);
+    const orphans = Object.keys(affordancePack().doors).filter((k) => !live.has(k));
     expect(orphans).toEqual([]);
   });
 
-  test("the registry stays SPARSE — a missing entry is legal, and this test never demands one", () => {
-    // Stated so nobody later "fixes" the asymmetry by requiring an entry per command: the dispatch
-    // summary is the fallback, and forcing a second description per verb is how two of them drift apart.
-    // A sub-door key (`vessel lay`) answers one motion beneath its door, so only the door-level keys count against the doors.
-    expect(Object.keys(COMMAND_HELP).filter((k) => !k.includes(" ")).length).toBeLessThan(COMMAND_NAMES.length);
+  test("★ every command answers from the pack: its door gathers an entry ★", () => {
+    expect(COMMAND_NAMES.filter((name) => packDoor(name) === undefined)).toEqual([]);
   });
 
-  test("meme help publishes the required store target", () => {
-    const { usage, synopsis, examples } = COMMAND_HELP.meme!;
-    expect({ usage, synopsis, examples: examples?.slice(0, 4) }).toMatchSnapshot("meme help");
+  test("meme help names the store target its project takes", async () => {
+    const r = await said(["meme", "project", "--help"]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/--recipe/);
+    expect(r.out).toMatch(/--bag/);
   });
 
   test("every verb the host shim answers holds a help row: `lares <shim verb> --help` reads it, never `unknown command`", async () => {
@@ -65,14 +57,11 @@ describe("the per-command help registry", () => {
     expect(r.err).toMatch(/unknown command "upp"/);
   });
 
-  test("a door that keeps its own sub-verb table answers --help with that table: `wiki --help` reads as `wiki help` reads", async () => {
+  test("the wiki door reads its carriers: `wiki --help` reads as `wiki help` reads, every verb in its index", async () => {
     const flag = await said(["wiki", "--help"]), word = await said(["wiki", "help"]);
-    expect(flag.out).not.toMatch(/no detailed help yet/);
-    // The same table, then exactly the door's long account: a blank line, `About:`, and the row's own summary. Nothing else rides.
-    const wiki = COMMANDS.find((c) => c.name === "wiki")!;
-    expect(flag.out).toBe(`${word.out}\n\nAbout:\n  ${wiki.summary}`);
-    expect(word.out).not.toMatch(/^About:$/m);   // CONTROL: the bare table (`wiki help`) carries no account
-    for (const verb of ["init", "share", "switch", "keep", "unkeep", "status"]) expect(flag.out).toMatch(new RegExp(`^  ${verb}\\s`, "m"));
+    expect(flag.out).toBe(word.out);
+    expect(flag.out).toBe(packDoor("wiki")!.help.join("\n"));
+    for (const verb of ["init", "share", "switch", "keep", "unkeep", "status", "render", "compact"]) expect(flag.out).toMatch(new RegExp(`lares wiki ${verb}\\b`));
     expect(flag.code).toBe(0);
   });
 
