@@ -2,7 +2,7 @@
  * working-layer-records-off-disk — the daemon's control records rest in the control document, so the working layer's
  * disk mirror never meets one.
  *
- * Placement decides residency: a receipt fact, a ward audit and a summons rest in the vessel's control document
+ * Placement decides residency: a receipt fact and a summons rest in the vessel's control document
  * (`control-home`), which no mirror names. The working layer holds only what its own writers put there, so a mounted
  * mirror projects the ordinary title and nothing else.
  */
@@ -34,7 +34,7 @@ afterEach(() => { if (diskRoot) { rmSync(diskRoot, { recursive: true, force: tru
 const filesUnder = (dir: string): string[] => readdirSync(dir, { recursive: true, encoding: "utf8" });
 
 describe("daemon control records never reach the working layer's disk mirror", () => {
-  test("a receipt fact, a ward audit and a summons rest in the control document and project no file; an ordinary title projects", async () => {
+  test("a receipt fact and a summons rest in the control document and project no file; an ordinary title projects", async () => {
     const working = new MemoryTiddlerStore(WORKING);
     const composite = new CompositeStore();
     composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
@@ -48,8 +48,8 @@ describe("daemon control records never reach the working layer's disk mirror", (
     await composite.put({ tiddler: { title: "lar:///ha.ka.ba/t/daemon/ordinary", text: "an ordinary note" } }, origin);
 
     const controlTitles = await controlBag.listVisible();
-    const bookkeeping = controlTitles.filter((t) => t.includes("/receipts/") || t.includes("/ledger/ward/") || t.includes("/summons/"));
-    expect(bookkeeping.length, "the records did not land in the control document").toBe(3);
+    const bookkeeping = controlTitles.filter((t) => t.includes("/receipts/") || t.includes("/summons/"));
+    expect(bookkeeping.length, "the records did not land in the control document").toBe(2);
     const titles = await working.listVisible();
     expect(titles, "a control record reached the working layer").toEqual(["lar:///ha.ka.ba/t/daemon/ordinary"]);
 

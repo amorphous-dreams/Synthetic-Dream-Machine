@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { memoryControlStore } from "./control-store-fixture.js";
-import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { DocHandle, Repo } from "@lararium/mesh/automerge";
 import type { LarDoc } from "@lararium/mesh/base-doc";
@@ -78,32 +78,12 @@ describe("where — registered wiki slot membership", () => {
   });
 });
 
-describe("disk ward audit control-home route", () => {
-  test("the audit rests in the control document, never in a wiki layer, and refuses by name without one", async () => {
+describe("disk ward alert route", () => {
+  test("a refusal with no home wiki names the missing audience and writes no control row", async () => {
     const composite = new CompositeStore();
-    const canon = new MemoryTiddlerStore(CANON);
-    const working = new MemoryTiddlerStore(WORKING);
-    composite.addLayer({ bagId: CANON, store: canon, writable: true, defaultWritable: false });
-    composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
     const control = memoryControlStore();
     const result = await fileWardRefusal(composite, control, () => {}, { bagId: CANON, uri: "lar:///ward/test", reason: "test" });
-    const audit = String(result.audited);
-    expect(await control.get(audit)).not.toBeNull();
-    expect(await working.get(audit)).toBeNull();
-    expect(await canon.get(audit)).toBeNull();
-    expect(audit).toContain("/bags/control/ledger/ward/");
-
-    const unmounted = new CompositeStore();
-    await expect(fileWardRefusal(composite, unmounted, () => {}, { bagId: CANON, uri: "lar:///ward/test", reason: "test" }))
-      .rejects.toBeInstanceOf(NoWorkingLayerRefusal);
-  });
-
-  test("audit address is unique without reading wall time", async () => {
-    const composite = new CompositeStore();
-    const control = memoryControlStore();
-    const first = await fileWardRefusal(composite, control, () => {}, { bagId: CANON, uri: "lar:///ward/test", reason: "test" });
-    const second = await fileWardRefusal(composite, control, () => {}, { bagId: CANON, uri: "lar:///ward/test", reason: "test" });
-    expect(String(first.audited)).toMatch(/\/ledger\/ward\/[0-9a-f-]{36}$/);
-    expect(first.audited).not.toBe(second.audited);
+    expect(result).toEqual({ alerted: "none", bagId: CANON, uri: "lar:///ward/test" });
+    expect(await control.listVisible()).toEqual([]);
   });
 });

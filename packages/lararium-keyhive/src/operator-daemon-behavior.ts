@@ -333,7 +333,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const archiveWriters = { ...(persistVeilArchive ? { persistVeilArchive } : {}), ...(routesVeilArchive ? { routesVeilArchive } : {}) };
   /**
    * THE ONE DOOR EVERY ARCHIVE FLOOR'S REFUSALS SURFACE THROUGH, the mounted face's and each lit sibling's alike: stdout for a
-   * person at a terminal, and the durable `@daemon` ward ledger (Rail A), naming the face where a sibling's floor refused. One
+   * person at a terminal, and the face-wiki alert (Rail A), naming the face where a sibling's floor refused. One
    * call site, so none of them can go dead unnoticed (the seal-refusal weld counts it).
    */
   const surfaceFloorRefusals = async (ctx: IslandContext, floor: Awaited<ReturnType<typeof persistArchiveFloor>>, face: string | null): Promise<void> => {
